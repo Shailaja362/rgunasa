@@ -51,6 +51,7 @@ return new class extends Migration
             $table->time('end_time');
             $table->enum('event_type', ['paid','free']);
             $table->integer('seat_count');
+            $table->integer('duration_months')->nullable()->comment('Event validity duration in months');
             $table->string('location');
             $table->enum('session', ['1', '2'])
                 ->comment('1 FN, 2 AN');

@@ -39,6 +39,8 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
             'password'      => Hash::make($row['mobile_number']),
             'date_of_birth' => $this->transformDate($row['date_of_birth'] ?? null),
             'gender'        => $row['gender'],
+            'register_number' => $row['register_number'],
+            'section' => $row['section'],
         ]);
     }
 
@@ -68,6 +70,8 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
             'mobile_number' => trim($data['mobile_number']),
             'date_of_birth' => trim($data['date_of_birth']),
             'gender'        => trim($data['gender']),
+            'register_number'        => trim($data['register_number']),
+            'section'        => trim($data['section']),
         ];
     }
 
@@ -100,6 +104,13 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
                 'bail',
                 'required',
                 Rule::exists('programmes', 'name'),
+            ],
+            '*.section' => ['bail', 'required', 'in:a,b,c'],
+            '*.register_number' => [
+                'bail',
+                'required',
+                'distinct', // prevents duplicate mobile numbers inside Excel
+                Rule::unique('students', 'register_number'), // REQUIRED
             ],
         ];
     }

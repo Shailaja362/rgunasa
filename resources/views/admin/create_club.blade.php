@@ -1,14 +1,17 @@
 <x-layouts.app>
-
-    <!-- Header -->
-    <div class="bg-[#F5E8F5] w-full h-[50px] rounded-full shadow-sm px-8 py-3">
-        <h3 class="font-semibold text-primary">Create New Club</h3>
+     <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
+        <!-- Title & Subtitle -->
+        <div class="flex flex-col">
+            <h3 class="font-semibold text-primary text-lg">
+               Create New Club
+            </h3>
+        </div>
+        <!-- Back Button -->
+        <a href="{{ route('club_list') }}"
+            class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+        </a>
     </div>
-
-    <!-- Back Button -->
-    <a href="{{ route('club_list') }}">
-        <i class="fa-solid fa-arrow-left"></i>
-    </a>
 
     <h1 class="text-primary font-semibold mt-10 px-3">Club Information</h1>
     <p class="px-3">Basic Details about your Club</p>

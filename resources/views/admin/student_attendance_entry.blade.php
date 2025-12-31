@@ -1,15 +1,21 @@
 <x-layouts.app>
-
     <!-- Header -->
-    <div class="bg-[#F5E8F5] w-full h-[90px] rounded-full shadow-sm px-8 py-3 flex flex-col justify-center">
-        <h3 class="font-semibold text-primary">Student Attendance Management</h3>
-        <p class="text-sm text-gray-700">Mark entry & exit</p>
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
+        <!-- Title & Subtitle -->
+        <div class="flex flex-col">
+            <h3 class="font-semibold text-primary text-lg">
+                Student Attendance Management
+            </h3>
+            <p class="text-sm text-gray-700">
+                Mark entry & exit
+            </p>
+        </div>
+        <!-- Back Button -->
+        <a href="{{ route('student_attendance') }}"
+            class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+        </a>
     </div>
-
-    <!-- Back -->
-    <a href="{{ route('student_attendance') }}" class="inline-block mt-3">
-        <i class="fa-solid fa-arrow-left"></i>
-    </a>
 
     <!-- Success Message -->
     @if (session('success'))
@@ -57,10 +63,10 @@
                     <thead class="bg-primary text-white uppercase text-sm">
                         <tr>
                             <th class="px-4 py-3">S.No</th>
-                            <th class="px-4 py-3">Name</th>
+                            <th class="px-4 py-3">Register Number</th>
+                            <th class="px-4 py-3">Student Name</th>
                             <th class="px-4 py-3">Department</th>
-                            <th class="px-4 py-3">Phone</th>
-                            <th class="px-4 py-3">Email</th>
+                            <th class="px-4 py-3">Section</th>
                             <th class="px-4 py-3 text-center"> Entry <br> <input type="checkbox" id="selectAllEntry">
                             </th>
                             <th class="px-4 py-3 text-center">Exit <br> <input type="checkbox" id="selectAllExit"></th>
@@ -87,11 +93,10 @@
 
                                 <tr class="border-t">
                                     <td class="px-4 py-3">{{ $loop->iteration }}</td>
-                                    <td class="px-4 py-3">{{ $attendance->student?->name }}</td>
-                                    <td class="px-4 py-3">{{ $attendance->student?->get_department?->name }}</td>
-                                    <td class="px-4 py-3">{{ $attendance->student?->mobile_number }}</td>
-                                    <td class="px-4 py-3">{{ $attendance->student?->email }}</td>
-
+                                    <td class="px-4 py-3">{{ $attendance->student?->register_number ?? '' }}</td>
+                                    <td class="px-4 py-3">{{ $attendance->student?->name ?? '' }}</td>
+                                    <td class="px-4 py-3">{{ $attendance->student?->get_department?->name ?? '' }}</td>
+                                    <td class="px-4 py-3">{{ $attendance->student?->section ?? '' }}</td>
                                     <!-- ENTRY -->
                                     <td class="px-4 py-3 text-center">
                                         <label class="inline-flex items-center">
@@ -140,14 +145,14 @@
 </x-layouts.app>
 <script>
     // Select All Entry
-    document.getElementById('selectAllEntry').addEventListener('change', function () {
+    document.getElementById('selectAllEntry').addEventListener('change', function() {
         document.querySelectorAll('.entry-checkbox:not(:disabled)').forEach(cb => {
             cb.checked = this.checked;
         });
     });
 
     // Select All Exit
-    document.getElementById('selectAllExit').addEventListener('change', function () {
+    document.getElementById('selectAllExit').addEventListener('change', function() {
         document.querySelectorAll('.exit-checkbox:not(:disabled)').forEach(cb => {
             cb.checked = this.checked;
         });

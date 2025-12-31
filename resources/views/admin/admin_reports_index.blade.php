@@ -10,7 +10,7 @@
             class="px-2 w-40 mt-5 bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
             <i class="fa fa-plus" aria-hidden="true"></i>Create Report</a>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mt-5">
         @foreach ($reports as $report)
             <div class="bg-white rounded-2xl shadow hover:shadow-lg transition p-5">
                 <!-- Header -->
@@ -31,17 +31,26 @@
                         {{ $report->get_event->title ?? '' }}</p>
                 </div>
                 <!-- Image -->
-                <div class="grid grid-cols-2 gap-3 mt-4">
+                <div class="grid grid-cols-3 gap-3 mt-4">
+                    <!-- View PDF -->
                     <a href="{{ route('reports_view_pdf', $report->id) }}" target="_blank"
-                        class="w-full inline-block text-center bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
-                        <i class="fa fa-eye" aria-hidden="true"></i> View Pdf
+                        class="w-full inline-block text-center bg-[#E27258] text-white font-medium py-1 rounded-full">
+                        <i class="fa fa-eye" aria-hidden="true"></i> View PDF
                     </a>
 
+                    <!-- Download PDF -->
                     <a href="{{ route('reports_download_pdf', $report->id) }}"
                         class="w-full inline-block text-center bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
                         <i class="fa fa-download" aria-hidden="true"></i> Download
                     </a>
+
+                    <!-- Add Grade -->
+                    <a href="{{ route('assign_grade_entry', ['event_id' => $report->event_id]) }}"  data-event_id="{{ $report->event_id }}"
+                        class="w-full inline-block text-center bg-[#6C2DC7] text-white font-medium py-1 rounded-full">
+                        <i class="fa fa-plus" aria-hidden="true"></i> Add Grade
+                    </a>
                 </div>
+
             </div>
         @endforeach
     </div>

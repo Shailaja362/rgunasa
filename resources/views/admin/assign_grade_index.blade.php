@@ -35,7 +35,7 @@
                                 <div class="flex gap-2 justify-center">
                                     <a href="{{ route('assign_grade_entry', ['event_id' => $event->id]) }}"
                                         data-event_id="{{ $event->id }}"
-                                        class="bg-gradient-to-r from-primary to-pink-600 text-white px-3 py-1 rounded-full text-xs">
+                                        class="bg-[#DA70D6] text-white px-3 py-1 rounded-full text-xs">
                                         Assign Grade
                                     </a>
                                 </div>

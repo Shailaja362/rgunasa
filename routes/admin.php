@@ -17,6 +17,7 @@ use App\Http\Controllers\super_admin\EventsController;
 use App\Http\Controllers\Auth\SuperAdminAuthController;
 use App\Http\Controllers\admin\StudentAttendanceController;
 use App\Http\Controllers\AdminImportExportController;
+use App\Http\Controllers\EventRegisterdReportController;
 use App\Http\Controllers\super_admin\AssignTasksController;
 use App\Http\Controllers\super_admin\ReviewReportsController;
 use App\Http\Controllers\super_admin\SuperAdminHomeController;
@@ -83,13 +84,11 @@ Route::prefix('admin')->group(function () {
         Route::post('/save-programme', [ProgrammeController::class, 'saveProgramme'])->name('save_programme');
 
         //faculty
-
         Route::get('/faculty-list', [FacultyController::class, 'index'])->name('faculty_list');
         Route::get('/create-faculty', [FacultyController::class, 'createFaculty'])->name('create_faculty');
         Route::post('/save-faculty', [FacultyController::class, 'saveFaculty'])->name('save_faculty');
 
         //student
-
         Route::get('/student-list', [StudentController::class, 'index'])->name('student_list');
         Route::get('/create-student', [StudentController::class, 'createStudent'])->name('create_student');
         Route::post('/save-student', [StudentController::class, 'saveStudent'])->name('save_student');
@@ -102,10 +101,8 @@ Route::prefix('admin')->group(function () {
         //Student Upload
         Route::get('/students/download-template', [StudentImportExportController::class, 'downloadTemplate'])
             ->name('students.download.template');
-
         Route::post('/students/upload', [StudentImportExportController::class, 'uploadStudents'])
             ->name('students.upload');
-
 
         //create admins
         Route::get('/admin-list', [AdminController::class, 'index'])->name('admin_list');
@@ -116,8 +113,13 @@ Route::prefix('admin')->group(function () {
         //Admin Upload
         Route::get('/admin/download-template', [AdminImportExportController::class, 'downloadTemplate'])
             ->name('admin.download.template');
-
         Route::post('/admin/upload', [AdminImportExportController::class, 'uploadAdmin'])
             ->name('admin.upload');
+        Route::get('/registered-report-index', [EventRegisterdReportController::class, 'index'])
+            ->name('registered_report_index');
+        Route::get('/event-registrations/export', [EventRegisterdReportController::class, 'export'])
+            ->name('admin.event-registrations.export');
+        Route::get('/task-view', [AssignTasksController::class, 'viewTask'])
+            ->name('task_view');
     });
 });

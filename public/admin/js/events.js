@@ -162,6 +162,11 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "",
             message: "Please select Event Type",
         },
+        {
+            id: "#duration_months",
+            condition: (val) => val === "",
+            message: "Please Enter Duration Month",
+        },
     ];
 
     let isValid = true;

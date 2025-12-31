@@ -130,4 +130,10 @@ class AssignTasksController extends Controller
             ], 500);
         }
     }
+
+    public function viewTask(Request $request){
+        $taskId = decrypt($request->task_id);
+        $this->data['task'] = Tasks::where('id', $taskId)->first();
+         return view('admin.admin_task_view')->with($this->data);
+    }
 }

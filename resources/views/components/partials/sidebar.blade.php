@@ -8,19 +8,19 @@
         @php
             $user = session()->get('student') ?? (session()->get('admin') ?? session()->get('super_admin'));
             $profile_pict = $user->profile_pic ?? null;
-             if (!empty(session()->get('student'))){
-              $name = session()->get('student')->name;
-              $id = session()->get('student')->id;
-              $route = route('student.logout');
-             }else if(!empty(session()->get('admin'))){
-              $name = session()->get('admin')->name;
-              $id = session()->get('admin')->emp_code;
-              $route = route('admin.logout');
-             }else if(!empty(session()->get('super_admin'))){
-              $name = session()->get('super_admin')->name;
-              $id = session()->get('super_admin')->emp_code;
-              $route = route('admin.logout');
-             }
+            if (!empty(session()->get('student'))) {
+                $name = session()->get('student')->name;
+                $id = session()->get('student')->id;
+                $route = route('student.logout');
+            } elseif (!empty(session()->get('admin'))) {
+                $name = session()->get('admin')->name;
+                $id = session()->get('admin')->emp_code;
+                $route = route('admin.logout');
+            } elseif (!empty(session()->get('super_admin'))) {
+                $name = session()->get('super_admin')->name;
+                $id = session()->get('super_admin')->emp_code;
+                $route = route('admin.logout');
+            }
 
         @endphp
 
@@ -38,7 +38,7 @@
             {{ $name }}
         </div>
         <div class="text-center font-medium text-md text-primary">
-            ID -  {{ $id }}
+            ID - {{ $id }}
         </div>
     </div>
 
@@ -60,7 +60,7 @@
             @endif
             @if (!empty(session()->get('admin')))
                 <x-slot:trigger>
-                </x-slot:trigger>
+                 </x-slot:trigger>
                 <x-slot:menus>
                     <x-menu.item name="Home" icon="fa-home" route="home" />
                     <x-menu.item name="Department" icon="fas fa-building" route="department_list" />
@@ -69,6 +69,7 @@
                     <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Create Event" icon="fas fa-pencil-alt" route="event_list" />
+                    <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
                     {{-- <x-menu.item name="Student Approval" icon="fas fa-user-check" route="student_approval" /> --}}
@@ -87,12 +88,12 @@
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
                     <x-menu.item name="Review Reports" icon="fa-check-circle" route="review_reports" />
-                     {{-- <x-menu.item name="Student Approval" icon="fa-graduation-cap" route="student_approval" /> --}}
+                    {{-- <x-menu.item name="Student Approval" icon="fa-graduation-cap" route="student_approval" /> --}}
                 </x-slot:menus>
             @endif
         </x-menu.list>
-          <x-menu.item name="Privacy Policy" icon="fa-book-open" route="privacy_policy"/>
-          <x-menu.item name="Terms and Conditions" icon="fa-file-contract " route="terms_and_conditions"/>
+        <x-menu.item name="Privacy Policy" icon="fa-book-open" route="privacy_policy" />
+        <x-menu.item name="Terms and Conditions" icon="fa-file-contract " route="terms_and_conditions" />
         @if (!empty(session()->get('student')))
             {{-- <x-menu.item name="Non-Curriculum" icon="fa-graduation-cap" /> --}}
         @endif
@@ -112,7 +113,7 @@
                 </button>
             </form>
             <p class="text-sm font-medium text-black">ID -
-              {{ $id }}
+                {{ $id }}
             </p>
         </div>
     </div>

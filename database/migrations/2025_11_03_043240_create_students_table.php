@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('department_id');
             $table->unsignedBigInteger('programme_id');
             $table->string('name');
+            $table->string('register_number')->nullable();
             $table->string('email')->unique();
             $table->string('mobile_number')->unique();
             $table->string('password');

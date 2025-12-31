@@ -37,12 +37,13 @@ class StudentController extends Controller
             $rules = [
                 'student_name'  => 'required',
                 'email'         => 'required|email',
-                'date_of_birth' => 'nullable',
+                'date_of_birth' => 'required',
                 'mobile_number' => 'required|digits:10',
                 'department_id' => 'required',
                 'programme_id'  => 'required',
                 'gender' => 'required',
-                'section' => 'required'
+                'section' => 'required',
+                'register_number' => 'required'
             ];
 
             if (!empty($request['student_id'])) {
@@ -114,6 +115,7 @@ class StudentController extends Controller
             $student->programme_id = $request['programme_id'] ?? '';
             $student->gender = $request['gender'] ?? '';
             $student->section = $request['section'] ?? '';
+            $student->register_number = $request['register_number'] ?? '';
             $student->save();
 
             if (!empty($request['student_id'])) {
@@ -152,7 +154,7 @@ class StudentController extends Controller
             $rules = [
                 'student_name'  => 'required',
                 'email'         => 'required|email',
-                'date_of_birth' => 'nullable',
+                'date_of_birth' => 'required',
                 'mobile_number' => 'required|digits:10',
                 'department_id' => 'required',
                 'programme_id'  => 'required',
@@ -204,6 +206,7 @@ class StudentController extends Controller
             $student->programme_id = $request['programme_id'] ?? '';
             $student->gender = $request['gender'] ?? '';
             $student->section = $request['section'] ?? '';
+            $student->register_number = $request['register_number'] ?? '';
             $student->save();
 
             session()->put('register_student', $student);
