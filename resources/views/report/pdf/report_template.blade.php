@@ -58,6 +58,23 @@
             vertical-align: top;
         }
 
+        .student_table {
+            width: 100%;
+            border-collapse: collapse;
+            /* ensures borders are not doubled */
+        }
+
+        .student_table th,
+        .student_table td {
+            /* visible border */
+            padding: 8px;
+            text-align: left;
+        }
+
+        .student_table th {
+            background-color: #F1E5F7;
+        }
+
         .label {
             width: 30%;
             font-weight: bold;
@@ -137,12 +154,10 @@
         function stars($rating)
         {
             $full = floor($rating);
-            $half = ($rating - $full) >= 0.5 ? 1 : 0;
+            $half = $rating - $full >= 0.5 ? 1 : 0;
             $empty = 5 - ($full + $half);
 
-            return str_repeat('★', $full)
-                 . str_repeat('⯪', $half)
-                 . str_repeat('☆', $empty);
+            return str_repeat('★', $full) . str_repeat('⯪', $half) . str_repeat('☆', $empty);
         }
 
         $data['report'] = $data['report'];
@@ -173,7 +188,7 @@
                     </td>
                     <td class="event-meta">
                         <b>
-                            Date: {{ optional($data['report']->get_event->event_date)->format('d M Y') }} <br>
+                            Date: {{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }} <br>
                             Session: {{ $data['report']->get_event->session == 1 ? 'FN' : 'AN' }}
                         </b>
                     </td>
@@ -201,7 +216,7 @@
         <table class="info-table">
             <tr>
                 <td class="label">Event Date</td>
-                <td>{{ optional($data['report']->get_event->event_date)->format('d M Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }}</td>
             </tr>
             <tr>
                 <td class="label">Report Created By</td>
@@ -219,7 +234,6 @@
 
         <!-- GENDER PARTICIPATION -->
         <div class="section-title">Gender Participation</div>
-
         <!-- PIE -->
         <svg width="420" height="200">
             <g transform="translate(100,100)">
@@ -258,18 +272,34 @@
                 <td>{{ $female }}</td>
             </tr>
         </table>
-
+        <div class="section-title">Attended Students Lists</div>
+        <table class="student_table">
+            <thead>
+                <th>S.No</th>
+                <th>Register Number</th>
+                <th>Student Name</th>
+            </thead>
+            <tbody>
+                @foreach ($data['attended_students'] as $student)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $student->student?->register_number ?? '' }}</td>
+                        <td>{{ $student->student?->name ?? '' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
         <!-- AVERAGE FEEDBACK -->
         <div class="section-title">Average Feedback</div>
 
         <table class="info-table">
             @foreach ([
-                'overall_experience' => 'Overall Experience',
-                'engagement' => 'Engagement',
-                'organization' => 'Organization',
-                'coordination' => 'Coordination',
-                'recommendation' => 'Recommendation',
-            ] as $k => $label)
+        'overall_experience' => 'Overall Experience',
+        'engagement' => 'Engagement',
+        'organization' => 'Organization',
+        'coordination' => 'Coordination',
+        'recommendation' => 'Recommendation',
+    ] as $k => $label)
                 @php $rating = round($avg[$k] ?? 0, 1); @endphp
                 <tr>
                     <td class="label">{{ $label }}</td>

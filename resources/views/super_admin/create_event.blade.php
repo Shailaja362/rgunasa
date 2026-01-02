@@ -1,9 +1,19 @@
 <x-layouts.app>
-    <div class="bg-[#F5E8F5] w-full h-[70px] rounded-full shadow-sm px-8 py-3">
-        <h3 class="font-semibold text-primary">Create New Event</h3>
-        <p>Set up a new mission event for student participation</p>
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
+        <!-- Title & Subtitle -->
+        <div class="flex flex-col">
+            <h3 class="font-semibold text-primary text-lg">
+                Create New Event
+            </h3>
+            <p class="text-sm text-gray-700">
+                Set up a new mission event for student participation
+            </p>
+        </div>
+        <!-- Back Button -->
+        <a href="{{ route('event_list') }}" class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+        </a>
     </div>
-    <a href="{{ route('event_list') }}"><i class="fa-solid fa-arrow-left">‌</i></a>
     <h1 class="text-primary font-semibold mt-10 px-3">Event Information</h1>
     <p class="px-3">Basic Details about your event</p>
     <form id="eventForm" method="POST" enctype="multipart/form-data" class="space-y-4 mt-8 px-3">
@@ -32,7 +42,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-medium">Programme Officer<span class="text-red-600">*</span></label>
                 <select name="programme_officer" id="programme_officer"
@@ -43,6 +53,31 @@
                     @endif
                 </select>
             </div>
+
+            <div>
+                <label class="block text-sm font-medium">Seat Count<span class="text-red-500">*</span></label>
+                <input type="text" name="seat_count" id="seat_count" value="{{ $edit_event->seat_count ?? '' }}"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
+            <div>
+                <label class="block text-sm font-medium">
+                    Event Duration (Months)<span class="text-red-500">*</span>
+                </label>
+                <input type="number" name="duration_months" min="1" id="duration_months"
+                    value="{{ $edit_event->duration_months ?? '' }}"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Event Description<span class="text-red-600">*</span></label>
+                <textarea name="description" id="description"
+                    class="bg-[#D9D9D9] w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring focus:ring-primary/40"
+                    rows="4"
+                    placeholder="Provide a detailed description of the event objective, activities, and learning outcomes">
+                        {{ $edit_event->description ?? '' }}
+                </textarea>
+            </div>
+
             <div>
                 <label class="block text-sm font-medium">Event Type<span class="text-red-600">*</span></label>
                 <select name="event_type" id="event_type"
@@ -52,6 +87,7 @@
                     <option value="free" @if (!empty($edit_event) && $edit_event->event_type == 'free') selected @endif>Free</option>
                 </select>
             </div>
+
             <div id="priceFieldContainer">
                 @if (!empty($edit_event) && $edit_event->event_type == 'paid')
                     <label class="block mt-3 font-medium">Price</label>
@@ -60,19 +96,6 @@
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40"
                         required>
                 @endif
-            </div>
-            <div>
-                <label class="block text-sm font-medium">Seat Count<span class="text-red-500">*</span></label>
-                <input type="text" name="seat_count" id="seat_count" value="{{ $edit_event->seat_count ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-
-            <div class="col-span-2">
-                <label class="block text-sm font-medium">Event Description<span class="text-red-600">*</span></label>
-                <textarea name="description" id="description" class="bg-[#D9D9D9] w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring focus:ring-primary/40" rows="4"
-                    placeholder="Provide a detailed description of the event objective, activities, and learning outcomes">
-                        {{ $edit_event->description ?? '' }}
-                </textarea>
             </div>
         </div>
 

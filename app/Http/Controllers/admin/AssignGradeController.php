@@ -19,7 +19,7 @@ class AssignGradeController extends Controller
 
     public function gradeEntry(Request $request)
     {
-        $this->data['registrations'] = StudentAttendance::with('student', 'get_grade')
+        $this->data['registrations'] = StudentAttendance::with('student', 'get_grade', 'student.get_department')
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
             ->where('event_id', $request->event_id)

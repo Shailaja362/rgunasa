@@ -12,6 +12,7 @@ class StudentsSheet implements WithHeadings, WithTitle
     {
         return [
             'S.No',
+            'Register Number',
             'Name',
             'Email',
             'Gender',
@@ -19,6 +20,7 @@ class StudentsSheet implements WithHeadings, WithTitle
             'Date of Birth',
             'Department',
             'Programme',
+            'Section'
         ];
     }
 

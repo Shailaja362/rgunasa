@@ -4,7 +4,7 @@
     </div>
     <div class="bg-[#F5E8F5] w-full rounded-xl shadow-sm p-8 space-y-6 mt-4">
         <h1 class="text-2xl font-bold">Student Event Registration Portal</h1>
-        <p class="text-sm text-gray-700">Effective Date: <span class="font-medium">[Add Date]</span></p>
+        <p class="text-sm text-gray-700">Effective Date: <span class="font-medium">27 December 2025</span></p>
 
         <p class="text-gray-700">
             [Your Institution / Portal Name] (“we”, “our”, “us”) is committed to protecting the privacy of students who use our online portal to register for events. This Privacy Policy explains how we collect, use, and protect your information.

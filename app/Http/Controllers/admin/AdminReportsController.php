@@ -10,9 +10,11 @@ use Illuminate\Http\Request;
 use App\Models\StudentFeedback;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\EventReportImage;
+use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Models\StudentEventRegistration;
 
 class AdminReportsController extends Controller
 {
@@ -157,27 +159,18 @@ class AdminReportsController extends Controller
         }
     }
 
-    // public function viewPdf($id)
-    // {
-    //     $report = EventReport::with(['get_event.get_task', 'get_event_image', 'creator'])->findOrFail($id);
-    //     $pdf = Pdf::loadView('report.pdf.report_template', compact('report'))
-    //         ->setPaper('a4', 'portrait');
-    //     $user = auth('admin')->user();
-    //     ActivityLog::add($user->name  .' - '. $report->get_event->title .' - Report Viewed', $user);
-
-    //     return $pdf->stream("event_report_{$report->id}.pdf");
-    // }
-
     public function viewPdf($id)
     {
 
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
-        // Get feedbacks
-
         $feedbacks = StudentFeedback::with('student')
             ->where('event_id', $event->event_id)
             ->get();
-
+        $attended_students = StudentAttendance::with('student', 'get_grade')
+                               ->whereNotNull('entry_time')
+                               ->whereNotNull('exit_time')
+                               ->where('event_id', $event->event_id)
+                               ->get();
         // Calculate average ratings
         $avgRatings = [
             'overall_experience' => 0,
@@ -238,14 +231,15 @@ class AdminReportsController extends Controller
                 'outcomes' => $event->outcomes,
                 'feedback_summary' => $event->feedback_summary
             ],
-            'genderChartUrl' => $genderChartUrl
+            'genderChartUrl' => $genderChartUrl,
+            'attended_students' =>  $attended_students
         ];
 
         // Generate PDF
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
         $user = auth('admin')->user();
-        ActivityLog::add($user->name  . ' - ' . $event->title . ' - Report Viewed', $user);
+        ActivityLog::add($user->name  . ' - ' . $event->get_event->title . ' - Report Viewed', $user);
         return $pdf->stream("event_report_{$event->id}.pdf");
     }
 
@@ -257,7 +251,11 @@ class AdminReportsController extends Controller
         $feedbacks = StudentFeedback::with('student')
             ->where('event_id', $event->event_id)
             ->get();
-
+        $attended_students = StudentAttendance::with('student', 'get_grade')
+                               ->whereNotNull('entry_time')
+                               ->whereNotNull('exit_time')
+                               ->where('event_id', $event->event_id)
+                               ->get();
         // Calculate average ratings
         $avgRatings = [
             'overall_experience' => 0,
@@ -319,11 +317,12 @@ class AdminReportsController extends Controller
                 'outcomes' => $event->outcomes,
                 'feedback_summary' => $event->feedback_summary
             ],
-            'genderChartUrl' => $genderChartUrl
+            'genderChartUrl' => $genderChartUrl,
+            'attended_students' => $attended_students
         ];
 
         $user = auth('admin')->user();
-        ActivityLog::add($user->name . ' - ' .  $event->title . 'Report Downloaded', $user);
+        ActivityLog::add($user->name . ' - ' .  $event->get_event->title . 'Report Downloaded', $user);
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
         return $pdf->download("event_report_{$event->id}.pdf");

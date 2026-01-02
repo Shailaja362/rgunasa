@@ -1,14 +1,12 @@
 <x-layouts.app>
-
     {{-- Header --}}
-    <div class="bg-[#F5E8F5] w-full h-[90px] rounded-full shadow-sm px-8 py-3 flex flex-col justify-center">
-        <h3 class="font-semibold text-primary">Student Assign Grades</h3>
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h3 class="font-semibold text-primary text-lg sm:text-xl">Student Assign Grades</h3>
+        <a href="{{ route('assign_grades') }}"
+           class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+        </a>
     </div>
-
-    <a href="{{ route('assign_grades') }}" class="inline-block mt-3">
-        <i class="fa-solid fa-arrow-left"></i>
-    </a>
-
     {{-- Success Message --}}
     @if (session('success'))
         <script>
@@ -51,7 +49,10 @@
                     <thead>
                         <tr class="bg-primary text-white uppercase tracking-wider">
                             <th class="px-4 py-3 text-left font-semibold">S.No</th>
-                            <th class="px-4 py-3 text-left font-semibold">Student</th>
+                            <th class="px-4 py-3 text-left font-semibold">Register Number</th>
+                            <th class="px-4 py-3 text-left font-semibold">Student Name</th>
+                            <th class="px-4 py-3 text-left font-semibold">Department Name</th>
+                            <th class="px-4 py-3 text-left font-semibold">Section</th>
                             <th class="px-4 py-3 text-left font-semibold">Grade</th>
                         </tr>
                     </thead>
@@ -63,12 +64,18 @@
                                     {{ $index + 1 }}
                                 </td>
                                 <td class="px-4 py-3">
+                                    {{ $registration->student->register_number ?? '' }}
+                                </td>
+                                <td class="px-4 py-3">
                                     <div class="font-medium text-gray-800">
                                         {{ $registration->student->name }}
                                     </div>
-                                    <div class="text-xs text-gray-500">
-                                        {{ $registration->student->register_number ?? '' }}
-                                    </div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    {{ $registration->student->get_department->name ?? '' }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    {{ $registration->student->section ?? '' }}
                                 </td>
                                 <td class="px-4 py-3">
                                     <select name="grades[{{ $registration->student_id }}]"

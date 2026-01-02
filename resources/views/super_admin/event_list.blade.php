@@ -7,7 +7,7 @@
     </div>
     <!-- Dashboard Header -->
     @if (!empty(session()->get('admin')))
-        <div class="taskdiv grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-5">
+        <div class="taskdiv grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mt-5">
             @foreach ($tasks as $task)
                 @if (empty($task->get_event))
                     <div class="task-card bg-white rounded-2xl shadow hover:shadow-lg transition p-5 flex flex-col justify-between"
@@ -72,7 +72,10 @@
                                     <i class="fa fa-plus" aria-hidden="true"></i> Create Event
                                 </a>
                             @endif
-
+ <a href="{{ route('task_view', ['task_id' => encrypt($task->id)]) }}"
+           class="px-2 w-30 mt-3 bg-gray-200 text-gray-800 font-medium py-1 rounded-full flex items-center justify-center hover:bg-gray-300">
+            <i class="fa fa-eye mr-1" aria-hidden="true"></i> View
+        </a>
                         </div>
                     </div>
                 @endif

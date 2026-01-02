@@ -100,7 +100,7 @@
                                     @if ($task->status == 'pending')
                                         <i class="fa fa-hourglass-half text-primary"></i>Pending
                                     @elseif($task->status == 'accepted')
-                                        <div
+                                    <div
                                 class="flex items-center bg-gradient-to-r from-primary to-pink-600 rounded-full px-4 py-1 text-white">
                                 Accepted
                             </div>

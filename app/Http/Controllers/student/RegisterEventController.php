@@ -58,39 +58,89 @@ class RegisterEventController extends Controller
         return view('student.register_event_index')->with($this->data);
     }
 
+    // public function studentRegisterEvent(Request $request)
+    // {
+    //     $request->validate([
+    //         'student_id' => 'required|string|max:255',
+    //         'event'  => 'required',
+    //     ]);
+
+    //     try {
+    //         $register_event = StudentEventRegistration::where(['student_id' => $request->stu_id, 'event_id' => $request->event_id])->first();
+
+    //         if (!$register_event) {
+
+    //             $register = new StudentEventRegistration();
+    //             $register->student_id    = $request->stu_id;
+    //             $register->event_id      = $request->event_id ?? null;
+    //             $register->status        = 1;
+    //             $register->save();
+
+    //             if (!empty($request['report_id'])) {
+    //                 $user = auth('student')->user();
+    //                 $event = Event::where('id', $request->event_id)->first();
+    //                 ActivityLog::add($user->name . ' - ' . $event->title . " - Event Registered", $user);
+    //             }
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Event Registered Successfully!',
+    //         ]);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Failed to Register Event',
+    //             'error'   => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+
     public function studentRegisterEvent(Request $request)
     {
         $request->validate([
-            'student_id' => 'required|string|max:255',
-            'event'  => 'required',
+            'stu_id'   => 'required',
+            'event_id' => 'required',
         ]);
 
         try {
-            $register_event = StudentEventRegistration::where(['student_id' => $request->stu_id, 'event_id' => $request->event_id])->first();
+            $event = Event::findOrFail($request->event_id);
+            // Get last registration
+            $lastRegistration = StudentEventRegistration::where([
+                'student_id' => $request->stu_id,
+                'event_id'   => $event->id
+            ])->orderBy('registered_at', 'desc')->first();
 
-            if (!$register_event) {
+            // If already registered, check duration
+            if ($lastRegistration) {
+                $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
+                    ->addMonths($event->duration_months);
 
-                $register = new StudentEventRegistration();
-                $register->student_id    = $request->stu_id;
-                $register->event_id      = $request->event_id ?? null;
-                $register->status        = 1;
-                $register->save();
-
-                if (!empty($request['report_id'])) {
-                    $user = auth('student')->user();
-                    $event = Event::where('id', $request->event_id)->first();
-                    ActivityLog::add($user->name . ' - ' . $event->title . " - Event Registered", $user);
+                if (Carbon::now()->lt($nextAllowedDate)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You can register again after ' . $nextAllowedDate->format('d M Y'),
+                    ]);
                 }
             }
+
+            // Allow registration
+            StudentEventRegistration::create([
+                'student_id'   => $request->stu_id,
+                'event_id'     => $event->id,
+                'status'       => 1,
+                'registered_at' => Carbon::now(),
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Event Registered Successfully!',
             ]);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
+
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to Register Event',
+                'message' => 'Registration Failed',
                 'error'   => $e->getMessage(),
             ], 500);
         }

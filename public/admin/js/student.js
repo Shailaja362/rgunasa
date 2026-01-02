@@ -36,6 +36,16 @@ $(document).on("submit", "#studentForm", function (e) {
             condition: (val) => val === "",
             message: "Please Select Section",
         },
+        {
+            id: "#register_number",
+            condition: (val) => val === "",
+            message: "Register Number is Required",
+        },
+        {
+            id: "#date_of_birth",
+            condition: (val) => val === "",
+            message: "Date of Birth is Required",
+        },
     ];
     let isValid = true;
     for (const field of fields) {
@@ -135,6 +145,16 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             id: "#section",
             condition: (val) => val === "",
             message: "Please Select Section",
+        },
+        {
+            id: "#register_number",
+            condition: (val) => val === "",
+            message: "Register Number is Required",
+        },
+        {
+            id: "#date_of_birth",
+            condition: (val) => val === "",
+            message: "Date of Birth is Required",
         },
     ];
     let isValid = true;

@@ -1,14 +1,18 @@
 <x-layouts.app>
-
     <!-- Header -->
-    <div class="bg-[#F5E8F5] w-full h-[50px] rounded-full shadow-sm px-8 py-3">
-        <h3 class="font-semibold text-primary">Create New Student</h3>
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
+        <!-- Title & Subtitle -->
+        <div class="flex flex-col">
+            <h3 class="font-semibold text-primary text-lg">
+                Create New Student
+            </h3>
+        </div>
+        <!-- Back Button -->
+        <a href="{{ route('student_list') }}"
+            class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back
+        </a>
     </div>
-
-    <!-- Back Button -->
-    <a href="{{ route('student_list') }}">
-        <i class="fa-solid fa-arrow-left"></i>
-    </a>
 
     <h1 class="text-primary font-semibold mt-10 px-3">Student Information</h1>
     <p class="px-3">Basic Details about your Student</p>
@@ -19,43 +23,38 @@
         @if (!empty($edit_student))
             <input type="hidden" name="student_id" value="{{ $edit_student->id }}">
         @endif
-
-        <!-- Student Name + Code -->
+        <!-- Email + Mobile -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
+              <div>
                 <label class="block text-sm font-medium">Student Name<span class="text-red-500">*</span></label>
                 <input type="text" name="student_name" id="student_name" value="{{ $edit_student->name ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
-
+            <div>
+                <label class="block text-sm font-medium">Register Number<span class="text-red-500">*</span></label>
+                <input type="text" name="register_number" id="register_number" value="{{ $edit_student->register_number ?? '' }}"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
             <div>
                 <label class="block text-sm font-medium">Date of Birth</label>
                 <input type="date" name="date_of_birth" id="date_of_birth"
                     value="{{ $edit_student->date_of_birth ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
-        </div>
-
-        <!-- Email + Mobile -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-medium">Email<span class="text-red-500">*</span></label>
                 <input type="text" name="email" id="email" value="{{ $edit_student->email ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
             <div>
                 <label class="block text-sm font-medium">Mobile Number<span class="text-red-500">*</span></label>
                 <input type="text" name="mobile_number" id="mobile_number"
                     value="{{ $edit_student->mobile_number ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
-        </div>
-
-        <!-- Department + Designation -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div>
+             <div>
                 <label class="block text-sm font-medium">Department<span class="text-red-500">*</span></label>
-                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="">Select Department</option>
                     @foreach ($department as $depart)
                         <option value="{{ $depart->id }}"
@@ -68,7 +67,7 @@
 
             <div>
                 <label class="block text-sm font-medium">Programme<span class="text-red-500">*</span></label>
-                <select name="programme_id" id="programme_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                <select name="programme_id" id="programme_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="">Select Programme</option>
                     @foreach ($programme as $prog)
                         <option value="{{ $prog->id }}"
@@ -91,7 +90,7 @@
             <div>
                 <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
                 <select name="section" id="section"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="" selected disabled>Select Section</option>
                     <option value="a">A</option>
                     <option value="b">B</option>
@@ -99,7 +98,7 @@
                 </select>
             </div>
         </div>
-
+        <!-- Department + Designation -->
         <!-- IMAGE UPLOAD START -->
         <div class="grid grid-cols-1">
             <div class="bg-[#F0F0F0] rounded-3xl p-10 text-center relative">

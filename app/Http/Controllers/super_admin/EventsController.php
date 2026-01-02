@@ -102,7 +102,8 @@ class EventsController extends Controller
             'contact_person'   => 'required',
             'contact_email'   => 'required',
             'seat_count'   => 'required',
-            'event_type'   => 'required'
+            'event_type'   => 'required',
+            'duration_months' => 'required'
         ];
 
         if ($request['event_type'] == 'paid') {
@@ -157,6 +158,7 @@ class EventsController extends Controller
             $event->end_registration = $request['registration_deadline']  ?? '';
             $event->contact_person = $request['contact_person']  ?? '';
             $event->contact_email = $request['contact_email']  ?? '';
+            $event->duration_months = $request['duration_months'];
             $event->save();
 
             if ($event && !empty($taskId)) {
