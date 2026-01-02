@@ -11,24 +11,25 @@
             {{-- Export Buttons --}}
             <div class="flex gap-2">
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'excel'] + request()->query()) }}"
-                    class="px-4 py-2 text-sm bg-[#ff7f50] text-white rounded">
+                    class="export-btn px-4 py-2 text-sm bg-[#ff7f50] text-white rounded">
                     Export Excel
                 </a>
 
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'csv'] + request()->query()) }}"
-                    class="px-4 py-2 text-sm bg-[#E27258] text-white rounded">
+                    class="export-btn px-4 py-2 text-sm bg-[#E27258] text-white rounded">
                     Export CSV
                 </a>
 
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'pdf'] + request()->query()) }}"
-                    class="px-4 py-2 text-sm bg-[#C04000] text-white rounded">
+                    class="export-btn px-4 py-2 text-sm bg-[#C04000] text-white rounded">
                     Export PDF
                 </a>
 
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'word'] + request()->query()) }}"
-                    class="px-4 py-2 text-sm bg-[#E34234] text-white rounded">
+                    class="export-btn px-4 py-2 text-sm bg-[#E34234] text-white rounded">
                     Export Word
                 </a>
+
             </div>
 
         </div>
@@ -150,3 +151,28 @@
         </div>
     </div>
 </x-layouts.app>
+
+<script>
+    $(document).on('click', '.export-btn', function(e) {
+
+        let eventId = $('select[name="event_id"]').val();
+        let status = $('select[name="status"]').val();
+        let fromDate = $('input[name="from_date"]').val();
+        let toDate = $('input[name="to_date"]').val();
+        let search = $('input[name="search"]').val();
+
+        // Check if all fields are empty
+        if (
+            eventId === '' &&
+            status === '' &&
+            fromDate === '' &&
+            toDate === '' &&
+            search.trim() === ''
+        ) {
+            e.preventDefault();
+            showToast('Please select at least one filter before downloading the report.', "error", 2000);
+            setTimeout(() => 800);
+            return false;
+        }
+    });
+</script>
