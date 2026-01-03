@@ -44,5 +44,6 @@ Route::prefix('student')->group(function () {
 
         Route::post('/razorpay-success', [RazorpayController::class, 'paymentSuccess'])
             ->name('razorpay_success');
+        Route::get('/uploaded-proof', [MyRegisterEventsController::class, 'getUploadedProof']);
     });
 });

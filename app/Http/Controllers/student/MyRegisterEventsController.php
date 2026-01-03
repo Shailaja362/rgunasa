@@ -89,10 +89,27 @@ class MyRegisterEventsController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Proof uploaded successfully!',
-                'data' => $upload
             ]);
         } catch (Exception $e) {
             return $e->getMessage();
         }
+    }
+
+    public function getUploadedProof(Request $request)
+    {
+        $proofs = StudentUploadProof::where([
+            'student_id' => $request->student_id,
+            'event_id'   => $request->event_id,
+        ])->get();
+
+        $feedback = StudentFeedback::where([
+            'student_id' => $request->student_id,
+            'event_id'   => $request->event_id,
+        ])->first();
+
+        return response()->json([
+            'proofs'   => $proofs,
+            'feedback' => $feedback
+        ]);
     }
 }

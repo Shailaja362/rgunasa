@@ -26,42 +26,58 @@ function showMyregistration(type) {
 }
 
 $(function () {
-    // === Upload Proof AJAX (Form submission) ===
-    // $("#uploadProofForm").on("submit", function (e) {
-    //     e.preventDefault();
-    //     let formData = new FormData(this);
-    //     $.ajax({
-    //         url: "/upload-proof",
-    //         method: "POST",
-    //         data: formData,
-    //         processData: false,
-    //         contentType: false,
-    //         success: function (res) {
-    //             if (res.success) {
-    //                 showToast(res.message, "success", 2000);
-    //             }
-    //         },
-    //         error: function (err) {
-    //             showToast(err, "error", 2000);
-    //         },
-    //     });
-    // });
+
 
     // === Assign event ID for upload ===
-    $(document).on("click", ".upload", function () {
-        var event_id = $(this).data("event_id");
-        var student_id = $(this).data("student_id");
-        $("#event_id").val(event_id);
-        $("#student_id").val(student_id);
+  $(document).on("click", ".upload", function () {
+      const eventId = $(this).data("event_id");
+      const studentId = $(this).data("student_id");
 
-        previewArea.empty().addClass("hidden");
-        uploadText.removeClass("hidden");
+      $("#event_id").val(eventId);
+      $("#student_id").val(studentId);
 
-        $("#successBox").addClass("hidden");
-        $("#uploadBox").removeClass("hidden");
+      filesArr = [];
+      previewArea.empty().addClass("hidden");
+      uploadText.removeClass("hidden");
+      successBox.addClass("hidden");
+      uploadBox.removeClass("hidden");
 
-        // uploadModal.removeClass("hidden");
-    });
+      $("#uploadModal").removeClass("hidden").addClass("flex");
+
+      // Fetch existing uploads
+      fetch(
+          `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}`
+      )
+          .then((res) => res.json())
+          .then((data) => {
+              // Existing images
+              if (data.proofs.length) {
+                  uploadText.addClass("hidden");
+                  previewArea.removeClass("hidden");
+
+                  data.proofs.forEach((img) => {
+                      previewArea.append(`
+                        <div class="relative">
+                            <img src="/storage/${img.file_path}" class="rounded-lg" width="100">
+                        </div>
+                    `);
+                  });
+              }
+
+              // Existing feedback
+              if (data.feedback) {
+                  const ratings = JSON.parse(data.feedback.ratings);
+                  Object.keys(ratings).forEach((key) => {
+                      $(
+                          `input[name="ratings[${key}]"][value="${ratings[key]}"]`
+                      ).prop("checked", true);
+                  });
+
+                  $("#comments").val(data.feedback.comments);
+              }
+          });
+  });
+
 
     // === View Details Modal ===
     $(document).on("click", ".view-details-btn", function () {

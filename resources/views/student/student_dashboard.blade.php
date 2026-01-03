@@ -107,12 +107,12 @@
                         $nextAllowedDate = null;
 
                         if ($lastRegistration) {
-                            // ❌ No duration → permanent block
+                            // No duration → permanent block
                             if (empty($event->duration_months) || $event->duration_months == 0) {
                                 $permanentBlock = true;
                             }
 
-                            // ❌ Duration exists → cooldown logic
+                            // Duration exists → cooldown logic
                             if (!$permanentBlock && $event->duration_months) {
                                 $nextAllowedDate = \Carbon\Carbon::parse($lastRegistration->registered_at)->addMonths(
                                     $event->duration_months,
