@@ -80,18 +80,27 @@
                             ->first();
 
                         /* ===========================
-                   Duration Cooldown Logic
+                   Registration Restriction Logic
                 ============================ */
                         $cooldownActive = false;
+                        $permanentBlock = false;
                         $nextAllowedDate = null;
 
-                        if ($lastRegistration && $event->duration_months) {
-                            $nextAllowedDate = \Carbon\Carbon::parse($lastRegistration->registered_at)->addMonths(
-                                $event->duration_months,
-                            );
+                        if ($lastRegistration) {
+                            // ❌ No duration → permanent block
+                            if (empty($event->duration_months) || $event->duration_months == 0) {
+                                $permanentBlock = true;
+                            }
 
-                            if ($today->lt($nextAllowedDate)) {
-                                $cooldownActive = true;
+                            // ❌ Duration exists → cooldown logic
+                            if (!$permanentBlock && $event->duration_months) {
+                                $nextAllowedDate = \Carbon\Carbon::parse($lastRegistration->registered_at)->addMonths(
+                                    $event->duration_months,
+                                );
+
+                                if ($today->lt($nextAllowedDate)) {
+                                    $cooldownActive = true;
+                                }
                             }
                         }
 
@@ -107,7 +116,11 @@
                    Final Register Permission
                 ============================ */
                         $canRegister =
-                            !$cooldownActive && $availableSeats > 0 && $deadline->gte($today) && !$paidEventConflict;
+                            !$permanentBlock &&
+                            !$cooldownActive &&
+                            $availableSeats > 0 &&
+                            $deadline->gte($today) &&
+                            !$paidEventConflict;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
@@ -150,39 +163,55 @@
                                     <p class="px-1">{{ $event['location'] }}</p>
                                 </div>
                             </div>
-                           @if ($cooldownActive)
-                                <div class="text-red-600 text-xs mt-2">
+                            @if ($permanentBlock)
+                                <div class="text-red-600 mt-2">
+                                    You are already registered for this event.
+                                </div>
+                            @elseif ($cooldownActive)
+                                <div class="text-red-600 mt-2">
                                     You can register again after
                                     <strong>{{ $nextAllowedDate->format('d M Y') }}</strong>
+                                </div>
+                            @elseif ($availableSeats <= 0)
+                                <div class="text-red-600 mt-2">
+                                    Seats are full.
+                                </div>
+                            @elseif ($deadline->lt($today))
+                                <div class="text-red-600 mt-2">
+                                    Registration deadline passed.
+                                </div>
+                            @elseif ($paidEventConflict)
+                                <div class="text-red-600 mt-2">
+                                    You already have a paid event on this date.
                                 </div>
                             @endif
 
                             {{-- Action Button --}}
                             @if ($event->event_type === 'paid')
                                 @if ($canRegister)
-                                    <button class="mt-3 w-full bg-primary text-white py-2 rounded-full pay-btn"
-                                        data-event-id="{{ $event->id }}"
-                                        data-amount="{{ (int) $event->amount }}"
+                                    <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
+                                        data-event-id="{{ $event->id }}" data-amount="{{ (int) $event->amount }}"
                                         data-title="{{ e($event->title) }}">
                                         Pay & Register
                                     </button>
                                 @else
                                     <button disabled
-                                        class="mt-3 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
-                                        Registration Closed
+                                        class="mt-4 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
+                                        {{ $permanentBlock ? 'Already Registered' : 'Registration Closed' }}
                                     </button>
                                 @endif
                             @else
                                 @if ($canRegister)
                                     <button
-                                        class="student_register mt-3 w-full bg-primary text-white py-2 rounded-full"
-                                        data-event_id="{{ $event->id }}">
+                                        onclick="document.querySelector('.registerModal').classList.remove('hidden')"
+                                        class="student_register mt-4 w-full bg-primary text-white font-medium py-2 rounded-full"
+                                        data-event_id={{ $event->id }}>
                                         Register Now
                                     </button>
                                 @else
                                     <button disabled
-                                        class="mt-3 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
-                                        Registration Closed
+                                        class="mt-4 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
+                                        {{ $permanentBlock ? 'Already Registered' : 'Registration Closed' }}
                                     </button>
                                 @endif
                             @endif
@@ -198,7 +227,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($ongoingEvents as $ongoing_event)
                     @php
-                         $today = \Carbon\Carbon::now();
+                        $today = \Carbon\Carbon::now();
                         $eventDate = \Carbon\Carbon::parse($ongoing_event->event_date)->toDateString();
 
                         /* ===========================
@@ -221,18 +250,27 @@
                             ->first();
 
                         /* ===========================
-                   Duration Cooldown Logic
+                   Registration Restriction Logic
                 ============================ */
                         $cooldownActive = false;
+                        $permanentBlock = false;
                         $nextAllowedDate = null;
 
-                        if ($lastRegistration && $ongoing_event->duration_months) {
-                            $nextAllowedDate = \Carbon\Carbon::parse($lastRegistration->registered_at)->addMonths(
-                                $ongoing_event->duration_months,
-                            );
+                        if ($lastRegistration) {
+                            // No duration → permanent block
+                            if (empty($ongoing_event->duration_months) || $ongoing_event->duration_months == 0) {
+                                $permanentBlock = true;
+                            }
 
-                            if ($today->lt($nextAllowedDate)) {
-                                $cooldownActive = true;
+                            // Duration exists → cooldown logic
+                            if (!$permanentBlock && $ongoing_event->duration_months) {
+                                $nextAllowedDate = \Carbon\Carbon::parse($lastRegistration->registered_at)->addMonths(
+                                    $ongoing_event->duration_months,
+                                );
+
+                                if ($today->lt($nextAllowedDate)) {
+                                    $cooldownActive = true;
+                                }
                             }
                         }
 
@@ -248,7 +286,11 @@
                    Final Register Permission
                 ============================ */
                         $canRegister =
-                            !$cooldownActive && $availableSeats > 0 && $deadline->gte($today) && !$paidEventConflict;
+                            !$permanentBlock &&
+                            !$cooldownActive &&
+                            $availableSeats > 0 &&
+                            $deadline->gte($today) &&
+                            !$paidEventConflict;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
@@ -291,17 +333,33 @@
                                     <p class="px-1">{{ $ongoing_event['location'] }}</p>
                                 </div>
                             </div>
-                            @if ($cooldownActive)
-                                <div class="text-red-600 text-xs mt-2">
+                            @if ($permanentBlock)
+                                <div class="text-red-600 mt-2">
+                                    You are already registered for this event.
+                                </div>
+                            @elseif ($cooldownActive)
+                                <div class="text-red-600 mt-2">
                                     You can register again after
                                     <strong>{{ $nextAllowedDate->format('d M Y') }}</strong>
+                                </div>
+                            @elseif ($availableSeats <= 0)
+                                <div class="text-red-600 mt-2">
+                                    Seats are full.
+                                </div>
+                            @elseif ($deadline->lt($today))
+                                <div class="text-red-600 mt-2">
+                                    Registration deadline passed.
+                                </div>
+                            @elseif ($paidEventConflict)
+                                <div class="text-red-600 mt-2">
+                                    You already have a paid event on this date.
                                 </div>
                             @endif
 
                             {{-- Action Button --}}
                             @if ($ongoing_event->event_type === 'paid')
                                 @if ($canRegister)
-                                    <button class="mt-3 w-full bg-primary text-white py-2 rounded-full pay-btn"
+                                    <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
                                         data-event-id="{{ $ongoing_event->id }}"
                                         data-amount="{{ (int) $ongoing_event->amount }}"
                                         data-title="{{ e($ongoing_event->title) }}">
@@ -309,21 +367,22 @@
                                     </button>
                                 @else
                                     <button disabled
-                                        class="mt-3 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
-                                        Registration Closed
+                                        class="mt-4 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
+                                        {{ $permanentBlock ? 'Already Registered' : 'Registration Closed' }}
                                     </button>
                                 @endif
                             @else
                                 @if ($canRegister)
                                     <button
-                                        class="student_register mt-3 w-full bg-primary text-white py-2 rounded-full"
-                                        data-event_id="{{ $ongoing_event->id }}">
+                                        onclick="document.querySelector('.registerModal').classList.remove('hidden')"
+                                        class="student_register mt-4 w-full bg-primary text-white font-medium py-2 rounded-full"
+                                        data-event_id={{ $ongoing_event->id }}>
                                         Register Now
                                     </button>
                                 @else
                                     <button disabled
-                                        class="mt-3 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
-                                        Registration Closed
+                                        class="mt-4 w-full bg-gray-400 cursor-not-allowed text-white py-2 rounded-full">
+                                        {{ $permanentBlock ? 'Already Registered' : 'Registration Closed' }}
                                     </button>
                                 @endif
                             @endif

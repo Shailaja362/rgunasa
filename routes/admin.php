@@ -121,5 +121,7 @@ Route::prefix('admin')->group(function () {
             ->name('admin.event-registrations.export');
         Route::get('/task-view', [AssignTasksController::class, 'viewTask'])
             ->name('task_view');
+
+        Route::get('/student-event-report',[AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
     });
 });

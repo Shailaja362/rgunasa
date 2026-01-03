@@ -20,14 +20,12 @@ class MyRegisterEventsController extends Controller
         $now = Carbon::now();
         $this->data['registeredEvents'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
         ->get();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event')
-        ->whereHas('event', function ($query) use ($now) {
-            $query->where('event_date', '<', $now->toDateString());
-            // ->orWhere(function ($q) use ($now) {
-                //     $q->whereDate('event_date', '=', $now->toDateString())
-                //         ->whereTime('end_time', '<', $now->toTimeString());
-                // });
+        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance')
+        ->whereHas('get_event_attendance', function ($query) use ($now) {
+            $query->whereNotNull('entry_time')
+                  ->whereNotNull('exit_time');
             })
+            ->where('status',3)
             ->where('student_id', $student->id)
             ->get();
 
@@ -35,8 +33,12 @@ class MyRegisterEventsController extends Controller
             ->where('status', 1)
             ->count();
 
-        $this->data['attendedCount'] = StudentEventRegistration::where('student_id', $student->id)
-            ->where('status', 2)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+            ->whereHas('get_event_attendance', function ($query) use ($now) {
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time');
+            })
+            ->where('status', 3)
             ->count();
         $events = Event::get();
         $myuploads = StudentUploadProof::select('student_id', 'event_id')
@@ -73,7 +75,7 @@ class MyRegisterEventsController extends Controller
                     $upload->save();
                 }
             }
-   
+
             $exists_feedback  = StudentFeedback::where(['student_id' => $validated['student_id'], 'event_id' => $validated['event_id']])->first();
 
             if (!$exists_feedback) {

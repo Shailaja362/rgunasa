@@ -1,9 +1,10 @@
 <x-layouts.app>
     {{-- Header --}}
-    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+    <div
+        class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <h3 class="font-semibold text-primary text-lg sm:text-xl">Student Assign Grades</h3>
         <a href="{{ route('assign_grades') }}"
-           class="flex items-center text-gray-700 hover:text-primary transition-colors">
+            class="flex items-center text-gray-700 hover:text-primary transition-colors">
             <i class="fa-solid fa-arrow-left mr-2"></i> Back
         </a>
     </div>
@@ -53,12 +54,23 @@
                             <th class="px-4 py-3 text-left font-semibold">Student Name</th>
                             <th class="px-4 py-3 text-left font-semibold">Department Name</th>
                             <th class="px-4 py-3 text-left font-semibold">Section</th>
+                            <th class="px-4 py-3 text-left font-semibold">Student Report</th>
                             <th class="px-4 py-3 text-left font-semibold">Grade</th>
                         </tr>
                     </thead>
 
                     <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($registrations as $index => $registration)
+                            @php
+                                $feedback = $registration->get_feedback->where([
+                                    'student_id' => $registration->student_id,
+                                    'event_id' => $registration->event_id,
+                                ])->first();
+                                $proofs = $registration->get_student_upload_proof->where([
+                                    'student_id' =>  $registration->student_id,
+                                    'event_id' => $registration->event_id,
+                                ])->get();
+                            @endphp
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 py-3">
                                     {{ $index + 1 }}
@@ -77,6 +89,16 @@
                                 <td class="px-4 py-3">
                                     {{ $registration->student->section ?? '' }}
                                 </td>
+                                <td>
+                                    @if ($feedback && $proofs->count() > 0)
+                                        <a href="{{ route('student_event_report', [
+                                            'student' => $registration->student_id,
+                                            'event' => $registration->event_id,
+                                        ]) }}" target="_blank"
+                                            class="bg-green-600 text-white px-4 py-2 rounded-full text-sm">
+                                            View Event Report
+                                        </a>
+                                    @endif
                                 <td class="px-4 py-3">
                                     <select name="grades[{{ $registration->student_id }}]"
                                         class="py-2 w-32 rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary"
@@ -102,8 +124,8 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3" class="px-4 py-6 text-center text-gray-500">
-                                   No attendance records found for this event.
+                                <td colspan="7" class="px-4 py-6 text-center text-gray-500">
+                                    No attendance records found for this event.
                                 </td>
                             </tr>
                         @endforelse
