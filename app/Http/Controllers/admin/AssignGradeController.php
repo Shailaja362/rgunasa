@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\admin;
 
 use App\Models\Event;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Models\StudentFeedback;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\StudentAttendance;
+use App\Models\StudentUploadProof;
 use App\Http\Controllers\Controller;
 use App\Models\StudentEventRegistration;
 
@@ -12,14 +16,13 @@ class AssignGradeController extends Controller
 {
     public function index()
     {
-
         $this->data['events'] = Event::with('get_club')->get();
         return view('admin.assign_grade_index')->with($this->data);
     }
 
     public function gradeEntry(Request $request)
     {
-        $this->data['registrations'] = StudentAttendance::with('student', 'get_grade', 'student.get_department')
+        $this->data['registrations'] = StudentAttendance::with('student', 'get_grade', 'student.get_department', 'get_student_upload_proof','get_feedback')
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
             ->where('event_id', $request->event_id)
@@ -45,11 +48,35 @@ class AssignGradeController extends Controller
                 ->first();
             if ($registration) {
                 $registration->grade = $grade;
-                $registration->status = 3;
+                $registration->status = 2;
                 $registration->save();
             }
         }
 
         return redirect()->route('assign_grade_entry')->with('success', 'Grades assigned successfully.');
+    }
+
+    public function downloadEventReport(Request $request)
+    {
+        $student = Student::findOrFail($request->student);
+        $event   = Event::findOrFail($request->event);
+        $proofs = StudentUploadProof::where([
+            'student_id' => $request->student,
+            'event_id'   => $request->event,
+        ])->get();
+
+        $feedback = StudentFeedback::where([
+            'student_id' => $request->student,
+            'event_id'   => $request->event,
+        ])->firstOrFail();
+
+        $pdf = Pdf::loadView('student.pdf.student_event_report', compact(
+            'student',
+            'event',
+            'proofs',
+            'feedback'
+        ))->setPaper('a4', 'portrait');
+
+        return $pdf->stream('event-report.pdf');
     }
 }

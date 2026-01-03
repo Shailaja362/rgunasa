@@ -18,9 +18,19 @@ class StudentDashboardController extends Controller
         $this->data['studentId'] = $student->id;
         $this->data['events'] = Event::get();
         $this->data['registered_count'] = StudentEventRegistration::where('student_id', $student->id)->get();
-        $this->data['completed_events'] = StudentEventRegistration::where('student_id', $student->id)
-                                          ->whereNotNull('grade')
-                                          ->where('status', 3)->get();
+        $this->data['completed_events'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+            ->whereHas('get_event_attendance', function ($query) use ($now) {
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time');
+            })
+            ->where('status', 3)
+            ->get();
+
+        $this->data['certificate_earned'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+            ->whereNotNull('grade')
+            ->where('status', 2)
+            ->get();
+            
         $this->data['ongoingEvents'] = Event::with('registrations')
             ->whereDate('event_date', $now->toDateString())
             // ->whereTime('start_time', '<=', $now->toTimeString())

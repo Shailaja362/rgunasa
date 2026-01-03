@@ -25,4 +25,9 @@ class StudentEventRegistration extends Model
     {
         return $this->hasMany(StudentAttendance::class, 'student_id', 'student_id');
     }
+
+    public function get_event_attendance()
+    {
+        return $this->hasMany(StudentAttendance::class, 'event_id', 'event_id');
+    }
 }

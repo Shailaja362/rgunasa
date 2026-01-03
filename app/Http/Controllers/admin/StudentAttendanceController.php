@@ -65,7 +65,18 @@ class StudentAttendanceController extends Controller
                 $attendance->exit_time = now();
             }
             $attendance->save();
+            
+            if ($attendance->entry_time && $attendance->exit_time) {
+                StudentEventRegistration::where([
+                    'event_id'   => $eventId,
+                    'student_id' => $studentId,
+                ])->update([
+                    'status' => 3,
+                ]);
+            }
         }
+
+
 
         return redirect()->back()->with('success', 'Attendance submitted successfully');
     }

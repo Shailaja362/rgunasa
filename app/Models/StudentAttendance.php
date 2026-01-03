@@ -16,4 +16,14 @@ class StudentAttendance extends Model
         return $this->belongsTo(StudentEventRegistration::class, 'student_id', 'student_id');
     }
 
+    public function get_student_upload_proof()
+    {
+        return $this->belongsTo(StudentUploadProof::class, 'student_id', 'student_id');
+    }
+
+    public function get_feedback()
+    {
+        return $this->belongsTo(StudentFeedback::class, 'student_id', 'student_id');
+    }
+
 }

@@ -49,10 +49,14 @@ class RegisterEventController extends Controller
             ->count();
         $activecount = StudentEventRegistration::where('student_id', $student->id)->count();
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
-        $this->data['attendedCount'] = StudentEventRegistration::where('student_id', $student->id)
-            ->where('status', 2)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+            ->whereHas('get_event_attendance', function ($query) use ($now) {
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time');
+            })
+            ->where('status',3)
             ->count();
-        $this->data['studentRegistrations'] = \App\Models\StudentEventRegistration::where('student_id', $student->id)
+        $this->data['studentRegistrations'] = StudentEventRegistration::where('student_id', $student->id)
             ->with('event') // eager load event for date and type
             ->get();
         return view('student.register_event_index')->with($this->data);
@@ -105,14 +109,26 @@ class RegisterEventController extends Controller
 
         try {
             $event = Event::findOrFail($request->event_id);
+
             // Get last registration
             $lastRegistration = StudentEventRegistration::where([
                 'student_id' => $request->stu_id,
                 'event_id'   => $event->id
-            ])->orderBy('registered_at', 'desc')->first();
+            ])
+                ->orderBy('registered_at', 'desc')
+                ->first();
 
-            // If already registered, check duration
             if ($lastRegistration) {
+
+                // ❌ Case 1: Duration NOT set → block duplicate forever
+                if (empty($event->duration_months) || $event->duration_months == 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'You are already registered for this event.',
+                    ]);
+                }
+
+                // ❌ Case 2: Duration set → check time limit
                 $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
                     ->addMonths($event->duration_months);
 
@@ -124,17 +140,17 @@ class RegisterEventController extends Controller
                 }
             }
 
-            // Allow registration
-            StudentEventRegistration::create([
-                'student_id'   => $request->stu_id,
-                'event_id'     => $event->id,
-                'status'       => 1,
-                'registered_at' => Carbon::now(),
-            ]);
+            // ✅ Allow registration
+            $register_student = new StudentEventRegistration();
+            $register_student->student_id     = $request->stu_id;
+            $register_student->event_id       = $event->id;
+            $register_student->status         = 1;
+            $register_student->registered_at  = Carbon::now();
+            $register_student->save();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Event Registered Successfully!',
+                'message' => 'Registration successful.',
             ]);
         } catch (\Exception $e) {
 
