@@ -327,7 +327,7 @@ class AdminReportsController extends Controller
         $data = [
             'report' => (object)[
                 'get_event' => $event->get_event,
-                'feedbacks' => $singleFeedback,
+                'feedback' => $singleFeedback,
                 'avgRatings' => $avgRatings,
                 'male_count' => $event->male_count,
                 'female_count' => $event->female_count,
