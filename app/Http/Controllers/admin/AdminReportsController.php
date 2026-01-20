@@ -250,7 +250,7 @@ class AdminReportsController extends Controller
             ->setPaper('a4', 'portrait');
         $user = auth('admin')->user();
         ActivityLog::add($user->name  . ' - ' . $event->get_event->title . ' - Report Viewed', $user);
-        return $pdf->stream("event_report_{$event->id}.pdf");
+        return $pdf->stream("event_report_{$event->get_event->title}.pdf");
     }
 
     public function downloadPdf($id)
@@ -347,6 +347,6 @@ class AdminReportsController extends Controller
         ActivityLog::add($user->name . ' - ' .  $event->get_event->title . 'Report Downloaded', $user);
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
-        return $pdf->download("event_report_{$event->id}.pdf");
+        return $pdf->download("event_report_{$event->get_event->title}.pdf");
     }
 }
