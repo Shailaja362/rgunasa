@@ -281,6 +281,8 @@
                 <th>S.No</th>
                 <th>Register Number</th>
                 <th>Student Name</th>
+                <th>Entry Time</th>
+                <th>Exit Time</th>
             </thead>
             <tbody>
                 @foreach ($data['attended_students'] as $student)
@@ -288,6 +290,10 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $student->student?->register_number ?? '' }}</td>
                         <td>{{ $student->student?->name ?? '' }}</td>
+                        <td>{{ $student->entry_time ? \Carbon\Carbon::parse($student->entry_time)->format('H:i A') : '' }}
+                        </td>
+                        <td>{{ $student->exit_time ? \Carbon\Carbon::parse($student->exit_time)->format('H:i A') : '' }}
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
