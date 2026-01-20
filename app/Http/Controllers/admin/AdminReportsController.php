@@ -161,16 +161,24 @@ class AdminReportsController extends Controller
 
     public function viewPdf($id)
     {
-
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
         $feedbacks = StudentFeedback::with('student')
             ->where('event_id', $event->event_id)
             ->get();
         $attended_students = StudentAttendance::with('student', 'get_grade')
-                               ->whereNotNull('entry_time')
-                               ->whereNotNull('exit_time')
-                               ->where('event_id', $event->event_id)
-                               ->get();
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->where('event_id', $event->event_id)
+            ->get();
+        $singleFeedback = StudentFeedback::with([
+            'student',
+            'uploads' => function ($q) use ($event) {
+                $q->where('event_id', $event->event_id);
+            }
+        ])
+            ->where('event_id', $event->event_id)
+            ->latest()
+            ->first();
         // Calculate average ratings
         $avgRatings = [
             'overall_experience' => 0,
@@ -184,7 +192,8 @@ class AdminReportsController extends Controller
 
         if ($totalFeedbacks > 0) {
             foreach ($feedbacks as $feedback) {
-                $ratings = json_decode($feedback->ratings, true);
+                $ratings = $feedback->ratings; // Already an array
+
                 foreach ($avgRatings as $key => $val) {
                     $avgRatings[$key] += isset($ratings[$key]) ? (int)$ratings[$key] : 0;
                 }
@@ -195,6 +204,7 @@ class AdminReportsController extends Controller
                 $avgRatings[$key] = $val / $totalFeedbacks;
             }
         }
+
 
         // Gender counts
         $studentIds = $feedbacks->pluck('student_id')->toArray();
@@ -219,7 +229,7 @@ class AdminReportsController extends Controller
         $data = [
             'report' => (object)[
                 'get_event' => $event->get_event,
-                'feedbacks' => $feedbacks,
+                'feedback' =>  $singleFeedback,
                 'avgRatings' => $avgRatings,
                 'male_count' => $event->male_count,
                 'female_count' => $event->female_count,
@@ -252,10 +262,20 @@ class AdminReportsController extends Controller
             ->where('event_id', $event->event_id)
             ->get();
         $attended_students = StudentAttendance::with('student', 'get_grade')
-                               ->whereNotNull('entry_time')
-                               ->whereNotNull('exit_time')
-                               ->where('event_id', $event->event_id)
-                               ->get();
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->where('event_id', $event->event_id)
+            ->get();
+
+        $singleFeedback = StudentFeedback::with([
+            'student',
+            'uploads' => function ($q) use ($event) {
+                $q->where('event_id', $event->event_id);
+            }
+        ])
+            ->where('event_id', $event->event_id)
+            ->latest()
+            ->first();
         // Calculate average ratings
         $avgRatings = [
             'overall_experience' => 0,
@@ -269,7 +289,8 @@ class AdminReportsController extends Controller
 
         if ($totalFeedbacks > 0) {
             foreach ($feedbacks as $feedback) {
-                $ratings = json_decode($feedback->ratings, true);
+                $ratings = $feedback->ratings; // Already an array
+
                 foreach ($avgRatings as $key => $val) {
                     $avgRatings[$key] += isset($ratings[$key]) ? (int)$ratings[$key] : 0;
                 }
@@ -280,6 +301,7 @@ class AdminReportsController extends Controller
                 $avgRatings[$key] = $val / $totalFeedbacks;
             }
         }
+
 
         // Gender counts
         $studentIds = $feedbacks->pluck('student_id')->toArray();
@@ -305,7 +327,7 @@ class AdminReportsController extends Controller
         $data = [
             'report' => (object)[
                 'get_event' => $event->get_event,
-                'feedbacks' => $feedbacks,
+                'feedbacks' => $singleFeedback,
                 'avgRatings' => $avgRatings,
                 'male_count' => $event->male_count,
                 'female_count' => $event->female_count,

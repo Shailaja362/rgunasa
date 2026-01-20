@@ -139,6 +139,7 @@
             border: 1px solid #bbb;
             margin-right: 1%;
             margin-bottom: 10px;
+            margin-top: 30px;
         }
 
         .footer {
@@ -188,7 +189,9 @@
                     </td>
                     <td class="event-meta">
                         <b>
-                            Date: {{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }} <br>
+                            Date:
+                            {{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }}
+                            <br>
                             Session: {{ $data['report']->get_event->session == 1 ? 'FN' : 'AN' }}
                         </b>
                     </td>
@@ -273,7 +276,7 @@
             </tr>
         </table>
         <div class="section-title">Attended Students Lists</div>
-        <table class="student_table">
+        <table class="info-table">
             <thead>
                 <th>S.No</th>
                 <th>Register Number</th>
@@ -313,14 +316,76 @@
 
         <!-- STUDENT FEEDBACK -->
         <div class="section-title">Student Feedback</div>
-        @foreach ($data['report']->feedbacks as $f)
-            @php $r = json_decode($f->ratings,true); @endphp
-            <div class="feedback-item">
-                <strong>{{ $f->student->name }}</strong><br>
-                <span class="stars">{{ stars($r['overall_experience'] ?? 0) }}</span>
-                <div>{{ $f->comments }}</div>
-            </div>
-        @endforeach
+
+        @if ($data['report']->feedback)
+            @php
+                $f = $data['report']->feedback;
+                $r = $f->ratings ?? [];
+            @endphp
+
+            <table class="info-table">
+                <tr>
+                    <td class="label">Student Name</td>
+                    <td>{{ $f->student->name }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Register Number</td>
+                    <td>{{ $f->student->register_number }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Overall Experience</td>
+                    <td>
+                        <span class="stars">{{ stars($r['overall_experience'] ?? 0) }}</span>
+                        <b>{{ $r['overall_experience'] ?? 0 }}/5</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Engagement</td>
+                    <td>
+                        <span class="stars">{{ stars($r['engagement'] ?? 0) }}</span>
+                        <b>{{ $r['engagement'] ?? 0 }}/5</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Organization</td>
+                    <td>
+                        <span class="stars">{{ stars($r['organization'] ?? 0) }}</span>
+                        <b>{{ $r['organization'] ?? 0 }}/5</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Coordination</td>
+                    <td>
+                        <span class="stars">{{ stars($r['coordination'] ?? 0) }}</span>
+                        <b>{{ $r['coordination'] ?? 0 }}/5</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Recommendation</td>
+                    <td>
+                        <span class="stars">{{ stars($r['recommendation'] ?? 0) }}</span>
+                        <b>{{ $r['recommendation'] ?? 0 }}/5</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label">Comments</td>
+                    <td>{{ $f->comments ?? '-' }}</td>
+                </tr>
+            </table>
+
+            {{-- Student Uploaded Image --}}
+            @if ($f->uploads->count())
+                <div class="section-title">Student Uploaded Proof</div>
+                <div class="image-grid">
+                    @foreach ($f->uploads as $img)
+                        <img src="{{ public_path('storage/' . $img->file_path) }}">
+                    @endforeach
+                </div>
+            @endif
+        @else
+            <p>No feedback available.</p>
+        @endif
+
 
         <!-- GEO IMAGES -->
         @if ($data['report']->geo_images->count())

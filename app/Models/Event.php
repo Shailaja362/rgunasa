@@ -31,6 +31,15 @@ class Event extends Model
         return $this->belongsTo(Club::class, 'club_id');
     }
 
+    public function studentUploads()
+    {
+        return $this->hasMany(StudentUploadProof::class, 'event_id');
+    }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(StudentFeedback::class, 'event_id');
+    }
 
 
 }
