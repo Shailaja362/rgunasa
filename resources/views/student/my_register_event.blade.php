@@ -278,16 +278,17 @@
                     class="bg-gradient-to-r from-primary to-pink-600 text-white px-6 py-2 rounded-full">
                     Submit Here
                 </button>
-                <!-- Success Box -->
-                <div id="successBox" class="hidden">
-                    <div class="flex flex-col items-center space-y-4">
-                        <img src="{{ asset('/images/upload_sucessfull.png') }}" width="70" />
-                        <p class="text-white font-semibold">Proof uploaded successfully!</p>
-                        <p class="text-white text-sm">Your attendance is marked as present</p>
-                        <button id="uploadAnother" class="border border-white text-white px-6 py-2 rounded-full mt-3">
-                            Upload another proof
-                        </button>
-                    </div>
+            </div>
+
+            <!-- Success Box -->
+            <div id="successBox" class="hidden">
+                <div class="flex flex-col items-center space-y-4">
+                    <img src="{{ asset('/images/upload_sucessfull.png') }}" width="70" />
+                    <p class="text-white font-semibold">Proof uploaded successfully!</p>
+                    <p class="text-white text-sm">Your attendance is marked as present</p>
+                    <button id="uploadAnother" class="border border-white text-white px-6 py-2 rounded-full mt-3">
+                        Upload another proof
+                    </button>
                 </div>
             </div>
         </div>
