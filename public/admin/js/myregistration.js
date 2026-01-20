@@ -26,58 +26,74 @@ function showMyregistration(type) {
 }
 
 $(function () {
-
-
+    let filesArr = [];
+    let existingImages = [];
+    const MAX_IMAGES = 4;
     // === Assign event ID for upload ===
-  $(document).on("click", ".upload", function () {
-      const eventId = $(this).data("event_id");
-      const studentId = $(this).data("student_id");
+    $(document).on("click", ".upload", function () {
+        const eventId = $(this).data("event_id");
+        const studentId = $(this).data("student_id");
 
-      $("#event_id").val(eventId);
-      $("#student_id").val(studentId);
+        $("#event_id").val(eventId);
+        $("#student_id").val(studentId);
 
-      filesArr = [];
-      previewArea.empty().addClass("hidden");
-      uploadText.removeClass("hidden");
-      successBox.addClass("hidden");
-      uploadBox.removeClass("hidden");
+        filesArr = [];
+        existingImages = [];
 
-      $("#uploadModal").removeClass("hidden").addClass("flex");
+        previewArea.empty().addClass("hidden");
+        uploadText.removeClass("hidden");
+        successBox.addClass("hidden");
+        uploadBox.removeClass("hidden");
 
-      // Fetch existing uploads
-      fetch(
-          `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}`
-      )
-          .then((res) => res.json())
-          .then((data) => {
-              // Existing images
-              if (data.proofs.length) {
-                  uploadText.addClass("hidden");
-                  previewArea.removeClass("hidden");
+        $("#uploadModal").removeClass("hidden").addClass("flex");
 
-                  data.proofs.forEach((img) => {
-                      previewArea.append(`
-                        <div class="relative">
-                            <img src="/storage/${img.file_path}" class="rounded-lg" width="100">
-                        </div>
-                    `);
-                  });
-              }
+        fetch(
+            `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}`
+        )
+            .then((res) => res.json())
+            .then((data) => {
+                if (data.proofs?.length) {
+                    existingImages = data.proofs;
 
-              // Existing feedback
-              if (data.feedback) {
-                  const ratings = JSON.parse(data.feedback.ratings);
-                  Object.keys(ratings).forEach((key) => {
-                      $(
-                          `input[name="ratings[${key}]"][value="${ratings[key]}"]`
-                      ).prop("checked", true);
-                  });
+                    uploadText.addClass("hidden");
+                    previewArea.removeClass("hidden");
 
-                  $("#comments").val(data.feedback.comments);
-              }
-          });
-  });
+                    data.proofs.forEach((img, index) => {
+                        previewArea.append(`
+        <div class="img-wrapper relative inline-block m-1"
+             data-type="existing"
+             data-idx="${index}">
 
+            <img src="/storage/${img.file_path}"
+                 class="rounded-lg mx-auto mb-2"
+                 width="100" />
+
+            <button type="button"
+                    class="remove-img absolute top-1 right-1 bg-red-600 text-white
+                           rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                &times;
+            </button>
+
+            <p class="text-white text-xs truncate w-[100px]">
+                ${img.file_name}
+            </p>
+        </div>
+    `);
+                    });
+                }
+
+                if (data.feedback) {
+                    const ratings = JSON.parse(data.feedback.ratings);
+                    Object.keys(ratings).forEach((key) => {
+                        $(
+                            `input[name="ratings[${key}]"][value="${ratings[key]}"]`
+                        ).prop("checked", true);
+                    });
+
+                    $("#comments").val(data.feedback.comments);
+                }
+            });
+    });
 
     // === View Details Modal ===
     $(document).on("click", ".view-details-btn", function () {
@@ -127,7 +143,6 @@ $(function () {
     const uploadAnother = $("#uploadAnother");
 
     // track selected files in JS so we can remove items
-    let filesArr = [];
 
     // helper: rebuild fileInput.files from filesArr
     function rebuildFileInput() {
@@ -137,37 +152,50 @@ $(function () {
     }
 
     // helper: render previews from filesArr
-   function showPreviewsFromArray() {
-       previewArea.empty();
+    function showPreviewsFromArray() {
+        previewArea.empty();
 
-       if (filesArr.length === 0) {
-           previewArea.addClass("hidden");
-           uploadText.removeClass("hidden");
-           return;
-       }
+        if (!filesArr.length && !existingImages.length) {
+            previewArea.addClass("hidden");
+            uploadText.removeClass("hidden");
+            return;
+        }
 
-       uploadText.addClass("hidden");
-       previewArea.removeClass("hidden");
+        uploadText.addClass("hidden");
+        previewArea.removeClass("hidden");
 
-       filesArr.forEach((file, index) => {
-           const reader = new FileReader();
+        // EXISTING images first
+        existingImages.forEach((img, index) => {
+            previewArea.append(`
+            <div class="img-wrapper relative inline-block m-1"
+                 data-type="existing"
+                 data-idx="${index}">
+                <img src="/storage/${img.file_path}" width="100" />
+                <button type="button" class="remove-img absolute top-1 right-1
+                    bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
+                <p class="text-white text-xs truncate">${img.file_name}</p>
+            </div>
+        `);
+        });
 
-           reader.onload = function (e) {
-               const wrapper = $(`
-                <div class="img-wrapper relative inline-block m-1" data-idx="${index}">
-                    <img src="${e.target.result}" class="rounded-lg mx-auto mb-2" width="100" />
-                    <button type="button" class="remove-img absolute top-1 right-1 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">&times;</button>
-                    <p class="text-white text-xs truncate w-[100px]">${file.name}</p>
+        // NEW images
+        filesArr.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewArea.append(`
+                <div class="img-wrapper relative inline-block m-1"
+                     data-type="new"
+                     data-idx="${index}">
+                    <img src="${e.target.result}" width="100" />
+                    <button type="button" class="remove-img absolute top-1 right-1
+                        bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
+                    <p class="text-white text-xs truncate">${file.name}</p>
                 </div>
             `);
-
-               previewArea.append(wrapper);
-           };
-
-           reader.readAsDataURL(file);
-       });
-   }
-
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
     // === Open/Close upload modal ===
     openModalBtn.on("click", function () {
@@ -219,29 +247,19 @@ $(function () {
 
     // central file-add handler (merge and enforce limits)
     function handleNewFiles(newFiles) {
-        // append new files but avoid duplicates by name+size (simple check)
-        newFiles.forEach((nf) => {
-            const duplicate = filesArr.some(
-                (f) =>
-                    f.name === nf.name &&
-                    f.size === nf.size &&
-                    f.lastModified === nf.lastModified
-            );
-            if (!duplicate) filesArr.push(nf);
-        });
+        const totalImages =
+            existingImages.length + filesArr.length + newFiles.length;
 
-        if (filesArr.length > 4) {
+        if (totalImages > MAX_IMAGES) {
             showToast("Maximum 4 images only allowed!", "error", 2000);
-            filesArr = filesArr.slice(0, 4);
+            return;
         }
 
-        // filter out files > 10MB
-        filesArr = filesArr.filter((f) => {
-            if (f.size > 10 * 1024 * 1024) {
-                 showToast(`${f.name} exceeds 10MB and was skipped.`, "error", 2000);
-                return false;
-            }
-            return true;
+        newFiles.forEach((nf) => {
+            const duplicate = filesArr.some(
+                (f) => f.name === nf.name && f.size === nf.size
+            );
+            if (!duplicate) filesArr.push(nf);
         });
 
         rebuildFileInput();
@@ -254,58 +272,62 @@ $(function () {
         e.stopPropagation();
 
         const wrapper = $(this).closest(".img-wrapper");
-        const idx = parseInt(wrapper.attr("data-idx"), 10);
+        const idx = parseInt(wrapper.data("idx"), 10);
+        const type = wrapper.data("type");
 
-        if (isNaN(idx)) {
-            // fallback: simply remove the wrapper and rebuild using what's left in DOM
-            wrapper.remove();
-        } else {
-            // remove from filesArr and rebuild the input & previews
+        if (type === "existing") {
+            // remove only this existing image
+            existingImages.splice(idx, 1);
+        }
+
+        if (type === "new") {
+            // remove only this new image
             filesArr.splice(idx, 1);
+            rebuildFileInput();
         }
 
-        // rebuild input and re-render previews (re-indexes data-idx)
-        rebuildFileInput();
+        // re-render previews correctly
         showPreviewsFromArray();
-
-        // if no images left, reset preview area
-        if (filesArr.length === 0) {
-            previewArea.addClass("hidden");
-            uploadText.removeClass("hidden");
-            fileInput.val("");
-        }
     });
 
     // === Submit upload (uses filesArr which is in sync with input) ===
     submitUpload.on("click", function (e) {
         e.preventDefault();
 
-        if (!filesArr.length) {
+        const totalImages = existingImages.length + filesArr.length;
+
+        // ❗ Must have at least one image (existing OR new)
+        if (totalImages === 0) {
             showToast("Please select at least one image!", "error", 2000);
             return;
         }
 
-        if (filesArr.length > 4) {
-            showToast(
-                "You can upload a maximum of 4 images only!",
-                "error",
-                2000
-            );
+        if (totalImages > MAX_IMAGES) {
+            showToast("Maximum 4 images only allowed!", "error", 2000);
             return;
         }
 
         const formData = new FormData();
+
+        // append ONLY new images
         filesArr.forEach((f) => formData.append("proof[]", f));
+
         formData.append("event_id", $("#event_id").val());
         formData.append("student_id", $("#student_id").val());
-         $("input[name^='ratings']:checked").each(function () {
-             formData.append($(this).attr("name"), $(this).val());
-         });
-        formData.append("comments", $("textarea[name='comments']").val());
+
+        $("input[name^='ratings']:checked").each(function () {
+            formData.append($(this).attr("name"), $(this).val());
+        });
+
+        formData.append("comments", $("#comments").val());
         formData.append("_token", $('meta[name="csrf-token"]').attr("content"));
 
         fetch("/student/upload-proof", {
             method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+                Accept: "application/json",
+            },
             body: formData,
         })
             .then((res) => res.json())
@@ -313,18 +335,12 @@ $(function () {
                 if (result.success) {
                     uploadBox.addClass("hidden");
                     successBox.removeClass("hidden");
-                } else if (result.error) {
-                    showToast(
-                        "This image has already been uploaded!",
-                        "error",
-                        2000
-                    );
                 } else {
-                    showToast("Upload failed. Try again!", "error", 2000);
+                    showToast(result.message || "Upload failed", "error", 2000);
                 }
             })
-            .catch((err) => {
-                showToast("Error uploading images.", "error", 2000);
+            .catch(() => {
+                showToast("Server error", "error", 2000);
             });
     });
 
@@ -350,5 +366,9 @@ $(function () {
         window.showToast = function (msg, type, ms) {
             showToast(`${type}: ${msg}`, "error", 2000);
         };
+    }
+
+    function totalImageCount() {
+        return existingImages.length + filesArr.length;
     }
 });
