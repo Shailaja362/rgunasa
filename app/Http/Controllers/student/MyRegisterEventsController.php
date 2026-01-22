@@ -93,14 +93,12 @@ class MyRegisterEventsController extends Controller
                     }
                 }
             }
-
             $exists_feedback  = StudentFeedback::where(['student_id' => $validated['student_id'], 'event_id' => $validated['event_id']])->first();
-
             if (!$exists_feedback) {
                 $feedback = new StudentFeedback();
                 $feedback->student_id = $validated['student_id'];
                 $feedback->event_id   = $validated['event_id'] ?? null;
-                $feedback->ratings  = json_encode($request->ratings); // Original filename
+                $feedback->ratings  = json_encode($request->ratings) ?? []; // Original filename
                 $feedback->comments  = $request->comments;         // Public path
                 $feedback->save();
             }

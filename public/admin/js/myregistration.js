@@ -296,15 +296,25 @@ $(function () {
 
         const totalImages = existingImages.length + filesArr.length;
 
-        // ❗ Must have at least one image (existing OR new)
+        // Must have at least one image (existing OR new)
         if (totalImages === 0) {
             showToast("Please select at least one image!", "error", 2000);
+            return;
+        }
+
+        if( $("#comments").val() == '') {
+            showToast("Please enter a comment!", "error", 2000);
             return;
         }
 
         if (totalImages > MAX_IMAGES) {
             showToast("Maximum 4 images only allowed!", "error", 2000);
             return;
+        }
+
+        if ($("input[name^='ratings']:checked").length === 0) {
+            showToast("Please select at least one rating.", "error", 2000);
+            return; // Stop form submission
         }
 
         const formData = new FormData();

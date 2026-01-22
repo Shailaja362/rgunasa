@@ -162,9 +162,6 @@ class AdminReportsController extends Controller
     public function viewPdf($id)
     {
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
-        $feedbacks = StudentFeedback::with('student')
-            ->where('event_id', $event->event_id)
-            ->get();
         $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
             $q->where('event_id', $event->event_id);
         }])
@@ -185,29 +182,39 @@ class AdminReportsController extends Controller
             ->latest()
             ->first();
         // Calculate average ratings
-        $avgRatings = [
-            'overall_experience' => 0,
-            'engagement' => 0,
-            'organization' => 0,
-            'coordination' => 0,
-            'recommendation' => 0,
+        $feedbacks = StudentFeedback::with('student')
+            ->where('event_id', $event->event_id)->get();
+
+        $keys = [
+            'overall_experience',
+            'engagement',
+            'organization',
+            'coordination',
+            'recommendation',
         ];
 
-        $totalFeedbacks = $feedbacks->count();
+        $totals = array_fill_keys($keys, 0);
+        $counts = array_fill_keys($keys, 0);
 
-        if ($totalFeedbacks > 0) {
-            foreach ($feedbacks as $feedback) {
-                $ratings = $feedback->ratings; // Already an array
+        foreach ($feedbacks as $feedback) {
 
-                foreach ($avgRatings as $key => $val) {
-                    $avgRatings[$key] += isset($ratings[$key]) ? (int)$ratings[$key] : 0;
+            // normalize here
+            $ratings = $this->normalizeRatings($feedback->ratings);
+
+            foreach ($keys as $key) {
+                if (isset($ratings[$key]) && is_numeric($ratings[$key])) {
+                    $totals[$key] += (int) $ratings[$key];
+                    $counts[$key]++;
                 }
             }
+        }
 
-            // Calculate average
-            foreach ($avgRatings as $key => $val) {
-                $avgRatings[$key] = $val / $totalFeedbacks;
-            }
+        // Final averages
+        $avgRatings = [];
+        foreach ($keys as $key) {
+            $avgRatings[$key] = $counts[$key] > 0
+                ? round($totals[$key] / $counts[$key], 1)
+                : 0;
         }
 
 
@@ -265,10 +272,6 @@ class AdminReportsController extends Controller
     {
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
         // Get feedbacks
-
-        $feedbacks = StudentFeedback::with('student')
-            ->where('event_id', $event->event_id)
-            ->get();
         $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
             $q->where('event_id', $event->event_id);
         }])
@@ -289,37 +292,43 @@ class AdminReportsController extends Controller
             ->where('event_id', $event->event_id)
             ->latest()
             ->first();
-        // Calculate average ratings
-        $avgRatings = [
-            'overall_experience' => 0,
-            'engagement' => 0,
-            'organization' => 0,
-            'coordination' => 0,
-            'recommendation' => 0,
+        $feedbacks = StudentFeedback::with('student')
+            ->where('event_id', $event->event_id)->get();
+
+        $keys = [
+            'overall_experience',
+            'engagement',
+            'organization',
+            'coordination',
+            'recommendation',
         ];
 
-        $totalFeedbacks = $feedbacks->count();
+        $totals = array_fill_keys($keys, 0);
+        $counts = array_fill_keys($keys, 0);
 
-        if ($totalFeedbacks > 0) {
-            foreach ($feedbacks as $feedback) {
-                $ratings = $feedback->ratings; // Already an array
+        foreach ($feedbacks as $feedback) {
 
-                foreach ($avgRatings as $key => $val) {
-                    $avgRatings[$key] += isset($ratings[$key]) ? (int)$ratings[$key] : 0;
+            // normalize here
+            $ratings = $this->normalizeRatings($feedback->ratings);
+
+            foreach ($keys as $key) {
+                if (isset($ratings[$key]) && is_numeric($ratings[$key])) {
+                    $totals[$key] += (int) $ratings[$key];
+                    $counts[$key]++;
                 }
-            }
-
-            // Calculate average
-            foreach ($avgRatings as $key => $val) {
-                $avgRatings[$key] = $val / $totalFeedbacks;
             }
         }
 
+        // Final averages
+        $avgRatings = [];
+        foreach ($keys as $key) {
+            $avgRatings[$key] = $counts[$key] > 0
+                ? round($totals[$key] / $counts[$key], 1)
+                : 0;
+        }
 
         // Gender counts
         $studentIds = $feedbacks->pluck('student_id')->toArray();
-
-
         // Prepare gender chart via QuickChart.io
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
@@ -364,5 +373,17 @@ class AdminReportsController extends Controller
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
         return $pdf->download("event_report_{$event->get_event->title}.pdf");
+    }
+
+    private function normalizeRatings($value)
+    {
+        if (empty($value) || $value === 'null') {
+            return [];
+        }
+        $decoded = json_decode($value, true);
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
+        }
+        return is_array($decoded) ? $decoded : [];
     }
 }

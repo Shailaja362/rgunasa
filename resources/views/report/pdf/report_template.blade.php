@@ -155,11 +155,9 @@
         function stars($rating)
         {
             $full = floor($rating);
-            $half = $rating - $full >= 0.5 ? 1 : 0;
-            $empty = 5 - ($full + $half);
-
-            return str_repeat('★', $full) . str_repeat('⯪', $half) . str_repeat('☆', $empty);
+            return str_repeat('★', $full) . str_repeat('☆', 5 - $full);
         }
+        
 
         $data['report'] = $data['report'];
 
@@ -287,9 +285,9 @@
             </thead>
             <tbody>
                 @foreach ($data['attended_students'] as $student)
-                @php
-                     $grade = $student->grades->first();
-                @endphp
+                    @php
+                        $grade = $student->grades->first();
+                    @endphp
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $student->student?->register_number ?? '' }}</td>
@@ -313,17 +311,21 @@
         'organization' => 'Organization',
         'coordination' => 'Coordination',
         'recommendation' => 'Recommendation',
-    ] as $k => $label)
-                @php $rating = round($avg[$k] ?? 0, 1); @endphp
+    ] as $key => $label)
+                @php
+                    $rating = round($data['report']->avgRatings[$key] ?? 0, 1);
+                @endphp
+
                 <tr>
                     <td class="label">{{ $label }}</td>
                     <td>
                         <span class="stars">{{ stars($rating) }}</span>
-                        &nbsp; <b>{{ $rating }}/5</b>
+                        <b>{{ $rating }}/5</b>
                     </td>
                 </tr>
             @endforeach
         </table>
+
 
         <!-- STUDENT FEEDBACK -->
         <div class="section-title">Student Feedback</div>
@@ -332,6 +334,7 @@
             @php
                 $f = $data['report']->feedback;
                 $r = $f->ratings ?? [];
+                $data_r = json_decode($r, true);
             @endphp
 
             <table class="info-table">
@@ -346,36 +349,36 @@
                 <tr>
                     <td class="label">Overall Experience</td>
                     <td>
-                        <span class="stars">{{ stars($r['overall_experience'] ?? 0) }}</span>
-                        <b>{{ $r['overall_experience'] ?? 0 }}/5</b>
+                        <span class="stars">{{ stars($data_r['overall_experience'] ?? 0) }}</span>
+                        <b>{{ $data_r['overall_experience'] ?? 0 }}/5</b>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Engagement</td>
                     <td>
-                        <span class="stars">{{ stars($r['engagement'] ?? 0) }}</span>
-                        <b>{{ $r['engagement'] ?? 0 }}/5</b>
+                        <span class="stars">{{ stars($data_r['engagement'] ?? 0) }}</span>
+                        <b>{{ $data_r['engagement'] ?? 0 }}/5</b>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Organization</td>
                     <td>
-                        <span class="stars">{{ stars($r['organization'] ?? 0) }}</span>
-                        <b>{{ $r['organization'] ?? 0 }}/5</b>
+                        <span class="stars">{{ stars($data_r['organization'] ?? 0) }}</span>
+                        <b>{{ $data_r['organization'] ?? 0 }}/5</b>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Coordination</td>
                     <td>
-                        <span class="stars">{{ stars($r['coordination'] ?? 0) }}</span>
-                        <b>{{ $r['coordination'] ?? 0 }}/5</b>
+                        <span class="stars">{{ stars($data_r['coordination'] ?? 0) }}</span>
+                        <b>{{ $data_r['coordination'] ?? 0 }}/5</b>
                     </td>
                 </tr>
                 <tr>
                     <td class="label">Recommendation</td>
                     <td>
-                        <span class="stars">{{ stars($r['recommendation'] ?? 0) }}</span>
-                        <b>{{ $r['recommendation'] ?? 0 }}/5</b>
+                        <span class="stars">{{ stars($data_r['recommendation'] ?? 0) }}</span>
+                        <b>{{ $data_r['recommendation'] ?? 0 }}/5</b>
                     </td>
                 </tr>
                 <tr>
