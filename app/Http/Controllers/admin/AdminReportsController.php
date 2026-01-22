@@ -162,7 +162,7 @@ class AdminReportsController extends Controller
     public function viewPdf($id)
     {
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
-        $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
+        $attended_students = StudentAttendance::with(['student', 'student.get_department', 'get_grade',  'grades' => function ($q) use ($event) {
             $q->where('event_id', $event->event_id);
         }])
             ->whereHas('grades', function ($query) use ($event) {
@@ -272,7 +272,7 @@ class AdminReportsController extends Controller
     {
         $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
         // Get feedbacks
-        $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
+        $attended_students = StudentAttendance::with(['student', 'student.get_department', 'get_grade',  'grades' => function ($q) use ($event) {
             $q->where('event_id', $event->event_id);
         }])
             ->whereHas('grades', function ($query) use ($event) {

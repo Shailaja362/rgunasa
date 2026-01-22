@@ -157,7 +157,7 @@
             $full = floor($rating);
             return str_repeat('★', $full) . str_repeat('☆', 5 - $full);
         }
-        
+
 
         $data['report'] = $data['report'];
 
@@ -279,6 +279,7 @@
                 <th>S.No</th>
                 <th>Register Number</th>
                 <th>Student Name</th>
+                <th>Department Name</th>
                 <th>Entry Time</th>
                 <th>Exit Time</th>
                 <th>Grade</th>
@@ -292,6 +293,7 @@
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $student->student?->register_number ?? '' }}</td>
                         <td>{{ $student->student?->name ?? '' }}</td>
+                        <td>{{ $student->student?->get_department?->department_name ?? '' }}</td>
                         <td>{{ $student->entry_time ? \Carbon\Carbon::parse($student->entry_time)->format('H:i A') : '' }}
                         </td>
                         <td>{{ $student->exit_time ? \Carbon\Carbon::parse($student->exit_time)->format('H:i A') : '' }}
