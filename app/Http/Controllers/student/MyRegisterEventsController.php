@@ -25,7 +25,6 @@ class MyRegisterEventsController extends Controller
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
             })
-            ->where('status', 3)
             ->where('student_id', $student->id)
             ->get();
 
