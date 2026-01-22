@@ -62,14 +62,21 @@
                     <tbody class="divide-y divide-gray-100 bg-white">
                         @forelse($registrations as $index => $registration)
                             @php
-                                $feedback = $registration->get_feedback->where([
-                                    'student_id' => $registration->student_id,
-                                    'event_id' => $registration->event_id,
-                                ])->first();
-                                $proofs = $registration->get_student_upload_proof->where([
-                                    'student_id' =>  $registration->student_id,
-                                    'event_id' => $registration->event_id,
-                                ])->get();
+                                $feedback = $registration->get_feedback
+                                    ?->where([
+                                        'student_id' => $registration->student_id,
+                                        'event_id' => $registration->event_id,
+                                    ])
+                                    ->first();
+
+                                $proofs =
+                                    $registration->get_student_upload_proof?->where([
+                                        'student_id' => $registration->student_id,
+                                        'event_id' => $registration->event_id,
+                                    ]) ?? collect();
+
+                                $grade = $registration->grades->first(); // already filtered by event
+
                             @endphp
                             <tr class="hover:bg-gray-50 transition">
                                 <td class="px-4 py-3">
@@ -94,7 +101,8 @@
                                         <a href="{{ route('student_event_report', [
                                             'student' => $registration->student_id,
                                             'event' => $registration->event_id,
-                                        ]) }}" target="_blank"
+                                        ]) }}"
+                                            target="_blank"
                                             class="bg-green-600 text-white px-4 py-2 rounded-full text-sm">
                                             View Event Report
                                         </a>
@@ -104,21 +112,10 @@
                                         class="py-2 w-32 rounded-lg border-gray-300 text-sm focus:border-primary focus:ring-primary"
                                         required>
                                         <option value="">Select Grade</option>
-                                        <option value="a"
-                                            {{ $registration->get_grade->grade == 'a' ? 'selected' : '' }}>A - Winner
-                                        </option>
-                                        <option value="b"
-                                            {{ $registration->get_grade->grade == 'b' ? 'selected' : '' }}>B - Runner
-                                            Up
-                                        </option>
-                                        <option value="c"
-                                            {{ $registration->get_grade->grade == 'c' ? 'selected' : '' }}>C -
-                                            Completed
-                                        </option>
-                                        <option value="d"
-                                            {{ $registration->get_grade->grade == 'd' ? 'selected' : '' }}>D -
-                                            Disqualified
-                                        </option>
+                                        <option value="a" {{ $grade?->grade === 'a' ? 'selected' : '' }}>A - Winner</option>
+    <option value="b" {{ $grade?->grade === 'b' ? 'selected' : '' }}>B - Runner Up</option>
+    <option value="c" {{ $grade?->grade === 'c' ? 'selected' : '' }}>C - Completed</option>
+    <option value="d" {{ $grade?->grade === 'd' ? 'selected' : '' }}>D - Disqualified</option>
                                     </select>
                                 </td>
                             </tr>
@@ -147,5 +144,4 @@
             @endif
         </div>
     </form>
-
 </x-layouts.app>

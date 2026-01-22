@@ -22,7 +22,18 @@ class AssignGradeController extends Controller
 
     public function gradeEntry(Request $request)
     {
-        $this->data['registrations'] = StudentAttendance::with('student', 'get_grade', 'student.get_department', 'get_student_upload_proof','get_feedback')
+        $this->data['registrations'] = StudentAttendance::with([
+            'student',
+            'student.get_department',
+            'get_student_upload_proof',
+            'get_feedback',
+            'grades' => function ($q) use ($request) {
+                $q->where('event_id', $request->event_id);
+            }
+        ])
+            ->whereHas('grades', function ($query) use ($request) {
+                $query->where('event_id', $request->event_id);
+            })
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
             ->where('event_id', $request->event_id)
@@ -43,6 +54,8 @@ class AssignGradeController extends Controller
         $eventId = $request->event_id;
 
         foreach ($request->grades as $registrationId => $grade) {
+
+
             $registration = StudentEventRegistration::where('student_id', $registrationId)
                 ->where('event_id', $eventId)
                 ->first();
@@ -53,7 +66,7 @@ class AssignGradeController extends Controller
             }
         }
 
-        return redirect()->route('assign_grade_entry')->with('success', 'Grades assigned successfully.');
+        return redirect()->back()->with('success', 'Grades assigned successfully.');
     }
 
     public function downloadEventReport(Request $request)

@@ -165,7 +165,12 @@ class AdminReportsController extends Controller
         $feedbacks = StudentFeedback::with('student')
             ->where('event_id', $event->event_id)
             ->get();
-        $attended_students = StudentAttendance::with('student', 'get_grade')
+        $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
+            $q->where('event_id', $event->event_id);
+        }])
+            ->whereHas('grades', function ($query) use ($event) {
+                $query->where('event_id', $event->event_id);
+            })
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
             ->where('event_id', $event->event_id)
@@ -261,7 +266,12 @@ class AdminReportsController extends Controller
         $feedbacks = StudentFeedback::with('student')
             ->where('event_id', $event->event_id)
             ->get();
-        $attended_students = StudentAttendance::with('student', 'get_grade')
+        $attended_students = StudentAttendance::with(['student', 'get_grade',  'grades' => function ($q) use ($event) {
+            $q->where('event_id', $event->event_id);
+        }])
+            ->whereHas('grades', function ($query) use ($event) {
+                $query->where('event_id', $event->event_id);
+            })
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
             ->where('event_id', $event->event_id)

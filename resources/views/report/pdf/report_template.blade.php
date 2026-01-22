@@ -283,9 +283,13 @@
                 <th>Student Name</th>
                 <th>Entry Time</th>
                 <th>Exit Time</th>
+                <th>Grade</th>
             </thead>
             <tbody>
                 @foreach ($data['attended_students'] as $student)
+                @php
+                     $grade = $student->grades->first();
+                @endphp
                     <tr>
                         <td>{{ $loop->iteration }}</td>
                         <td>{{ $student->student?->register_number ?? '' }}</td>
@@ -294,6 +298,7 @@
                         </td>
                         <td>{{ $student->exit_time ? \Carbon\Carbon::parse($student->exit_time)->format('H:i A') : '' }}
                         </td>
+                        <td>{{ $grade->grade ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
