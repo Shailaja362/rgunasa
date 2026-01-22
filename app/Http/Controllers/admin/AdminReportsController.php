@@ -380,10 +380,25 @@ class AdminReportsController extends Controller
         if (empty($value) || $value === 'null') {
             return [];
         }
-        $decoded = json_decode($value, true);
-        if (is_string($decoded)) {
-            $decoded = json_decode($decoded, true);
+
+        // If it's already an array, return as-is
+        if (is_array($value)) {
+            return $value;
         }
-        return is_array($decoded) ? $decoded : [];
+
+        // Only decode if it's a string
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+
+            // Sometimes JSON is double-encoded
+            if (is_string($decoded)) {
+                $decoded = json_decode($decoded, true);
+            }
+
+            return is_array($decoded) ? $decoded : [];
+        }
+
+        // For any other type, return empty array
+        return [];
     }
 }
