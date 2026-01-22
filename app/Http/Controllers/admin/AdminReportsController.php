@@ -227,8 +227,11 @@ class AdminReportsController extends Controller
             'options' => ['plugins' => ['legend' => ['position' => 'bottom']]]
         ]));
         // Counts
-        $registeredCount = $event->get_event->registrations()->count();
-        $attendedCount = $event->male_count + $event->female_count;
+        $registeredCount = StudentEventRegistration::where('event_id', $event->event_id)->count();
+        $attendedCount   =  StudentAttendance::where('event_id', $event->event_id)
+                            ->whereNotNull('entry_time')
+                            ->whereNotNull('exit_time')
+                            ->count();
 
         // Prepare PDF data
         $data = [
@@ -330,8 +333,11 @@ class AdminReportsController extends Controller
             'options' => ['plugins' => ['legend' => ['position' => 'bottom']]]
         ]));
         // Counts
-        $registeredCount = $event->get_event->registrations()->count();
-        $attendedCount = $event->male_count + $event->female_count;
+        $registeredCount = StudentEventRegistration::where('event_id', $event->event_id)->count();
+        $attendedCount   =  StudentAttendance::where('event_id', $event->event_id)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->count();
 
         // Prepare PDF data
         $data = [
