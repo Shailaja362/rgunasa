@@ -27,8 +27,8 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
 
     public function model(array $row)
     {
-        $department = Department::where('name', trim($row['department']))->first();
-        $programme  = Programme::where('name', trim($row['programme']))->first();
+        $department = Department::where('name', strtolower(trim($row['department'])))->first();
+        $programme  = Programme::where('name', strtolower(trim($row['programme'])))->first();
 
         return new Student([
             'department_id' => $department?->id,
@@ -63,15 +63,15 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
     {
 
         return [
-            'department' => trim($data['department']),
-            'programme'  => trim($data['programme']),
+            'department' => strtolower(trim($data['department'])),
+            'programme'  => strtolower(trim($data['programme'])),
             'name'          => trim($data['name']),
             'email'         => trim($data['email']),
             'mobile_number' => trim($data['mobile_number']),
             'date_of_birth' => trim($data['date_of_birth']),
-            'gender'        => trim($data['gender']),
-            'register_number'        => trim($data['register_number']),
-            'section'        => trim($data['section']),
+            'gender'        => strtolower(trim($data['gender'])),
+            'register_number' => trim($data['register_number']),
+            'section'       => strtolower(trim($data['section'])),
         ];
     }
 
@@ -94,7 +94,7 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
                 'distinct', // prevents duplicate mobile numbers inside Excel
                 Rule::unique('students', 'mobile_number'), // REQUIRED
             ],
-            '*.gender' => ['bail', 'required', 'in:m,f,o'],
+            '*.gender' => ['bail', 'required', 'in:m,f,o,M,F,O'],
             '*.department' => [
                 'bail',
                 'required',
@@ -105,7 +105,7 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
                 'required',
                 Rule::exists('programmes', 'name'),
             ],
-            '*.section' => ['bail', 'required', 'in:a,b,c'],
+            '*.section' => ['bail', 'required', 'in:a,b,c,A,B,C'],
             '*.register_number' => [
                 'bail',
                 'required',

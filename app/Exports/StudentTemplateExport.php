@@ -10,6 +10,7 @@ class StudentTemplateExport implements WithMultipleSheets
     {
         return [
             'Student Upload Sheet'    => new StudentsSheet(),      // MAIN
+            'Student Upload Guideline Sheet '    => new StudentGuidelineSheet(),      // MAIN
             'Departments' => new DepartmentsSheet(),   // REFERENCE
             'Programmes'  => new ProgrammesSheet(),    // REFERENCE
             'Gender'      => new GenderSheet(),

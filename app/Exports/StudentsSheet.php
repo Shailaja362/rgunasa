@@ -11,7 +11,6 @@ class StudentsSheet implements WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-            'S.No',
             'Register Number',
             'Name',
             'Email',
