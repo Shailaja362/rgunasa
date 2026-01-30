@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\EventReportImage;
 use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
+use App\Models\Department;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StudentEventRegistration;
@@ -20,7 +21,7 @@ class AdminReportsController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task')->get();
+        $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')->get();
         return view('admin.admin_reports_index')->with($this->data);
     }
 
@@ -37,7 +38,7 @@ class AdminReportsController extends Controller
         }
         $adminId = Auth::guard('admin')->id();
         $this->data['event'] = Event::where('created_by', $adminId)->get();
-
+        $this->data['departments'] = Department::get();
         return view('admin.create_admin_report')->with($this->data);
     }
 
@@ -54,9 +55,10 @@ class AdminReportsController extends Controller
                 'certificates' => 'required',
                 'attendance_in' => 'required',
                 'attendance_out' => 'required',
+                'department_id' => 'required',
+                'event_date' => 'required'
             ];
             $request->validate($rules);
-
             if (!empty($request->report_id)) {
                 $report = EventReport::findOrFail($request->report_id);
                 $message = "Report Updated Successfully";
@@ -101,6 +103,8 @@ class AdminReportsController extends Controller
             // SAVE MAIN REPORT
             $report->event_id = $request->event_id;
             $report->created_by = $user->id;
+            $report->department_id = $request->department_id;
+            $report->event_date = $request->event_date;
             $report->male_count = $request->male_count;
             $report->female_count = $request->female_count;
             $report->outcomes = $request->outcome_results;

@@ -18,9 +18,9 @@ class MyRegisterEventsController extends Controller
     {
         $student = session()->get('student');
         $now = Carbon::now();
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
+        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule')->where('student_id', $student->id)
             ->get();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance')
+        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule')
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
@@ -34,7 +34,7 @@ class MyRegisterEventsController extends Controller
 
         $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($now) {
-                $query->whereNotNull('entry_time')
+                   $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
             })
             ->where('status', 3)
@@ -51,23 +51,24 @@ class MyRegisterEventsController extends Controller
 
     public function uploadProof(Request $request)
     {
-        $validated = $request->validate([
-            'student_id' => 'required|integer',
-            'event_id'   => 'required|integer',
-
-            // THIS IS THE FIX
-            'proof'      => 'nullable|array',
-            'proof.*'    => 'image|mimes:jpg,jpeg,png|max:10240',
-
-            'ratings.*'  => 'required|integer|min:1|max:5',
-            'comments'   => 'nullable|string|max:500',
-        ]);
-
-
         try {
+            echo '<pre>';
+            print_r($request->all());
+            echo '</pre>';
+            exit;
+            $validated = $request->validate([
+                'student_id' => 'required|integer',
+                'event_id'   => 'required|integer',
+                'schedule_id' => 'required|integer',
+                'proof'      => 'nullable|array',
+                'ratings.*'  => 'required|integer|min:1|max:5',
+                'comments'   => 'nullable|string|max:500',
+            ]);
+
             $hasExistingProof = StudentUploadProof::where([
                 'student_id' => $request->student_id,
                 'event_id'   => $request->event_id,
+                'event_schedule_id' => $request->schedule_id
             ])->exists();
 
             if (!$hasExistingProof && !$request->hasFile('proof')) {
@@ -80,11 +81,12 @@ class MyRegisterEventsController extends Controller
                 foreach ($request->file('proof') as $file) {
                     $fileName = $file->getClientOriginalName();
                     $filePath = $file->storeAs('student_upload_proof', $fileName, 'public');
-                    $exists = StudentUploadProof::where(['student_id' => $validated['student_id'], 'event_id' => $validated['event_id'], 'file_name' =>  $fileName, 'file_path' => $filePath])->first();
+                    $exists = StudentUploadProof::where(['student_id' => $validated['student_id'], 'event_id' => $validated['event_id'], 'file_name' =>  $fileName, 'file_path' => $filePath, 'event_schedule_id' => $validated['schedule_id']])->first();
                     if (!$exists) {
                         $upload = new StudentUploadProof();
                         $upload->student_id = $validated['student_id'];
                         $upload->event_id   = $validated['event_id'] ?? null;
+                        $upload->event_schedule_id  = $validated['schedule_id'] ?? null;
                         $upload->file_name  = $fileName; // Original filename
                         $upload->file_path  = $filePath;         // Public path
                         $upload->file_type  = $file->getClientOriginalExtension();
@@ -97,6 +99,7 @@ class MyRegisterEventsController extends Controller
                 $feedback = new StudentFeedback();
                 $feedback->student_id = $validated['student_id'];
                 $feedback->event_id   = $validated['event_id'] ?? null;
+                $feedback->event_schedule_id   = $validated['schedule_id'] ?? null;
                 $feedback->ratings  = json_encode($request->ratings) ?? []; // Original filename
                 $feedback->comments  = $request->comments;         // Public path
                 $feedback->save();
@@ -112,20 +115,27 @@ class MyRegisterEventsController extends Controller
 
     public function getUploadedProof(Request $request)
     {
+       try{
+            $proofs = StudentUploadProof::where([
+                'student_id' => $request->student_id,
+                'event_id'   => $request->event_id,
+                'event_schedule_id' => $request->schedule_id
+            ])->get();
 
-        $proofs = StudentUploadProof::where([
-            'student_id' => $request->student_id,
-            'event_id'   => $request->event_id,
-        ])->get();
+            $feedback = StudentFeedback::where([
+                'student_id' => $request->student_id,
+                'event_id'   => $request->event_id,
+                'event_schedule_id' => $request->schedule_id
+            ])->first();
 
-        $feedback = StudentFeedback::where([
-            'student_id' => $request->student_id,
-            'event_id'   => $request->event_id,
-        ])->first();
 
-        return response()->json([
-            'proofs'   => $proofs,
-            'feedback' => $feedback
-        ]);
+            return response()->json([
+                'proofs'   => $proofs,
+                'feedback' => $feedback
+            ]);
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
+
     }
 }

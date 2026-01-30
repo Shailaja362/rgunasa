@@ -4,7 +4,6 @@
         <h3 class="font-semibold text-primary">Event Report Submission</h3>
         <p>Submit comprehensive reports for completed events</p>
     </div>
-
     <div class="flex justify-end">
         <a href="{{ route('create_report') }}"
             class="px-2 w-40 mt-5 bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
@@ -14,7 +13,7 @@
         @foreach ($reports as $report)
             <div class="bg-white rounded-2xl shadow hover:shadow-lg transition p-5">
                 <!-- Header -->
-                <p class="font-semibold text-lg">{{ $report->get_event->title ?? '' }}</p>
+                <p class="font-semibold text-lg">{{ $report->get_event->title ?? '' }} - {{ $report->get_department->name ?? '' }} - {{  $report->event_date ?? ''  }}</p>
                 <p class="text-xs mt-2">
                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                     Event -
@@ -43,10 +42,7 @@
                         class="w-full inline-block text-center bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
                         <i class="fa fa-download" aria-hidden="true"></i> Download
                     </a>
-
-
                 </div>
-
             </div>
         @endforeach
     </div>

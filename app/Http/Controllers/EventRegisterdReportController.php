@@ -65,7 +65,6 @@ class EventRegisterdReportController extends Controller
             );
            }
 
-
         return view('admin.registered_event_report_index')->with($this->data);
     }
 

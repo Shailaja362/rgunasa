@@ -25,23 +25,26 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] = Event::with('registrations')
-            ->whereDate('event_date', $now->toDateString())
-            // ->whereTime('start_time', '<=', $now->toTimeString())
-            // ->whereTime('end_time', '>=', $now->toTimeString())
-            ->orderBy('start_time', 'asc')
+        $this->data['ongoingEvents'] = Event::with('registrations')->whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('department_id', $student->department_id)
+                ->where('event_date', Carbon::now()->toDateString());
+        })
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('department_id', $student->department_id)
+                    ->where('event_date', Carbon::now()->toDateString());
+            }, 'get_dep_events.registrations'])
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] = Event::with('registrations')
-            ->where(function ($query) use ($now) {
-                $query->whereDate('event_date', '>', $now->toDateString())
-                    ->orWhere(function ($q) use ($now) {
-                        $q->whereDate('event_date', '=', $now->toDateString())
-                            ->whereTime('start_time', '>', $now->toTimeString());
-                    });
-            })
-            ->orderBy('event_date', 'asc')
-            ->orderBy('start_time', 'asc')
+            ->whereHas('get_dep_events', function ($q) use ($student) {
+               $q->where('department_id', $student->department_id)
+                ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
+             })
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('department_id', $student->department_id)
+                    ->where('event_date', '>', Carbon::now()->toDateString())
+                    ->orderBy('event_date', 'asc');
+             }, 'get_dep_events.registrations'])
             ->get();
 
         $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
@@ -54,7 +57,7 @@ class RegisterEventController extends Controller
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
             })
-            ->where('status',3)
+            ->where('status', 3)
             ->count();
         $this->data['studentRegistrations'] = StudentEventRegistration::where('student_id', $student->id)
             ->with('event') // eager load event for date and type
@@ -72,7 +75,6 @@ class RegisterEventController extends Controller
 
         try {
             $event = Event::findOrFail($request->event_id);
-
             // Get last registration
             $lastRegistration = StudentEventRegistration::where([
                 'student_id' => $request->stu_id,
@@ -82,7 +84,6 @@ class RegisterEventController extends Controller
                 ->first();
 
             if ($lastRegistration) {
-                // Case 1: Duration NOT set → block duplicate forever
                 if (empty($event->duration_months) || $event->duration_months == 0) {
                     return response()->json([
                         'success' => false,
@@ -105,6 +106,7 @@ class RegisterEventController extends Controller
             // Allow registration
             $register_student = new StudentEventRegistration();
             $register_student->student_id     = $request->stu_id;
+            $register_student->event_schedule_id = $request->schedule_id;
             $register_student->event_id       = $event->id;
             $register_student->status         = 1;
             $register_student->registered_at  = Carbon::now();

@@ -1,27 +1,27 @@
-$(document).on("change", "#event_id", function () {
-    var eventId = $(this).val();
-    if (eventId) {
-        $.ajax({
-            url: "/admin/create_report", // Route to get officers
-            type: "GET",
-            dataType: "json",
-            data: {
-                eventId: eventId,
-                get_event_date: true,
-            },
-            success: function (response) {
-                $("#event_date").empty();
-                $("#event_date").val(response.event.event_date);
-            },
-            error: function () {
-                showToast("Unable to fetch event date!", "error", 2000);
-            },
-        });
-    } else {
-        $("#event_date").empty();
+// $(document).on("change", "#event_id", function () {
+//     var eventId = $(this).val();
+//     if (eventId) {
+//         $.ajax({
+//             url: "/admin/create_report", // Route to get officers
+//             type: "GET",
+//             dataType: "json",
+//             data: {
+//                 eventId: eventId,
+//                 get_event_date: true,
+//             },
+//             success: function (response) {
+//                 $("#event_date").empty();
+//                 $("#event_date").val(response.event.event_date);
+//             },
+//             error: function () {
+//                 showToast("Unable to fetch event date!", "error", 2000);
+//             },
+//         });
+//     } else {
+//         $("#event_date").empty();
 
-    }
-});
+//     }
+// });
 
 $(document).on("submit", "#eventReportForm", function (e) {
        const totalImages = document.querySelectorAll(

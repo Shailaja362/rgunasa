@@ -10,7 +10,9 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\StudentAttendance;
 use App\Models\StudentUploadProof;
 use App\Http\Controllers\Controller;
+use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
+use ZipArchive;
 
 class AssignGradeController extends Controller
 {
@@ -22,27 +24,40 @@ class AssignGradeController extends Controller
 
     public function gradeEntry(Request $request)
     {
-        $this->data['registrations'] = StudentAttendance::with([
-            'student',
-            'student.get_department',
-            'get_student_upload_proof',
-            'get_feedback',
-            'grades' => function ($q) use ($request) {
-                $q->where('event_id', $request->event_id);
-            }
-        ])
-            ->whereHas('grades', function ($query) use ($request) {
-                $query->where('event_id', $request->event_id);
-            })
+        $eventId = $request->event_id;
+        $this->data['event'] = Event::findOrFail($eventId);
+        $this->data['get_schedule_event'] = StudentAttendance::with('student.get_department')
+            ->where('event_id', $eventId)
             ->whereNotNull('entry_time')
             ->whereNotNull('exit_time')
-            ->where('event_id', $request->event_id)
-            ->orderBy('id')
-            ->get();
-        $this->data['event'] = Event::find($request->event_id);
-        $this->data['attendance_entry'] = StudentAttendance::where('event_id', $request->event_id)->get();
+            ->get()
+            ->pluck('student.get_department', 'student_id')
+            ->unique('id');
+        $this->data['schedule_department'] = EventSchedule::with('department')->where('event_id', $eventId)->get();
+        $this->data['registrations'] = collect();
+        if ($request->filled('department_id') && $request->filled('event_date')) {
+            $get_schedule_dept = EventSchedule::where(['event_id' => $request->event_id , 'event_date' => $request->event_date , 'department_id' => $request->department_id])->first();
+            $this->data['registrations'] = StudentAttendance::with([
+                'student.get_department',
+                'get_student_upload_proof',
+                'get_feedback',
+                'grades' => function ($q) use ($eventId) {
+                    $q->where('event_id', $eventId);
+                }
+            ])
+                ->where('event_id', $eventId)
+                ->whereHas('student', function ($q) use ($request) {
+                    $q->where('department_id', $request->department_id);
+                })
+                ->whereNotNull('entry_time')
+                ->whereNotNull('exit_time')
+                ->orderBy('id')
+                ->get();
+        }
+
         return view('admin.assign_grade_entry')->with($this->data);
     }
+
 
     public function saveGrades(Request $request)
     {
@@ -91,5 +106,37 @@ class AssignGradeController extends Controller
         ))->setPaper('a4', 'portrait');
 
         return $pdf->stream('event-report.pdf');
+    }
+
+    public function downloadAll($eventId, $studentId)
+    {
+        $proofs = StudentUploadProof::where('event_id', $eventId)
+            ->where('student_id', $studentId)
+            ->get();
+
+        // Filter only document files
+        $docFiles = $proofs->filter(function ($file) {
+            $ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
+            return in_array($ext, ['pdf', 'doc', 'docx', 'xls', 'xlsx']);
+        });
+
+        if ($docFiles->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'No document files to download.'
+            ]);
+        }
+
+        $files = $docFiles->map(function ($file) {
+            return [
+                'name' => $file->file_name,
+                'url' => asset('storage/' . $file->file_path)
+            ];
+        })->values()->all();
+
+        return response()->json([
+            'success' => true,
+            'files' => $files
+        ]);
     }
 }

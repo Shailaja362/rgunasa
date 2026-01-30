@@ -55,11 +55,6 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Seat Count<span class="text-red-500">*</span></label>
-                <input type="text" name="seat_count" id="seat_count" value="{{ $edit_event->seat_count ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-            <div>
                 <label class="block text-sm font-medium">
                     Event Duration (Months)<span class="text-red-500">*</span>
                 </label>
@@ -79,7 +74,7 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Event Type<span class="text-red-600">*</span></label>
+                <label class="block text-sm font-medium">Event Type <span class="text-red-600">*</span></label>
                 <select name="event_type" id="event_type"
                     class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="">Select Event Type</option>
@@ -98,30 +93,106 @@
                 @endif
             </div>
         </div>
+        <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
+        <p>Add one or more department schedules</p>
+        <div id="departmentContainer" class="space-y-6 mt-6">
 
+            @php
+                if (!empty($edit_event) && $edit_event->get_dep_events->count() > 0) {
+                    $deptData = $edit_event->get_dep_events;
+                } else {
+                    // always force one empty section
+                    $deptData = collect([null]);
+                }
+            @endphp
+
+            @foreach ($deptData as $index => $dept)
+                <div class="bg-[#F0F0F0] p-5 rounded-2xl relative dept-card">
+
+                    @if ($index > 0)
+                        <button type="button" class="absolute top-2 right-2 text-red-500 font-bold removeDept">
+                            &times;
+                        </button>
+                    @endif
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {{-- Department dropdown --}}
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Department <span class="text-red-500">*</span>
+                            </label>
+                            <select name="departments[{{ $index }}][department_id]"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
+                                <option value="">Select Department</option>
+                                @foreach ($departments as $d)
+                                    <option value="{{ $d->id }}"
+                                        @if (!empty($dept) && $dept->department_id == $d->id) selected @endif>
+                                        {{ $d->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        {{-- Section --}}
+                        <div>
+                            <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
+                            <input type="text" name="departments[{{ $index }}][section]"
+                                value="{{ $dept->section ?? '' }}" class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                        </div>
+                        {{-- Event Date --}}
+                        <div>
+                            <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
+                            <input type="date" name="departments[{{ $index }}][event_date]"
+                                value="{{ $dept->event_date ?? '' }}"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
+                        </div>
+                        {{-- Reserve Date --}}
+                        <div>
+                            <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
+                            <input type="date" name="departments[{{ $index }}][reserve_date]"
+                                value="{{ $dept->reserve_date ?? '' }}"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 reserve_date">
+                        </div>
+                        {{-- Seat Count --}}
+                        <div>
+                            <label class="block text-sm font-medium">Seat Count <span class="text-red-600">*</span></label>
+                            <input type="number" name="departments[{{ $index }}][seat_count]"
+                                value="{{ $dept->seat_count ?? '' }}"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 seat_count">
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
+        <button type="button" id="addDeptBtn" class="px-4 py-2 bg-primary text-white rounded-full mt-4">
+            + Add Department
+        </button>
         <!-- Schedule Section -->
         <h1 class="text-primary font-semibold mt-10 px-3">Schedule & Location</h1>
         <p class="px-3">When and where the event will take place</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-                <label class="block text-sm font-medium">Event Date<span class="text-red-500">*</span></label>
-                <input type="date" name="event_date" id="event_date" value="{{ $edit_event->event_date ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-3">
             <div>
                 <label class="block text-sm font-medium">Start Time<span class="text-red-600">*</span></label>
                 <input type="time" name="start_time" id="start_time" value="{{ $edit_event->start_time ?? '' }}"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
-
             <div>
                 <label class="block text-sm font-medium">End Time<span class="text-red-600">*</span></label>
                 <input type="time" name="end_time" id="end_time" value="{{ $edit_event->end_time ?? '' }}"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
-
+            <div>
+                <label class="block text-sm font-medium">Reserve Start Time<span class="text-red-600">*</span></label>
+                <input type="time" name="reserve_start_time" id="reserve_start_time"
+                    value="{{ $edit_event->reserve_start_time ?? '' }}"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Reserve End Time<span class="text-red-600">*</span></label>
+                <input type="time" name="reserve_end_time" id="reserve_end_time"
+                    value="{{ $edit_event->reserve_end_time ?? '' }}"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
             <div class="col-span-2">
                 <label class="block text-sm font-medium">Location / Virtual Link<span
                         class="text-red-600">*</span></label>
@@ -129,7 +200,6 @@
                     class="bg-[#D9D9D9] w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring focus:ring-primary/40"
                     rows="3" placeholder="Enter the event venue or virtual meeting link">{{ $edit_event->location ?? '' }}</textarea>
             </div>
-
             <div>
                 <label class="block text-sm font-medium">Session<span class="text-red-600">*</span></label>
                 <select name="session" id="session"
@@ -202,11 +272,9 @@
                         {{-- File Input --}}
                         <input type="file" id="fileInput" name="banner_image" accept="image/*" class="hidden" />
                     </div>
-
                 </div>
             </div>
         </div>
-
         <!-- Center-Aligned Button -->
         <div class="flex justify-center mt-10">
             <button type="submit"
@@ -216,4 +284,10 @@
         </div>
     </form>
 </x-layouts.app>
+<script>
+    const deptOptions = @json(
+        $departments->map(function ($d) {
+            return ['id' => $d->id, 'name' => $d->name];
+        }));
+</script>
 <script src="{{ asset('admin/js/events.js') }}"></script>

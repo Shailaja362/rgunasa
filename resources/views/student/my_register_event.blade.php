@@ -51,7 +51,9 @@
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
                         ])->count();
-                        $available = $event->event->seat_count - $registered;
+                        $available = $event->schedule
+                            ? $event->schedule->seat_count - $registered
+                            : 0;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
@@ -87,7 +89,8 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ \Carbon\Carbon::parse($event->event->event_date)->format('F j, Y') }}</p>
+                                       {{ optional($event->schedule)->event_date ? \Carbon\Carbon::parse($event->schedule->event_date)->format('F j, Y') : '-' }}
+                                    </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
                                     <i class="fa fa-map-marker text-primary" aria-hidden="true"></i>
@@ -109,7 +112,7 @@
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
                         ])->count();
-                        $available = $event->event->seat_count - $registered;
+                        $available = $event->get_event_schedule->seat_count - $registered;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
@@ -137,7 +140,8 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ \Carbon\Carbon::parse($event->event->event_date)->format('F j, Y') }}</p>
+                                        {{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}
+                                    </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
                                     <i class="fa fa-map-marker text-primary" aria-hidden="true"></i>
@@ -151,18 +155,15 @@
                                         data-title="{{ $event->event->title }}"
                                         data-image="{{ asset('storage/' . $event->event->banner_image) }}"
                                         data-description="{{ $event->event->description }}"
-                                        data-date=" {{ \Carbon\Carbon::parse($event->event->event_date)->format('F j, Y') }}"
+                                        data-date=" {{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}"
                                         data-start="{{ \Carbon\Carbon::parse($event->event->start_time)->format('h:i A') }}"
                                         data-end="{{ \Carbon\Carbon::parse($event->event->end_time)->format('h:i A') }}"
                                         data-location="{{ $event->event->location }}">
                                         View Details
                                     </p>
                                 </div>
-                                <div
-                                    class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
-                                    <p id="openUploadModal" class="px-2 text-center upload"
-                                        data-event_id={{ $event->event->id }}
-                                        data-student_id={{ $event->student_id }}>Upload Proof</p>
+                                <div class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
+                                 <p id="openUploadModal" class="px-2 text-center upload" data-event_id={{ $event->event->id }} data-schedule_id={{ $event->get_event_schedule->id }}  data-student_id={{ $event->student_id }}>Upload Proof</p>
                                 </div>
                             </div>
                         </div>
@@ -210,6 +211,8 @@
                 class="closeModal absolute top-4 right-6 text-white text-xl font-bold">&times;</button>
             <input id="event_id" type="hidden" />
             <input id="student_id" type="hidden" />
+            <input id="schedule_id" type="hidden" />
+
             <!-- Upload Box -->
             <div id="uploadBox" class="space-y-6">
                 <div id="dropArea"
@@ -220,10 +223,11 @@
                         <p class="text-white font-semibold">Drag & drop your images here</p>
                         <p class="text-white text-sm mt-2">or click to select files</p>
                         <p class="text-[#FD5063] text-md mt-2 py-2 rounded-full bg-white">
-                            JPG or PNG only, max 10MB each — Max 4 images allowed
+                            JPG, PNG, PDF, Word, Excel — Max 10MB each • Max 4 files
                         </p>
                     </div>
-                    <input type="file" id="fileInput" accept="image/*" multiple class="hidden" />
+                    <input type="file" id="fileInput" multiple
+                        class="absolute inset-0 opacity-0 cursor-pointer z-50" />
                 </div>
 
                 <!-- Divider -->
@@ -286,11 +290,12 @@
                     <img src="{{ asset('/images/upload_sucessfull.png') }}" width="70" />
                     <p class="text-white font-semibold">Proof uploaded successfully!</p>
                     <p class="text-white text-sm">Your attendance is marked as present</p>
-                    <button id="uploadAnother" class="border border-white text-white px-6 py-2 rounded-full mt-3">
+                    <button id="uploadAnother" class="upload border border-white text-white px-6 py-2 rounded-full mt-3">
                         Upload another proof
                     </button>
                 </div>
             </div>
         </div>
+    </div>
 </x-layouts.app>
 <script src="{{ asset('admin/js/myregistration.js') }}"></script>

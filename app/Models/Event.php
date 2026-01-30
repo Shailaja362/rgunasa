@@ -41,5 +41,8 @@ class Event extends Model
         return $this->hasMany(StudentFeedback::class, 'event_id');
     }
 
-
+    public function get_dep_events()
+    {
+        return $this->hasMany(EventSchedule::class, 'event_id','id');
+    }
 }

@@ -30,4 +30,14 @@ class StudentEventRegistration extends Model
     {
         return $this->hasMany(StudentAttendance::class, 'event_id', 'event_id');
     }
+
+    public function schedule()
+    {
+        return $this->belongsTo(EventSchedule::class, 'event_id', 'event_id');
+    }
+
+    public function get_event_schedule()
+    {
+        return $this->belongsTo(EventSchedule::class, 'event_schedule_id',);
+    }
 }

@@ -46,11 +46,11 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable();
             $table->string('title');
             $table->text('description');
-            $table->date('event_date');
             $table->time('start_time');
             $table->time('end_time');
+            $table->time('reserve_start_time');
+            $table->time('reserve_end_time');
             $table->enum('event_type', ['paid','free']);
-            $table->integer('seat_count');
             $table->integer('duration_months')->nullable()->comment('Event validity duration in months');
             $table->string('location');
             $table->enum('session', ['1', '2'])

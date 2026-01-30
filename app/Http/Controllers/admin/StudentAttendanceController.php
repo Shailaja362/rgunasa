@@ -7,7 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
+use Exception;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentAttendanceController extends Controller
@@ -20,12 +22,35 @@ class StudentAttendanceController extends Controller
 
     public function attendanceEntry(Request $request)
     {
-        $this->data['registeredStudents'] = StudentEventRegistration::with('event', 'student.get_department', 'get_student_proof')
-            ->where('event_id', $request->event_id)->get();
-        $this->data['event'] = Event::find($request->event_id);
-        $this->data['attendance_entry'] = StudentAttendance::where('event_id', $request->event_id)->get();
+        $eventId = $request->event_id;
+        $this->data['event'] = Event::findOrFail($eventId);
+        $this->data['get_schedule_event'] = EventSchedule::with('department')
+            ->where('event_id', $eventId)
+            ->distinct('department_id')
+            ->get(['department_id', 'event_id']);
+            $this->data['registeredStudents'] = collect();
+            if ($request->filled('department_id') && $request->filled('event_date')) {
+            $schedule = EventSchedule::where('event_id', $eventId)
+                ->where('department_id', $request->department_id)
+                ->whereDate('event_date', $request->event_date)
+                ->first();
+                if ($schedule) {
+                $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
+                ->where('event_schedule_id', $schedule->id)->get();
+                $this->data['registeredStudents'] = StudentEventRegistration::with([
+                    'student.get_department'
+                ])
+                    ->where('event_id', $eventId)
+                    ->where('event_schedule_id', $schedule->id)
+                    ->get();
+            }else{
+                $this->data['attendance_entry'] = collect();
+            }
+        }
+
         return view('admin.student_attendance_entry')->with($this->data);
     }
+
 
     public function download(Request $request)
     {
@@ -37,46 +62,63 @@ class StudentAttendanceController extends Controller
 
     public function markAttendance(Request $request)
     {
-        $request->validate([
-            'event_id'   => 'required|exists:events,id',
-            'attendance' => 'required|array',
-        ]);
+        try{
+        
+            $request->validate([
+                'event_id'   => 'required|exists:events,id',
+                'attendance' => 'required|array',
+            ]);
 
-        $eventId = $request->event_id;
+            $eventId = $request->event_id;
 
-        foreach ($request->attendance as $studentId => $data) {
-            // Use firstOrNew to create or update attendance
-            $existingAttendance = StudentAttendance::where('event_id', $eventId)
-                ->where('student_id', $studentId)
-                ->first();
+            $eventSchedule = EventSchedule::where([
+                'event_id'      => $eventId,
+                'department_id' => $request->department_id,
+                'event_date'    => $request->event_date
+            ])->first();
+            if (!$eventSchedule) {
+                return redirect()->back()->with('error', 'No schedule found for the selected event, department, and date.');
+            }
+            foreach ($request->attendance as $studentId => $data) {
 
-            if ($existingAttendance) {
-                $attendance = $existingAttendance;
-            } else {
-                $attendance = new StudentAttendance();
-                $attendance->event_id = $eventId;
-                $attendance->student_id = $studentId;
-            }
+                $existingAttendance = StudentAttendance::where('event_id', $eventId)
+                    ->where('student_id', $studentId)
+                    ->where('event_schedule_id' ,  $eventSchedule->id)
+                    ->first();
 
-            if (!empty($data['entry']) && !$attendance->entry_time) {
-                $attendance->entry_time = now();
-            }
-            if (!empty($data['exit']) && !$attendance->exit_time) {
-                $attendance->exit_time = now();
-            }
-            $attendance->save();
-            
-            if ($attendance->entry_time && $attendance->exit_time) {
-                StudentEventRegistration::where([
-                    'event_id'   => $eventId,
-                    'student_id' => $studentId,
-                ])->update([
-                    'status' => 3,
-                ]);
-            }
+                if ($existingAttendance) {
+                    $attendance = $existingAttendance;
+                } else {
+                    $attendance = new StudentAttendance();
+                    $attendance->event_id = $eventId;
+                    $attendance->event_schedule_id = $eventSchedule->id;
+                    $attendance->student_id = $studentId;
+                }
+
+                if (!empty($data['entry']) && !$attendance->entry_time) {
+                    $attendance->entry_time = now();
+                }
+                if (!empty($data['exit']) && !$attendance->exit_time) {
+                    $attendance->exit_time = now();
+                }
+                $attendance->save();
+
+                if ($attendance->entry_time && $attendance->exit_time) {
+                    StudentEventRegistration::where([
+                        'event_id'   => $eventId,
+                        'student_id' => $studentId,
+                    ])->update([
+                        'status' => 3,
+                    ]);
+                }
         }
-
-
+        } catch (Exception $e) {
+            echo '<pre>';
+            print_r($e->getMessage());
+            echo '</pre>';
+            exit;
+            return $e->getMessage();
+        }
 
         return redirect()->back()->with('success', 'Attendance submitted successfully');
     }

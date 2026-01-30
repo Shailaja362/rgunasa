@@ -2,11 +2,13 @@ $(function () {
     // ==== EDIT BANNER ====
     $(document).on("click", ".student_register", function () {
         var event_id = $(this).data("event_id");
+        var schedule_id = $(this).data("schedule_id");
         $.ajax({
             url: "get-student",
             type: "GET",
             data: {
                 event_id: event_id,
+                schedule_id: schedule_id,
                 get_student: true,
             },
             success: function (response) {
@@ -19,6 +21,7 @@ $(function () {
                     $(".event").val(response.event.title);
                     $(".event_id").val(response.event.id);
                     $(".stu_id").val(student_data.id);
+                    $(".schedule_id").val(schedule_id);
                 }
             },
             error: function (xhr) {
@@ -107,16 +110,17 @@ document.querySelectorAll(".pay-btn").forEach((btn) => {
         payWithRazorpay(
             this.dataset.eventId,
             this.dataset.amount,
-            this.dataset.title
+            this.dataset.title,
+            this.dataset.schedule_id,
         );
     });
 });
 
-function payWithRazorpay(eventId, title) {
+function payWithRazorpay(eventId, schedule_id,title) {
     $.ajax({
         url: "razorpay-order",
         method: "POST",
-        data: { event_id: eventId },
+        data: { event_id: eventId, schedule_id: schedule_id },
         success: function (order) {
             var options = {
                 key: window.RAZORPAY_KEY,
@@ -135,12 +139,12 @@ function payWithRazorpay(eventId, title) {
                             razorpay_payment_id: response.razorpay_payment_id,
                             razorpay_order_id: response.razorpay_order_id,
                             razorpay_signature: response.razorpay_signature,
+                            schedule_id: schedule_id,
                         },
                         success: function (res) {
-                        window.location.reload();
+                            window.location.reload();
                         },
-                        error: function (err) {
-                        },
+                        error: function (err) {},
                     });
                 },
                 prefill: {
@@ -152,9 +156,7 @@ function payWithRazorpay(eventId, title) {
             var rzp = new Razorpay(options);
             rzp.open();
         },
-        error: function (err) {
-
-        },
+        error: function (err) {},
     });
 }
 

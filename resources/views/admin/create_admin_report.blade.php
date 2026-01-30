@@ -22,9 +22,24 @@
                     @endforeach
                 </select>
             </div>
+             <div>
+                            <label class="block text-sm font-medium">
+                                Department <span class="text-red-500">*</span>
+                            </label>
+                            <select name="department_id"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
+                                <option value="">Select Department</option>
+                                @foreach ($departments as $d)
+                                    <option value="{{ $d->id }}"
+                                        @if (!empty($eve) && $eve->id == $d->id) selected @endif>
+                                        {{ $d->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
             <div>
                 <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
-                <input type="text" name="event_date" id="event_date" disabled
+                <input type="date" name="event_date" id="event_date"
                     class="bg-[#D9D9D9] w-full rounded-full py-3 px-4 mt-1 focus:outline-none focus:ring-2 focus:ring-primary/40">
             </div>
         </div>
@@ -84,7 +99,7 @@
         <input id="fileInput" name="proof[]" type="file" accept="image/*" multiple class="hidden">
 
         <!-- FEEDBACK SUMMARY -->
-        <h2 class="text-primary font-semibold mt-10 px-4">Feedback Summary</h2>
+        <h2 class="text-primary font-semibold mt-10 px-4">Feedback Summary <span class="text-red-500">*</span></h2>
         <div class="px-4 mt-2">
             <textarea name="feedback_summary" id="feedback_summary" rows="3"
                 placeholder="Summarize participant feedback, ratings, testimonials, suggestions for improvement, and satisfaction levels..."

@@ -11,7 +11,7 @@ function showMyregistration(type) {
         completedTab.classList.remove(
             "bg-white",
             "text-primary",
-            "rounded-full"
+            "rounded-full",
         );
     } else {
         registeredSection.classList.add("hidden");
@@ -20,7 +20,7 @@ function showMyregistration(type) {
         registeredTab.classList.remove(
             "bg-white",
             "text-primary",
-            "rounded-full"
+            "rounded-full",
         );
     }
 }
@@ -28,111 +28,23 @@ function showMyregistration(type) {
 $(function () {
     let filesArr = [];
     let existingImages = [];
-    const MAX_IMAGES = 4;
-    // === Assign event ID for upload ===
-    $(document).on("click", ".upload", function () {
-        const eventId = $(this).data("event_id");
-        const studentId = $(this).data("student_id");
 
-        $("#event_id").val(eventId);
-        $("#student_id").val(studentId);
+    const MAX_FILES = 4;
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
-        filesArr = [];
-        existingImages = [];
+    const ALLOWED_TYPES = [
+        "image/jpeg",
+        "image/png",
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "application/vnd.ms-excel",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
 
-        previewArea.empty().addClass("hidden");
-        uploadText.removeClass("hidden");
-        successBox.addClass("hidden");
-        uploadBox.removeClass("hidden");
-
-        $("#uploadModal").removeClass("hidden").addClass("flex");
-
-        fetch(
-            `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}`
-        )
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.proofs?.length) {
-                    existingImages = data.proofs;
-
-                    uploadText.addClass("hidden");
-                    previewArea.removeClass("hidden");
-
-                    data.proofs.forEach((img, index) => {
-                        previewArea.append(`
-        <div class="img-wrapper relative inline-block m-1"
-             data-type="existing"
-             data-idx="${index}">
-
-            <img src="/storage/${img.file_path}"
-                 class="rounded-lg mx-auto mb-2"
-                 width="100" />
-
-            <button type="button"
-                    class="remove-img absolute top-1 right-1 bg-red-600 text-white
-                           rounded-full w-6 h-6 flex items-center justify-center text-xs">
-                &times;
-            </button>
-
-            <p class="text-white text-xs truncate w-[100px]">
-                ${img.file_name}
-            </p>
-        </div>
-    `);
-                    });
-                }
-
-                if (data.feedback) {
-                    const ratings = JSON.parse(data.feedback.ratings);
-                    Object.keys(ratings).forEach((key) => {
-                        $(
-                            `input[name="ratings[${key}]"][value="${ratings[key]}"]`
-                        ).prop("checked", true);
-                    });
-
-                    $("#comments").val(data.feedback.comments);
-                }
-            });
-    });
-
-    // === View Details Modal ===
-    $(document).on("click", ".view-details-btn", function () {
-        const title = $(this).data("title");
-        const image = $(this).data("image");
-        const date = $(this).data("date");
-        const start = $(this).data("start");
-        const end = $(this).data("end");
-        const location = $(this).data("location");
-        const description = $(this).data("description");
-
-        $("#modalTitle").text(title);
-        $("#modalDescription").text(description);
-        $("#modalImage").attr("src", image);
-        $("#modalDate").html(`${date}`);
-        $("#modalTime").html(`${start} - ${end}`);
-        $("#modalLocation").html(`${location}`);
-
-        $("#viewDetailsModal").removeClass("hidden").addClass("flex");
-    });
-
-    // === Close modals ===
-    $(document).on("click", ".closeModal", function () {
-        $("#uploadModal, #viewDetailsModal")
-            .addClass("hidden")
-            .removeClass("flex");
-    });
-
-    // === Close when clicking outside view details modal ===
-    $("#viewDetailsModal").on("click", function (e) {
-        if ($(e.target).is("#viewDetailsModal")) {
-            $("#viewDetailsModal").addClass("hidden").removeClass("flex");
-        }
-    });
-
-    // === Upload Modal Logic ===
-    const modal = $("#uploadModal");
-    const openModalBtn = $("#openUploadModal");
-    const closeModalBtn = $("#closeModal");
+    /* ================= Elements ================= */
+    const uploadModal = $("#uploadModal");
+    const openUploadBtn = $("#openUploadModal");
     const dropArea = $("#dropArea");
     const fileInput = $("#fileInput");
     const previewArea = $("#previewArea");
@@ -142,17 +54,22 @@ $(function () {
     const uploadBox = $("#uploadBox");
     const uploadAnother = $("#uploadAnother");
 
-    // track selected files in JS so we can remove items
+    /* ================= Helpers ================= */
 
-    // helper: rebuild fileInput.files from filesArr
     function rebuildFileInput() {
         const dt = new DataTransfer();
         filesArr.forEach((f) => dt.items.add(f));
         fileInput[0].files = dt.files;
     }
 
-    // helper: render previews from filesArr
-    function showPreviewsFromArray() {
+    function fileLabel(type) {
+        if (type === "application/pdf") return "PDF";
+        if (type.includes("word")) return "DOC";
+        if (type.includes("excel") || type.includes("sheet")) return "XLS";
+        return "FILE";
+    }
+
+    function showPreviews() {
         previewArea.empty();
 
         if (!filesArr.length && !existingImages.length) {
@@ -164,109 +81,180 @@ $(function () {
         uploadText.addClass("hidden");
         previewArea.removeClass("hidden");
 
-        // EXISTING images first
+        // Existing images (unchanged behavior)
         existingImages.forEach((img, index) => {
             previewArea.append(`
-            <div class="img-wrapper relative inline-block m-1"
-                 data-type="existing"
-                 data-idx="${index}">
-                <img src="/storage/${img.file_path}" width="100" />
-                <button type="button" class="remove-img absolute top-1 right-1
-                    bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
-                <p class="text-white text-xs truncate">${img.file_name}</p>
-            </div>
-        `);
-        });
-
-        // NEW images
-        filesArr.forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                previewArea.append(`
                 <div class="img-wrapper relative inline-block m-1"
-                     data-type="new"
-                     data-idx="${index}">
-                    <img src="${e.target.result}" width="100" />
-                    <button type="button" class="remove-img absolute top-1 right-1
+                     data-type="existing" data-idx="${index}">
+                    <img src="/storage/${img.file_path}" width="100" class="rounded-lg">
+                    <button type="button"  class="remove-img absolute top-1 right-1
                         bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
-                    <p class="text-white text-xs truncate">${file.name}</p>
+                    <p class="text-white text-xs truncate w-[100px]">
+                        ${img.file_name}
+                    </p>
                 </div>
             `);
-            };
-            reader.readAsDataURL(file);
+        });
+
+        // New files (images + documents)
+        filesArr.forEach((file, index) => {
+            if (file.type.startsWith("image/")) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewArea.append(`
+                        <div class="img-wrapper relative inline-block m-1"
+                             data-type="new" data-idx="${index}">
+                            <img src="${e.target.result}" width="100"
+                                 class="rounded-lg">
+                            <button type="button"
+                                class="remove-img absolute top-1 right-1
+                                bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
+                            <p class="text-white text-xs truncate w-[100px]">
+                                ${file.name}
+                            </p>
+                        </div>
+                    `);
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewArea.append(`
+                    <div class="img-wrapper relative inline-block m-1 text-center"
+                         data-type="new" data-idx="${index}">
+                        <div class="w-[100px] h-[100px]
+                                    bg-white rounded-lg flex items-center
+                                    justify-center font-bold text-primary">
+                            ${fileLabel(file.type)}
+                        </div>
+                        <button type="button"
+                            class="remove-img absolute top-1 right-1
+                            bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
+                        <p class="text-white text-xs truncate w-[100px]">
+                            ${file.name}
+                        </p>
+                    </div>
+                `);
+            }
         });
     }
 
-    // === Open/Close upload modal ===
-    openModalBtn.on("click", function () {
-        modal.removeClass("hidden").addClass("flex");
-    });
+    function handleNewFiles(newFiles) {
+        const total = existingImages.length + filesArr.length + newFiles.length;
 
-    closeModalBtn.on("click", function () {
-        modal.addClass("hidden").removeClass("flex");
-    });
+        if (total > MAX_FILES) {
+            showToast("Maximum 4 files allowed!", "error", 2000);
+            return;
+        }
 
-    // === Drop area click -> open file picker ===
-    dropArea.on("click", function (e) {
-        e.stopPropagation();
-        fileInput.trigger("click");
-    });
+        newFiles.forEach((file) => {
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                showToast(
+                    "Only JPG, PNG, PDF, Word & Excel files allowed!",
+                    "error",
+                    2000,
+                );
+                return;
+            }
 
-    // prevent fileInput click from bubbling to drop area (avoid retrigger)
-    fileInput.on("click", function (e) {
-        e.stopPropagation();
-    });
+            if (file.size > MAX_SIZE) {
+                showToast("Each file must be under 10MB!", "error", 2000);
+                return;
+            }
 
-    // === Drag & Drop handlers ===
-    dropArea.on("dragover", function (e) {
+            const duplicate = filesArr.some(
+                (f) => f.name === file.name && f.size === file.size,
+            );
+
+            if (!duplicate) filesArr.push(file);
+        });
+
+        rebuildFileInput();
+        showPreviews();
+    }
+
+    /* ================= Upload Proof Button ================= */
+   $(document).on("click", ".upload", function () {
+       const eventId = $(this).data("event_id");
+       const studentId = $(this).data("student_id");
+       const scheduleId = $(this).data("schedule_id");
+
+       $("#event_id").val(eventId);
+       $("#student_id").val(studentId);
+       $("#schedule_id").val(scheduleId);
+
+       filesArr = [];
+       existingImages = [];
+
+       previewArea.empty().addClass("hidden");
+       uploadText.removeClass("hidden");
+       successBox.addClass("hidden");
+       uploadBox.removeClass("hidden");
+
+       // Show modal
+       uploadModal.removeClass("hidden").addClass("flex");
+
+       //  Open file chooser automatically (optional)
+        fetch(`/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`, )
+           .then((res) => res.json())
+           .then((data) => {
+               // Existing proofs
+               if (data.proofs?.length) {
+                   existingImages = data.proofs;
+                   uploadText.addClass("hidden");
+                   previewArea.removeClass("hidden");
+                   data.proofs.forEach((img, index) => {
+                       previewArea.append(`
+                        <div class="img-wrapper relative inline-block m-1"
+                             data-type="existing" data-idx="${index}">
+                            <img src="/storage/${img.file_path}" width="100" class="rounded-lg">
+                            <button type="button"
+                                class="remove-img absolute top-1 right-1
+                                bg-red-600 text-white rounded-full w-6 h-6">&times;</button>
+                            <p class="text-white text-xs truncate w-[100px]">
+                                ${img.file_name}
+                            </p>
+                        </div>
+                    `);
+                   });
+               }
+
+               // Existing feedback
+               if (data.feedback) {
+                   const ratings = JSON.parse(data.feedback.ratings);
+                   Object.keys(ratings).forEach((key) => {
+                       $(
+                           `input[name="ratings[${key}]"][value="${ratings[key]}"]`,
+                       ).prop("checked", true);
+                   });
+                   $("#comments").val(data.feedback.comments);
+               }
+           });
+   });
+
+
+    /* ================= Click / Drag ================= */
+
+    dropArea.on("dragover", (e) => {
         e.preventDefault();
         dropArea.addClass("border-pink-400");
     });
 
-    dropArea.on("dragleave", function (e) {
+    dropArea.on("dragleave", (e) => {
         e.preventDefault();
         dropArea.removeClass("border-pink-400");
     });
 
-    dropArea.on("drop", function (e) {
+    dropArea.on("drop", (e) => {
         e.preventDefault();
         dropArea.removeClass("border-pink-400");
-
-        const droppedFiles = Array.from(
-            e.originalEvent.dataTransfer.files || []
-        );
-        handleNewFiles(droppedFiles);
+        handleNewFiles(Array.from(e.originalEvent.dataTransfer.files || []));
     });
 
-    // === When user selects files via file input ===
-    fileInput.on("change", function (e) {
-        const selected = Array.from(e.target.files || []);
-        // replace selection (if you want to append instead, change logic)
-        handleNewFiles(selected);
+    fileInput.on("change", (e) => {
+        handleNewFiles(Array.from(e.target.files || []));
     });
 
-    // central file-add handler (merge and enforce limits)
-    function handleNewFiles(newFiles) {
-        const totalImages =
-            existingImages.length + filesArr.length + newFiles.length;
+    /* ================= Remove ================= */
 
-        if (totalImages > MAX_IMAGES) {
-            showToast("Maximum 4 images only allowed!", "error", 2000);
-            return;
-        }
-
-        newFiles.forEach((nf) => {
-            const duplicate = filesArr.some(
-                (f) => f.name === nf.name && f.size === nf.size
-            );
-            if (!duplicate) filesArr.push(nf);
-        });
-
-        rebuildFileInput();
-        showPreviewsFromArray();
-    }
-
-    // === Delegated remove handler (on the previewArea) ===
     previewArea.on("click", ".remove-img", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -276,77 +264,60 @@ $(function () {
         const type = wrapper.data("type");
 
         if (type === "existing") {
-            // remove only this existing image
             existingImages.splice(idx, 1);
-        }
-
-        if (type === "new") {
-            // remove only this new image
+        } else {
             filesArr.splice(idx, 1);
             rebuildFileInput();
         }
 
-        // re-render previews correctly
-        showPreviewsFromArray();
+        showPreviews();
     });
 
-    // === Submit upload (uses filesArr which is in sync with input) ===
+    /* ================= Submit ================= */
+
     submitUpload.on("click", function (e) {
         e.preventDefault();
 
-        const totalImages = existingImages.length + filesArr.length;
-
-        // Must have at least one image (existing OR new)
-        if (totalImages === 0) {
-            showToast("Please select at least one image!", "error", 2000);
+        if (!filesArr.length && !existingImages.length) {
+            showToast("Please upload at least one file!", "error", 2000);
             return;
         }
 
-        if( $("#comments").val() == '') {
+        if ($("#comments").val() === "") {
             showToast("Please enter a comment!", "error", 2000);
             return;
         }
 
-        if (totalImages > MAX_IMAGES) {
-            showToast("Maximum 4 images only allowed!", "error", 2000);
-            return;
-        }
-
         if ($("input[name^='ratings']:checked").length === 0) {
-            showToast("Please select at least one rating.", "error", 2000);
-            return; // Stop form submission
+            showToast("Please select at least one rating!", "error", 2000);
+            return;
         }
 
         const formData = new FormData();
 
-        // append ONLY new images
         filesArr.forEach((f) => formData.append("proof[]", f));
 
         formData.append("event_id", $("#event_id").val());
         formData.append("student_id", $("#student_id").val());
+        formData.append("schedule_id", $("#schedule_id").val());
+        formData.append("comments", $("#comments").val());
+        formData.append("_token", $('meta[name="csrf-token"]').attr("content"));
 
         $("input[name^='ratings']:checked").each(function () {
             formData.append($(this).attr("name"), $(this).val());
         });
 
-        formData.append("comments", $("#comments").val());
-        formData.append("_token", $('meta[name="csrf-token"]').attr("content"));
-
         fetch("/student/upload-proof", {
             method: "POST",
-            headers: {
-                "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-                Accept: "application/json",
-            },
             body: formData,
         })
             .then((res) => res.json())
-            .then((result) => {
-                if (result.success) {
+            .then((res) => {
+                if (res.success) {
                     uploadBox.addClass("hidden");
                     successBox.removeClass("hidden");
                 } else {
-                    showToast(result.message || "Upload failed", "error", 2000);
+                    showToast(res.message || "Upload failed", "error", 2000);
                 }
             })
             .catch(() => {
@@ -354,7 +325,6 @@ $(function () {
             });
     });
 
-    // === Upload another proof ===
     uploadAnother.on("click", function () {
         successBox.addClass("hidden");
         uploadBox.removeClass("hidden");
@@ -364,21 +334,11 @@ $(function () {
         uploadText.removeClass("hidden");
     });
 
-    // === (Optional) view-details close logic from your original code ===
+    /* ================= Close Modal ================= */
+
     $(document).on("click", ".closeModal", function () {
         $("#uploadModal, #viewDetailsModal")
             .addClass("hidden")
             .removeClass("flex");
     });
-
-    // === Example toast fallback if undefined ===
-    if (typeof showToast !== "function") {
-        window.showToast = function (msg, type, ms) {
-            showToast(`${type}: ${msg}`, "error", 2000);
-        };
-    }
-
-    function totalImageCount() {
-        return existingImages.length + filesArr.length;
-    }
 });

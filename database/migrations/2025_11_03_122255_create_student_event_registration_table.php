@@ -15,11 +15,13 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('event_id');
+            $table->unsignedBigInteger('event_schedule_id');
             $table->timestamp('registered_at')->nullable();
-            $table->enum('status', ['1', '2','3','4'])->comment('1 - Registered, 2 - Approved, 3 - Completed, 4 - Cancelled');
+            $table->enum('status', ['1', '2', '3', '4'])->comment('1 - Registered, 2 - Approved, 3 - Completed, 4 - Cancelled');
             $table->enum('grade', ['a', 'b', 'c', 'd'])->comment('A - Winner, B - Runner Up, C - Completed, D - Disqualified')->nullable();
             $table->timestamps();
 
+            $table->foreign('event_schedule_id')->references('id')->on('event_schedules')->onDelete('no action');
             $table->foreign('event_id')->references('id')->on('events')->onDelete('no action');
             $table->foreign('student_id')->references('id')->on('students')->onDelete('no action');
         });
@@ -28,8 +30,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-    }
+    public function down(): void {}
 };

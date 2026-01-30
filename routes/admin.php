@@ -58,7 +58,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/student-attendance', [StudentAttendanceController::class, 'index'])->name('student_attendance');
         Route::get('/student-attendance-entry', [StudentAttendanceController::class, 'attendanceEntry'])->name('student_attendance_entry');
         Route::get('/attendance/download', [StudentAttendanceController::class, 'download'])->name('attendance.download');
-        Route::post('/attendance/mark', [StudentAttendanceController::class, 'markAttendance'])->name('attendance.mark');
+        Route::any('/attendance/mark', [StudentAttendanceController::class, 'markAttendance'])->name('attendance.mark');
         Route::get('/assign-grade', [AssignGradeController::class, 'index'])->name('assign_grades');
         Route::get('/assign-grade-entry', [AssignGradeController::class, 'gradeEntry'])->name('assign_grade_entry');
         Route::post('/grade-save', [AssignGradeController::class, 'saveGrades'])->name('grade_save');
@@ -123,5 +123,6 @@ Route::prefix('admin')->group(function () {
             ->name('task_view');
 
         Route::get('/student-event-report',[AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
+        Route::get('/download-otherfiles/{event}/{student}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
     });
 });

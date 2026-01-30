@@ -11,19 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('student_attendances', function (Blueprint $table) {
-
+        Schema::create('event_schedules', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('event_id');
-            $table->unsignedBigInteger('student_id');
-            $table->unsignedBigInteger('event_schedule_id');
-            $table->timestamp('entry_time')->nullable();
-            $table->timestamp('exit_time')->nullable();
+            $table->unsignedBigInteger('department_id');
+            $table->enum('section', ['a','b','c']);
+            $table->date('event_date');
+            $table->date('reserve_date')->nullable();
+            $table->unsignedInteger('seat_count');
             $table->timestamps();
 
-            $table->foreign('event_schedule_id')->references('id')->on('event_schedules')->onDelete('no action');
             $table->foreign('event_id')->references('id')->on('events')->onDelete('no action');
-            $table->foreign('student_id')->references('id')->on('students')->onDelete('no action');
+            $table->foreign('department_id')->references('id')->on('departments')->onDelete('no action');
         });
     }
 
@@ -32,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('student_attendance');
+   
     }
 };

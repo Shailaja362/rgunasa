@@ -30,4 +30,9 @@ class EventReport extends Model
     {
         return $this->hasMany(StudentUploadProof::class, 'event_id', 'event_id');
     }
+
+    public function get_department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
 }

@@ -10,6 +10,7 @@
             @csrf
              <input type="hidden" name="event_id" class="event_id">
              <input type="hidden" name="stu_id" class="stu_id">
+             <input type="hidden" name="schedule_id" class="schedule_id">
             <div>
                 <label class="block text-sm font-medium text-gray-700">Full Name</label>
                 <input type="text" name="name" required disabled

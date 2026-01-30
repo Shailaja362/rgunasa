@@ -15,12 +15,14 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('student_id');
             $table->unsignedBigInteger('event_id');
+            $table->unsignedBigInteger('event_schedule_id');
             $table->json('ratings');
             $table->string('comments');
             $table->timestamps();
 
             $table->foreign('student_id')->references('id')->on('students')->onDelete('no action');
             $table->foreign('event_id')->references('id')->on('events')->onDelete('no action');
+            $table->foreign('event_schedule_id')->references('id')->on('event_schedules')->onDelete('no action');
         });
     }
 

@@ -56,6 +56,7 @@ class RazorpayController extends Controller
             'razorpay_order_id' => 'required',
             'razorpay_payment_id' => 'required',
             'razorpay_signature' => 'required',
+            'schedule_id' =>  'required',
         ]);
 
          $payment = EventPayment::where('order_id', $request->razorpay_order_id)
@@ -87,6 +88,7 @@ class RazorpayController extends Controller
                 $register = new StudentEventRegistration();
                 $register->student_id   = Auth::id();
                 $register->event_id     = $payment->event_id;
+                $register->event_schedule_id  = $request->schedule_id;
                 $register->status       = 1;
                 $register->save();
             });

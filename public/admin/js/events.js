@@ -17,12 +17,12 @@ function showSection(type) {
         registeredTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         completedTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
     } else if (type === "ongoing") {
         ongoingSection.classList.remove("hidden");
@@ -33,17 +33,17 @@ function showSection(type) {
         upcomingTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         registeredTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         completedTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
     } else if (type === "registered") {
         registeredSection.classList.remove("hidden");
@@ -54,13 +54,13 @@ function showSection(type) {
         upcomingTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         ongoingTab.classList.remove("bg-primary", "text-white", "rounded-full");
         completedTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
     } else if (type === "completed") {
         registeredSection.classList.add("hidden");
@@ -70,12 +70,12 @@ function showSection(type) {
         registeredTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         upcomingTab.classList.remove(
             "bg-primary",
             "text-white",
-            "rounded-full"
+            "rounded-full",
         );
         ongoingTab.classList.remove("bg-primary", "text-white", "rounded-full");
         completedTab.classList.add("bg-primary", "text-white", "rounded-full");
@@ -84,8 +84,6 @@ function showSection(type) {
 
 $(document).on("submit", "#eventForm", function (e) {
     e.preventDefault();
-
-    // Fields to validate
     let fields = [
         {
             id: "#event_title",
@@ -106,11 +104,6 @@ $(document).on("submit", "#eventForm", function (e) {
             id: "#description",
             condition: (val) => val === "",
             message: "Please enter Description",
-        },
-        {
-            id: "#event_date",
-            condition: (val) => val === "",
-            message: "Please select Event Date",
         },
         {
             id: "#start_time",
@@ -153,7 +146,7 @@ $(document).on("submit", "#eventForm", function (e) {
             message: "Please enter Contact Email",
         },
         {
-            id: "#seat_count",
+            id: ".seat_count",
             condition: (val) => val === "",
             message: "Please enter Seat Count",
         },
@@ -167,6 +160,26 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "",
             message: "Please Enter Duration Month",
         },
+        {
+            id: ".department",
+            condition: (val) => val === "",
+            message: "Please Select Department",
+        },
+        {
+            id: ".section",
+            condition: (val) => val === "",
+            message: "Please Select Section",
+        },
+        {
+            id: ".event_date",
+            condition: (val) => val === "",
+            message: "Please Select Event Date",
+        },
+        {
+            id: ".reserve_date",
+            condition: (val) => val === "",
+            message: "Please Select Reserve Date",
+        },
     ];
 
     let isValid = true;
@@ -179,17 +192,17 @@ $(document).on("submit", "#eventForm", function (e) {
     let price = $("#price").val();
     const errorEl = $("#price").siblings(".error-message");
     if (eventType === "paid" && (price === "" || price <= 0)) {
-         $("#price").addClass("border-red-500 ring-1 ring-red-500");
-         if (errorEl.length === 0) {
-             $("#price").after(
-                 `<div class="error-message text-red-500 text-sm mt-1">Please enter valid price for Paid Event</div>`
-             );
-         }
+        $("#price").addClass("border-red-500 ring-1 ring-red-500");
+        if (errorEl.length === 0) {
+            $("#price").after(
+                `<div class="error-message text-red-500 text-sm mt-1">Please enter valid price for Paid Event</div>`,
+            );
+        }
         showToast("Please enter valid price for Paid Event", "error", 2000);
         isValid = false;
-    }else{
-         $("#price").removeClass("border-red-500 ring-1 ring-red-500");
-         if (errorEl.length) errorEl.remove();
+    } else {
+        $("#price").removeClass("border-red-500 ring-1 ring-red-500");
+        if (errorEl.length) errorEl.remove();
     }
 
     if (!isValid) return;
@@ -210,6 +223,7 @@ $(document).on("submit", "#eventForm", function (e) {
             }
         },
         function (err) {
+            console.log(err);
             if (err.errors) {
                 let msg = "";
                 $.each(err.errors, function (k, v) {
@@ -219,7 +233,7 @@ $(document).on("submit", "#eventForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
-        }
+        },
     );
 });
 
@@ -238,7 +252,7 @@ $(document).on("change", "#club_id", function () {
             success: function (response) {
                 $("#programme_officer").empty(); // Clear previous options
                 $("#programme_officer").append(
-                    '<option value="">Select Programme Officer</option>'
+                    '<option value="">Select Programme Officer</option>',
                 );
                 if (response.success && response.faculty != "") {
                     var officer = response.faculty.get_faculty;
@@ -247,7 +261,7 @@ $(document).on("change", "#club_id", function () {
                             officer.id +
                             '">' +
                             officer.name +
-                            "</option>"
+                            "</option>",
                     );
                 }
             },
@@ -258,12 +272,14 @@ $(document).on("change", "#club_id", function () {
     } else {
         $("#programme_officer").empty();
         $("#programme_officer").append(
-            '<option value="">Select Programme Officer</option>'
+            '<option value="">Select Programme Officer</option>',
         );
     }
 });
 
-document.getElementById("fileInput").addEventListener("change", function (event) {
+document
+    .getElementById("fileInput")
+    .addEventListener("change", function (event) {
         const file = event.target.files[0];
         const previewArea = document.getElementById("previewArea");
         const uploadText = document.getElementById("uploadText");
@@ -284,15 +300,98 @@ document.getElementById("dropArea").addEventListener("click", function () {
     document.getElementById("fileInput").click();
 });
 
-document.getElementById('event_type').addEventListener('change', function () {
+document.getElementById("event_type").addEventListener("change", function () {
     let type = this.value;
-    let container = document.getElementById('priceFieldContainer');
+    let container = document.getElementById("priceFieldContainer");
 
-    if (type === 'paid') {
+    if (type === "paid") {
         container.innerHTML = `
             <label class="block font-medium">Price</label>
             <input type="number" name="price" id="price" placeholder="Enter price" class="bg-[#D9D9D9] w-full rounded-full py-2 px-4 focus:outline-none focus:ring focus:ring-primary/40">`;
     } else {
-        container.innerHTML = '';
+        container.innerHTML = "";
     }
 });
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const addDeptBtn = document.getElementById("addDeptBtn");
+    const deptContainer = document.getElementById("departmentContainer");
+
+    if (!addDeptBtn || !deptContainer) return;
+
+    // 🔥 IMPORTANT FIX
+    let deptIndex = deptContainer.querySelectorAll('.dept-card').length;
+
+    addDeptBtn.addEventListener("click", function () {
+        addDepartmentCard();
+    });
+
+    function addDepartmentCard(data = {}) {
+        const deptOptionsHtml = deptOptions.map(d =>
+            `<option value="${d.id}" ${data.department_id == d.id ? "selected" : ""}>
+                ${d.name}
+            </option>`
+        ).join("");
+
+        const card = document.createElement("div");
+        card.className = "bg-[#F0F0F0] p-5 rounded-2xl relative dept-card";
+
+        card.innerHTML = `
+            <button type="button"
+                class="removeDept absolute top-2 right-2 text-red-500 font-bold">&times;</button>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium">Department <span class="text-red-600">*</span></label>
+                    <select name="departments[${deptIndex}][department_id]"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department">
+                        <option value="">Select Department</option>
+                        ${deptOptionsHtml}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
+                    <input type="text"
+                        name="departments[${deptIndex}][section]"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 section">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
+                    <input type="date"
+                        name="departments[${deptIndex}][event_date]"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
+                    <input type="date"
+                        name="departments[${deptIndex}][reserve_date]"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 reserve_date">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium">Seat Count <span class="text-red-600">*</span></label>
+                    <input type="number"
+                        name="departments[${deptIndex}][seat_count]"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 seat_count">
+                </div>
+            </div>
+        `;
+
+        deptContainer.appendChild(card);
+        deptIndex++; // critical
+    }
+
+    // remove department (event delegation)
+    deptContainer.addEventListener("click", function (e) {
+        if (e.target.classList.contains("removeDept")) {
+            e.target.closest(".dept-card")?.remove();
+        }
+    });
+});
+
+

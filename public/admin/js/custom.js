@@ -50,27 +50,31 @@ async function sendRequest(
  * @returns {boolean}
  */
 function validateField(field) {
+    let isValid = true;
+    $(field.id).each(function () {
+        const element = $(this);
+        const value = element.val()?.trim() ?? "";
+        const errorEl = element.siblings(".error-message");
 
-    const element = $(field.id);
-    const value = element.val()?.trim() ?? "";
-    const errorEl = element.siblings(".error-message");
-
-    if (field.condition(value)) {
-        element.addClass("border-red-500 ring-1 ring-red-500");
-        if (errorEl.length === 0) {
-            element.after(
-                `<div class="error-message text-red-500 text-sm mt-1">${field.message}</div>`
-            );
+        if (field.condition(value)) {
+            isValid = false;
+            element.addClass("border-red-500 ring-1 ring-red-500");
+            if (errorEl.length === 0) {
+                element.after(
+                    `<div class="error-message text-red-500 text-sm mt-1">${field.message}</div>`,
+                );
+            } else {
+                errorEl.text(field.message);
+            }
         } else {
-            errorEl.text(field.message);
+            element.removeClass("border-red-500 ring-1 ring-red-500");
+            if (errorEl.length) errorEl.remove();
         }
-        return false;
-    } else {
-        element.removeClass("border-red-500 ring-1 ring-red-500");
-        if (errorEl.length) errorEl.remove();
-        return true;
-    }
+    });
+
+    return isValid;
 }
+
 
 /**
  * Common Toast Helper (Fetch-based)

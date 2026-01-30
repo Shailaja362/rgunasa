@@ -5,7 +5,9 @@ namespace App\Http\Controllers\super_admin;
 use App\Helpers\ActivityLog;
 use App\Http\Controllers\Controller;
 use App\Models\Club;
+use App\Models\Department;
 use App\Models\Event;
+use App\Models\EventSchedule;
 use App\Models\Faculty;
 use App\Models\StudentEventRegistration;
 use App\Models\Tasks;
@@ -59,6 +61,7 @@ class EventsController extends Controller
     {
         $this->data['faculty'] = Faculty::get();
         $this->data['club'] = Club::get();
+        $this->data['departments'] = Department::get();
         if ($request->event_id) {
             $eventId = decrypt($request->event_id);
             $this->data['edit_event'] = Event::where('id', $eventId)->first();
@@ -92,7 +95,6 @@ class EventsController extends Controller
             'club_id'   => 'required',
             'programme_officer'   => 'required',
             'description'   => 'required',
-            'event_date'   => 'required',
             'start_time'   => 'required',
             'end_time'   => 'required',
             'location'   => 'required',
@@ -101,9 +103,8 @@ class EventsController extends Controller
             'registration_deadline'   => 'required',
             'contact_person'   => 'required',
             'contact_email'   => 'required',
-            'seat_count'   => 'required',
             'event_type'   => 'required',
-            'duration_months' => 'required'
+            'duration_months' => 'required',
         ];
 
         if ($request['event_type'] == 'paid') {
@@ -117,6 +118,7 @@ class EventsController extends Controller
         }
         $request->validate($rules);
         try {
+
             if (!empty($request['event_id'])) {
                 $message = 'Event Updated successfully';
                 $event = Event::find($request['event_id']);
@@ -147,11 +149,11 @@ class EventsController extends Controller
             $event->faculty_id = $request['programme_officer'] ?? '';
             $event->title  = $request['event_title'] ?? '';
             $event->description = $request['description'] ?? '';
-            $event->event_date = $request['event_date'] ?? '';
             $event->start_time  = $request['start_time'] ?? '';
             $event->end_time = $request['end_time']  ?? '';
+            $event->reserve_start_time  = $request['reserve_start_time'] ?? '';
+            $event->reserve_end_time = $request['reserve_end_time']  ?? '';
             $event->event_type = $request['event_type'] ?? '';
-            $event->seat_count = $request['seat_count'] ?? '';
             $event->location  = $request['location'] ?? '';
             $event->session = $request['session']  ?? '';
             $event->eligibility_criteria = $request['eligibility']  ?? '';
@@ -160,6 +162,24 @@ class EventsController extends Controller
             $event->contact_email = $request['contact_email']  ?? '';
             $event->duration_months = $request['duration_months'];
             $event->save();
+
+            EventSchedule::where(['event_id' => $event->id])->delete();
+
+            foreach ($request->departments as $schedule) {
+                $exists_schedule = EventSchedule::where(['event_id' => $event->id,
+                      'department_id' => $schedule['department_id'], 'section' => $schedule['section'] ,
+                      'event_date' => $schedule['event_date']])->first();
+                if(empty($exists_schedule)){
+                    $create_event_schedule = new EventSchedule();
+                    $create_event_schedule->event_id = $event->id;
+                    $create_event_schedule->department_id = $schedule['department_id'];
+                    $create_event_schedule->section = $schedule['section'];
+                    $create_event_schedule->event_date = $schedule['event_date'];
+                    $create_event_schedule->reserve_date = $schedule['reserve_date'];
+                    $create_event_schedule->seat_count = $schedule['seat_count'];
+                    $create_event_schedule->save();
+                }
+            }
 
             if ($event && !empty($taskId)) {
                 $get_task = Tasks::where('id', $taskId)->first();
@@ -185,7 +205,7 @@ class EventsController extends Controller
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to save event',
+                'message' => $e->getMessage(),
                 'error' => 'Failed to save event',
             ], 500);
         }

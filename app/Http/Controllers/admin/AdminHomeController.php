@@ -27,8 +27,8 @@ class AdminHomeController extends Controller
             ->orderBy('created_at', 'DESC')
             ->get();
         $this->data['upcoming_events'] = Event::where('created_by', $adminId)
-            ->whereDate('event_date', '>=', $today)
-            ->orderBy('event_date', 'asc')
+            // ->whereDate('event_date', '>=', $today)
+            // ->orderBy('event_date', 'asc')
             ->get();
         $this->data['pending_approvals'] = StudentEventRegistration::with('event')
                                              ->whereHas('event' , function($query) use($adminId) {

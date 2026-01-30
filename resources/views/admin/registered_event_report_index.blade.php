@@ -78,7 +78,6 @@
                     <input type="date" name="to_date" value="{{ request('to_date') }}"
                         class="w-full border rounded px-3 py-2">
                 </div>
-
                 {{-- Search --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">Search</label>
@@ -86,18 +85,16 @@
                         placeholder="Student name / Email" class="w-full border rounded px-3 py-2">
                 </div>
             </div>
-
             <div class="mt-6 flex justify-center gap-4">
-                <a href="{{ route('registered_report_index') }}"
-                    class="px-6 py-2 text-sm border rounded-md bg-gray-600 text-white hover:bg-gray-600 transition">
-                    Reset
-                </a>
                 <button type="submit"
                     class="px-6 py-2 text-sm bg-gradient-to-r from-primary to-pink-600 text-white rounded-md hover:bg-indigo-700 transition">
                     Apply Filters
                 </button>
+                <a href="{{ route('registered_report_index') }}"
+                    class="px-6 py-2 text-sm border rounded-md bg-gray-600 text-white hover:bg-gray-600 transition">
+                    Reset
+                </a>
             </div>
-
         </form>
 
         {{-- Table --}}
@@ -137,7 +134,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-6 text-gray-500">
+                            <td colspan="9" class="text-center py-6 text-gray-500">
                                 No registrations found
                             </td>
                         </tr>
