@@ -227,7 +227,7 @@
                         </p>
                     </div>
                     <input type="file" id="fileInput" multiple
-                        class="absolute inset-0 opacity-0 cursor-pointer z-50" />
+                        class="hidden" />
                 </div>
 
                 <!-- Divider -->

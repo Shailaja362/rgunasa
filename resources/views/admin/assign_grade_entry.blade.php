@@ -101,6 +101,7 @@
                                     $grade = $registration->grades->first();
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition">
+                                    <input type="hidden" name="schedule_id" value="{{ $registration->event_schedule_id }}">
                                     <td class="px-4 py-3">{{ $index + 1 }}</td>
                                     <td class="px-4 py-3">{{ $registration->student->register_number ?? '' }}</td>
                                     <td class="px-4 py-3">{{ $registration->student->name ?? '' }}</td>
@@ -108,7 +109,7 @@
                                     <td class="px-4 py-3">{{ $registration->student->section ?? '' }}</td>
                                     <td class="px-4 py-3">
                                         @if ($feedback && $proofs->count() > 0)
-                                            <a href="{{ route('student_event_report', ['student' => $registration->student_id, 'event' => $event->id]) }}"
+                                            <a href="{{ route('student_event_report', ['student' => $registration->student_id, 'event' => $event->id, 'schedule_id' => $registration->event_schedule_id]) }}"
                                                 target="_blank"
                                                 class="bg-green-600 text-white px-4 py-2 rounded-full text-sm">
                                                 View Report
@@ -127,7 +128,8 @@
                                             <a href="javascript:void(0)"
                                                 class="bg-blue-600 text-white px-4 py-1 rounded-full text-sm downloadAllBtn"
                                                 data-event_id="{{ $event->id }}"
-                                                data-student_id="{{ $registration->student_id }}">
+                                                data-student_id="{{ $registration->student_id }}"
+                                                data-schedule_id="{{ $registration->event_schedule_id }}">
                                                 Download All Files
                                             </a>
                                         @endif

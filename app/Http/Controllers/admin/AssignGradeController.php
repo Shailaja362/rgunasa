@@ -36,23 +36,26 @@ class AssignGradeController extends Controller
         $this->data['schedule_department'] = EventSchedule::with('department')->where('event_id', $eventId)->get();
         $this->data['registrations'] = collect();
         if ($request->filled('department_id') && $request->filled('event_date')) {
-            $get_schedule_dept = EventSchedule::where(['event_id' => $request->event_id , 'event_date' => $request->event_date , 'department_id' => $request->department_id])->first();
-            $this->data['registrations'] = StudentAttendance::with([
-                'student.get_department',
-                'get_student_upload_proof',
-                'get_feedback',
-                'grades' => function ($q) use ($eventId) {
-                    $q->where('event_id', $eventId);
-                }
-            ])
-                ->where('event_id', $eventId)
-                ->whereHas('student', function ($q) use ($request) {
-                    $q->where('department_id', $request->department_id);
-                })
-                ->whereNotNull('entry_time')
-                ->whereNotNull('exit_time')
-                ->orderBy('id')
-                ->get();
+            $get_schedule_dept = EventSchedule::where(['event_id' => $request->event_id, 'event_date' => $request->event_date, 'department_id' => $request->department_id])->first();
+            if ($get_schedule_dept) {
+                $this->data['registrations'] = StudentAttendance::with([
+                    'student.get_department',
+                    'get_student_upload_proof',
+                    'get_feedback',
+                    'grades' => function ($q) use ($eventId) {
+                        $q->where('event_id', $eventId);
+                    }
+                ])
+                    ->where('event_id', $eventId)
+                    ->whereHas('student', function ($q) use ($request) {
+                        $q->where('department_id', $request->department_id);
+                    })
+                    ->where('event_schedule_id', $get_schedule_dept->id)
+                    ->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time')
+                    ->orderBy('id')
+                    ->get();
+            }
         }
 
         return view('admin.assign_grade_entry')->with($this->data);
@@ -69,10 +72,9 @@ class AssignGradeController extends Controller
         $eventId = $request->event_id;
 
         foreach ($request->grades as $registrationId => $grade) {
-
-
             $registration = StudentEventRegistration::where('student_id', $registrationId)
                 ->where('event_id', $eventId)
+                ->where('event_schedule_id', $request->schedule_id)
                 ->first();
             if ($registration) {
                 $registration->grade = $grade;
@@ -91,11 +93,13 @@ class AssignGradeController extends Controller
         $proofs = StudentUploadProof::where([
             'student_id' => $request->student,
             'event_id'   => $request->event,
+            'event_schedule_id' => $request->schedule_id,
         ])->get();
 
         $feedback = StudentFeedback::where([
             'student_id' => $request->student,
             'event_id'   => $request->event,
+            'event_schedule_id' => $request->schedule_id,
         ])->firstOrFail();
 
         $pdf = Pdf::loadView('student.pdf.student_event_report', compact(
@@ -112,6 +116,7 @@ class AssignGradeController extends Controller
     {
         $proofs = StudentUploadProof::where('event_id', $eventId)
             ->where('student_id', $studentId)
+            ->where('event_schedule_id', request()->schedule_id)
             ->get();
 
         // Filter only document files

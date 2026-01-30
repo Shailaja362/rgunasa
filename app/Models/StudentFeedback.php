@@ -7,7 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class StudentFeedback extends Model
 {
    protected $table = 'student_feedbacks';
-    protected $casts = [
+   protected $fillable = [
+        'student_id',
+        'event_id',
+        'ratings',
+        'comments',
+        'event_schedule_id'
+    ];
+   protected $casts = [
         'ratings' => 'array',
     ];
     // Feedback belongs to a student
