@@ -130,35 +130,36 @@ class EventsController extends Controller
     public function saveEvent(Request $request)
     {
 
-        $rules = [
-            'event_title'   => 'required',
-            'club_id'   => 'required',
-            'programme_officer'   => 'required',
-            'description'   => 'required',
-            'start_time'   => 'required',
-            'end_time'   => 'required',
-            'location'   => 'required',
-            'session'   => 'required',
-            'eligibility'   => 'required',
-            'registration_deadline'   => 'required',
-            'contact_person'   => 'required',
-            'contact_email'   => 'required',
-            'event_type'   => 'required',
-            'duration_months' => 'required',
-        ];
 
-        if ($request['event_type'] == 'paid') {
-            $rules['price'] = 'required';
-        }
-
-        if (empty($request['event_id']) && !$request->has('old_banner')) {
-            $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
-        } else if ($request->hasFile('banner_image')) {
-            $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
-        }
-        $request->validate($rules);
         try {
+            $rules = [
+                'event_title'   => 'required',
+                'club_id'   => 'required',
+                'programme_officer'   => 'required',
+                'description'   => 'required',
+                'start_time'   => 'required',
+                'end_time'   => 'required',
+                'location'   => 'required',
+                'session'   => 'required',
+                'eligibility'   => 'required',
+                'registration_deadline'   => 'required',
+                'contact_person'   => 'required',
+                'contact_email'   => 'required',
+                'event_type'   => 'required',
+                'duration_months' => 'required',
+            ];
 
+            if ($request['event_type'] == 'paid') {
+                $rules['price'] = 'required';
+            }
+
+            if (empty($request['event_id']) && !$request->has('old_banner')) {
+                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
+            } else if ($request->hasFile('banner_image')) {
+                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
+            }
+            $request->validate($rules);
+            
             if (!empty($request['event_id'])) {
                 $message = 'Event Updated successfully';
                 $event = Event::find($request['event_id']);
@@ -243,6 +244,11 @@ class EventsController extends Controller
                 'event' => $event,
             ]);
         } catch (Exception $e) {
+            echo '<pre>';
+            print_r($e->getMessage());
+            echo '</pre>';
+            exit;
+
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),

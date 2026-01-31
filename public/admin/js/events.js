@@ -204,8 +204,22 @@ $(document).on("submit", "#eventForm", function (e) {
         $("#price").removeClass("border-red-500 ring-1 ring-red-500");
         if (errorEl.length) errorEl.remove();
     }
+    let fileInput = $("#fileInput")[0];
+    let oldBanner = $('input[name="old_banner"]').val();
+
+    if ((!oldBanner || oldBanner === "") && fileInput.files.length === 0) {
+        showToast("Event banner image is required", "error", 2000);
+        $("#dropArea").addClass("border-red-500 ring-2 ring-red-500");
+        isValid = false;
+    } else {
+        $("#dropArea").removeClass("border-red-500 ring-2 ring-red-500");
+    }
 
     if (!isValid) return;
+    $("#submitBtn")
+        .prop("disabled", true)
+        .addClass("opacity-50 cursor-not-allowed")
+        .html('<i class="fas fa-spinner fa-spin"></i> Saving...');
     let formData = new FormData(this);
     let taskId = "request()->task_id";
     sendRequest(
@@ -223,7 +237,11 @@ $(document).on("submit", "#eventForm", function (e) {
             }
         },
         function (err) {
-            console.log(err);
+            $("#submitBtn")
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .html('<i class="fas fa-save"></i> Create Event');
+
             if (err.errors) {
                 let msg = "";
                 $.each(err.errors, function (k, v) {
@@ -313,27 +331,28 @@ document.getElementById("event_type").addEventListener("change", function () {
     }
 });
 
-
 document.addEventListener("DOMContentLoaded", function () {
-
     const addDeptBtn = document.getElementById("addDeptBtn");
     const deptContainer = document.getElementById("departmentContainer");
 
     if (!addDeptBtn || !deptContainer) return;
 
-    // 🔥 IMPORTANT FIX
-    let deptIndex = deptContainer.querySelectorAll('.dept-card').length;
+    // IMPORTANT FIX
+    let deptIndex = deptContainer.querySelectorAll(".dept-card").length;
 
     addDeptBtn.addEventListener("click", function () {
         addDepartmentCard();
     });
 
     function addDepartmentCard(data = {}) {
-        const deptOptionsHtml = deptOptions.map(d =>
-            `<option value="${d.id}" ${data.department_id == d.id ? "selected" : ""}>
+        const deptOptionsHtml = deptOptions
+            .map(
+                (d) =>
+                    `<option value="${d.id}" ${data.department_id == d.id ? "selected" : ""}>
                 ${d.name}
-            </option>`
-        ).join("");
+            </option>`,
+            )
+            .join("");
 
         const card = document.createElement("div");
         card.className = "bg-[#F0F0F0] p-5 rounded-2xl relative dept-card";
@@ -354,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
-                    <input type="text"
+                    <input type="date"
                         name="departments[${deptIndex}][section]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 section">
                 </div>
@@ -363,14 +382,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
                     <input type="date"
                         name="departments[${deptIndex}][event_date]"
-                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date">
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date date_field">
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
                     <input type="date"
                         name="departments[${deptIndex}][reserve_date]"
-                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 reserve_date">
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 reserve_date date_field">
                 </div>
 
                 <div>
@@ -392,6 +411,6 @@ document.addEventListener("DOMContentLoaded", function () {
             e.target.closest(".dept-card")?.remove();
         }
     });
+
+
 });
-
-
