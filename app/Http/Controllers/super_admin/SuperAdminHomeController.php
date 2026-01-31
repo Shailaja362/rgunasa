@@ -19,41 +19,67 @@ class SuperAdminHomeController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $endOfWeek   = Carbon::now()->endOfWeek();
         $adminId = Auth::guard('admin')->id();
-        $this->data['upcomingEvents'] = Event::whereDate('event_date', '>', now())->count();
-        $this->data['ongoingEvents'] = Event::whereDate('event_date', '=', now())->count();
-        $this->data['totalAdmins'] = Admin::where('role_id',2)->count();
+
+        // Total Upcoming Events (event date > today)
+        $this->data['upcomingEvents'] = Event::whereHas('schedules', function ($q) {
+            $q->whereDate('event_date', '>', now());
+        })->count();
+
+        // Ongoing Events (event date = today)
+        $this->data['ongoingEvents'] = Event::whereHas('schedules', function ($q) {
+            $q->whereDate('event_date', now());
+        })->count();
+
+        // Total Admins with role_id 2
+        $this->data['totalAdmins'] = Admin::where('role_id', 2)->count();
+
+        // Total Students
         $this->data['totalStudents'] = Student::count();
-        $this->data['upcomingEventsThisWeek'] = Event::whereBetween('event_date', [$startOfWeek, $endOfWeek])
-            ->where('event_date', '>', now())
-            ->count();
+
+        // Upcoming Events This Week
+        $this->data['upcomingEventsThisWeek'] = Event::whereHas('schedules', function ($q) use ($startOfWeek, $endOfWeek) {
+            $q->whereBetween('event_date', [$startOfWeek, $endOfWeek])
+                ->whereDate('event_date', '>', now());
+        })->count();
+
+        // Admins Created This Month
         $this->data['adminsThisMonth'] = Admin::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
+
+        // Students Created This Month
         $this->data['studentsThisMonth'] = Student::whereMonth('created_at', now()->month)
             ->whereYear('created_at', now()->year)
             ->count();
+
+        // Submitted Reports = tasks where event has report
         $this->data['submittedReports'] = Tasks::where('created_by', $adminId)
             ->whereHas('get_event.get_report')
             ->count();
 
-        // Pending = tasks whose event exists but report not created
+        // Pending Reports = tasks whose event exists but report not created
         $this->data['pendingReports'] = Tasks::where('created_by', $adminId)
-            ->doesntHave('get_event')
+            ->whereHas('get_event') // event exists
+            ->whereDoesntHave('get_event.get_report') // report missing
             ->count();
+
+        // This Week Submitted Reports
         $this->data['thisweeksubmittedReports'] = Tasks::where('created_by', $adminId)
-            ->whereHas('get_event', function ($q) use ($startOfWeek, $endOfWeek) {
-                $q->whereBetween('event_date', [$startOfWeek, $endOfWeek]) // adjust field name
+            ->whereHas('get_event.schedules', function ($q) use ($startOfWeek, $endOfWeek) {
+                $q->whereBetween('event_date', [$startOfWeek, $endOfWeek])
                     ->whereHas('get_report');
             })
             ->count();
 
-        // Pending = event exists but report not created
+        // This Week Pending Reports
         $this->data['thisweekpendingReports'] = Tasks::where('created_by', $adminId)
-            ->whereHas('get_event', function ($q) use ($startOfWeek, $endOfWeek) {
+            ->whereHas('get_event.schedules', function ($q) use ($startOfWeek, $endOfWeek) {
                 $q->whereBetween('event_date', [$startOfWeek, $endOfWeek])
                     ->whereDoesntHave('get_report');
             })
             ->count();
+
+        // Today's Activities
         $this->data['activities'] = Activity::whereDate('created_at', Carbon::today())
             ->orderBy('id', 'DESC')
             ->get();

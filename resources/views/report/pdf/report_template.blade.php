@@ -26,7 +26,7 @@
         }
 
         .event-title {
-            font-size: 22px;
+            font-size: 13px;
             font-weight: bold;
             color: #7A1C73;
         }
@@ -158,7 +158,6 @@
             return str_repeat('★', $full) . str_repeat('☆', 5 - $full);
         }
 
-
         $data['report'] = $data['report'];
 
         $male = $data['report']->male_count ?? 0;
@@ -180,15 +179,15 @@
         <div class="header">
             <table>
                 <tr>
-                    <td>
+                    <td style="width:60%;">
                         <div class="event-title">
                             {{ $data['report']->get_event->title ?? 'Event Title' }}
                         </div>
                     </td>
-                    <td class="event-meta">
+                    <td style="width:50%;" class="event-meta">
                         <b>
                             Date:
-                            {{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }}
+                            {{ \Carbon\Carbon::parse(optional($data['report']->schedule)->event_date)->format('d M Y') }}
                             <br>
                             Session: {{ $data['report']->get_event->session == 1 ? 'FN' : 'AN' }}
                         </b>
@@ -217,11 +216,11 @@
         <table class="info-table">
             <tr>
                 <td class="label">Event Date</td>
-                <td>{{ \Carbon\Carbon::parse(optional($data['report']->get_event)->event_date)->format('d M Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse(optional($data['report']->schedule)->event_date)->format('d M Y') }}</td>
             </tr>
             <tr>
                 <td class="label">Report Created By</td>
-                <td>{{ $data['report']->creator->name ?? 'Admin' }}</td>
+                <td>{{ $data['report']->creator->name ?? '' }}</td>
             </tr>
         </table>
 
@@ -401,8 +400,6 @@
         @else
             <p>No feedback available.</p>
         @endif
-
-
         <!-- GEO IMAGES -->
         @if ($data['report']->geo_images->count())
             <div class="section-title">Geo Tagged Photos</div>
@@ -412,11 +409,9 @@
                 @endforeach
             </div>
         @endif
-
         <div class="footer">
             Generated on {{ now()->format('d M Y h:i A') }}
         </div>
-
     </div>
 </body>
 

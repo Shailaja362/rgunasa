@@ -12,10 +12,15 @@ use App\Models\StudentUploadProof;
 use App\Http\Controllers\Controller;
 use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
+use App\Traits\ResolvesEventSchedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use ZipArchive;
 
 class AssignGradeController extends Controller
 {
+    use ResolvesEventSchedule;
+
     public function index()
     {
         $this->data['events'] = Event::with('get_club')->get();
@@ -26,70 +31,71 @@ class AssignGradeController extends Controller
     {
         $eventId = $request->event_id;
         $this->data['event'] = Event::findOrFail($eventId);
-        $this->data['get_schedule_event'] = StudentAttendance::with('student.get_department')
-            ->where('event_id', $eventId)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->get()
-            ->pluck('student.get_department', 'student_id')
-            ->unique('id');
-        $this->data['schedule_department'] = EventSchedule::with('department')->where('event_id', $eventId)->get();
         $this->data['registrations'] = collect();
+        $this->data['schedule_department'] = EventSchedule::with('department')
+            ->where('event_id', $eventId)
+            ->get();
         if ($request->filled('department_id') && $request->filled('event_date')) {
-            $get_schedule_dept = EventSchedule::where(['event_id' => $request->event_id, 'event_date' => $request->event_date, 'department_id' => $request->department_id])->first();
-            if ($get_schedule_dept) {
-                $this->data['registrations'] = StudentAttendance::with([
-                    'student.get_department',
-                    'get_student_upload_proof',
-                    'get_feedback',
-                    'grades' => function ($q) use ($eventId) {
-                        $q->where('event_id', $eventId);
-                    }
-                ])
+            $schedule = $this->resolveSchedule(
+                $eventId,
+                $request->department_id,
+                $request->event_date
+            );
+            if ($schedule) {
+                $this->data['registrations'] = StudentAttendance::with('student.get_department')
                     ->where('event_id', $eventId)
-                    ->whereHas('student', function ($q) use ($request) {
-                        $q->where('department_id', $request->department_id);
-                    })
-                    ->where('event_schedule_id', $get_schedule_dept->id)
+                    ->where('event_schedule_id', $schedule->id)
                     ->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
-                    ->orderBy('id')
                     ->get();
             }
         }
-
         return view('admin.assign_grade_entry')->with($this->data);
     }
-
 
     public function saveGrades(Request $request)
     {
         $request->validate([
-            'event_id' => 'required|exists:events,id',
-            'grades'   => 'required|array',
+            'event_id'    => 'required|exists:events,id',
+            'schedule_id' => 'required|exists:event_schedules,id',
+            'grades'      => 'required|array'
         ]);
 
-        $eventId = $request->event_id;
+        DB::beginTransaction();
 
-        foreach ($request->grades as $registrationId => $grade) {
-            $registration = StudentEventRegistration::where('student_id', $registrationId)
-                ->where('event_id', $eventId)
-                ->where('event_schedule_id', $request->schedule_id)
-                ->first();
-            if ($registration) {
-                $registration->grade = $grade;
-                $registration->status = 2;
-                $registration->save();
+        try {
+
+            foreach ($request->grades as $studentId => $grade) {
+
+                $updated = StudentEventRegistration::where([
+                    'event_id' => $request->event_id,
+                    'student_id' => $studentId,
+                    'event_schedule_id' => $request->schedule_id
+                ])->update([
+                    'grade'  => $grade,
+                    'status' => 2
+                ]);
+
+                if (!$updated) {
+                    throw new \Exception("Registration not found for student ID: {$studentId}");
+                }
             }
-        }
 
-        return redirect()->back()->with('success', 'Grades assigned successfully.');
+            DB::commit();
+
+            return back()->with('success', 'Grades saved successfully');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Grade Save Failed', ['error' => $e->getMessage()]);
+            return back()->with('error', $e->getMessage());
+        }
     }
 
     public function downloadEventReport(Request $request)
     {
         $student = Student::findOrFail($request->student);
         $event   = Event::findOrFail($request->event);
+        $event_schedule   = EventSchedule::findOrFail($request->schedule_id);
         $proofs = StudentUploadProof::where([
             'student_id' => $request->student,
             'event_id'   => $request->event,
@@ -106,7 +112,8 @@ class AssignGradeController extends Controller
             'student',
             'event',
             'proofs',
-            'feedback'
+            'feedback',
+            'event_schedule'
         ))->setPaper('a4', 'portrait');
 
         return $pdf->stream('event-report.pdf');

@@ -18,44 +18,84 @@ use Illuminate\Support\Facades\Auth;
 
 class EventsController extends Controller
 {
+    // public function index(Request $request)
+    // {
+    //     $now = Carbon::now();
+    //     $this->data['ongoingEvents'] = Event::with('registrations')
+    //         ->whereDate('event_date', $now->toDateString())
+    //         ->whereTime('start_time', '<=', $now->toTimeString())
+    //         ->whereTime('end_time', '>=', $now->toTimeString())
+    //         ->orderBy('start_time', 'asc')
+    //         ->get();
+
+    //     // Upcoming Events
+    //     $this->data['upcomingEvents'] = Event::with('registrations')
+    //         ->where(function ($query) use ($now) {
+    //             $query->whereDate('event_date', '>', $now->toDateString())
+    //                 ->orWhere(function ($q) use ($now) {
+    //                     $q->whereDate('event_date', '=', $now->toDateString())
+    //                         ->whereTime('start_time', '>', $now->toTimeString());
+    //                 });
+    //         })
+    //         ->orderBy('event_date', 'asc')
+    //         ->orderBy('start_time', 'asc')
+    //         ->get();
+    //     $this->data['registeredEvents'] = StudentEventRegistration::with('event')
+    //         ->get();
+
+    //     $this->data['completedEvents'] = StudentEventRegistration::with('event')
+    //         ->whereHas('event', function ($query) use ($now) {
+    //             $query->where('event_date', '<', $now->toDateString());
+    //         })
+    //         ->get();
+    //     return view('super_admin.event_index')->with($this->data);
+    // }
+
     public function index(Request $request)
     {
         $now = Carbon::now();
-        $this->data['ongoingEvents'] = Event::with('registrations')
-            ->whereDate('event_date', $now->toDateString())
+
+        $this->data['ongoingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
+            $q->whereDate('event_date', $now->toDateString());
+        }])->whereHas('schedules', function ($q) use ($now) {
+            $q->whereDate('event_date', $now->toDateString());
+        })
             ->whereTime('start_time', '<=', $now->toTimeString())
             ->whereTime('end_time', '>=', $now->toTimeString())
-            ->orderBy('start_time', 'asc')
             ->get();
 
         // Upcoming Events
-        $this->data['upcomingEvents'] = Event::with('registrations')
-            ->where(function ($query) use ($now) {
-                $query->whereDate('event_date', '>', $now->toDateString())
-                    ->orWhere(function ($q) use ($now) {
-                        $q->whereDate('event_date', '=', $now->toDateString())
-                            ->whereTime('start_time', '>', $now->toTimeString());
-                    });
+        $this->data['upcomingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
+            $q->whereDate('event_date', '>', $now->toDateString())
+                ->orWhere(function ($q2) use ($now) {
+                    $q2->whereDate('event_date', $now->toDateString());
+                });
+        }])->whereHas('schedules', function ($q) use ($now) {
+            $q->whereDate('event_date', '>', $now->toDateString())
+                ->orWhere(function ($q2) use ($now) {
+                    $q2->whereDate('event_date', $now->toDateString());
+                });
+        })
+            ->whereTime('start_time', '>', $now->toTimeString())->get();
+
+        // Completed Events
+        $this->data['completedEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
+            $q->whereDate('event_date', '<', $now->toDateString())
+                ->orWhere(function ($q2) use ($now) {
+                    $q2->whereDate('event_date', $now->toDateString());
+                });
+        }])->whereHas('schedules', function ($q) use ($now) {
+            $q->whereDate('event_date', '<', $now->toDateString())
+                ->orWhere(function ($q2) use ($now) {
+                    $q2->whereDate('event_date', $now->toDateString());
+                });
             })
-            ->orderBy('event_date', 'asc')
-            ->orderBy('start_time', 'asc')
-            ->get();
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event')
-            ->get();
-        // $this->data['completedEvents'] = StudentEventRegistration::with('event')
-        //     ->where('status', 3)
-        //     ->get();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event')
-            ->whereHas('event', function ($query) use ($now) {
-                $query->where('event_date', '<', $now->toDateString());
-                // ->orWhere(function ($q) use ($now) {
-                //     $q->whereDate('event_date', '=', $now->toDateString())
-                //         ->whereTime('end_time', '<', $now->toTimeString());
-                // });
-            })
-            ->get();
+            ->whereTime('end_time', '<', $now->toTimeString())->get();
+        $this->data['registeredEvents'] = StudentEventRegistration::with('event.schedules')->get();
         return view('super_admin.event_index')->with($this->data);
     }
+
+
 
     public function createEvent(Request $request)
     {

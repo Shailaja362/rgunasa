@@ -93,7 +93,6 @@
                             <th class="px-2 py-2">Banner Image</th>
                             <th class="px-2 py-2">Event Name</th>
                             <th class="px-2 py-2">Programme Officer</th>
-                            <th class="px-2 py-2">Event Date</th>
                             <th class="px-2 py-2">Start Time</th>
                             <th class="px-2 py-2">End Time</th>
                             <th class="px-2 py-2">End Date</th>
@@ -114,7 +113,6 @@
                                 </td>
                                 <td class="px-2 py-3">{{ $event->title ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $event->get_faculty->name }}</td>
-                                <td class="px-2 py-3">{{ $event->event_date ?? '' }}</td>
                                 <td class="px-2 py-3">
                                     {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:i A') : '-' }}
                                 </td>

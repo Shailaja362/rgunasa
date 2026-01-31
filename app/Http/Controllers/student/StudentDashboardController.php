@@ -103,7 +103,6 @@ class StudentDashboardController extends Controller
                 $q->where('department_id', $student->department_id)
                     ->where('event_date', '>', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
-                    // ->orderBy('start_time', 'asc');
             }, 'get_dep_events.registrations'])
             ->get();
 

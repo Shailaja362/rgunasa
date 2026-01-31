@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('event_id');
             $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('event_schedule_id');
+            $table->unsignedBigInteger('department_id');
+            $table->date('event_date')->nullable();
             $table->integer('male_count')->default(0);
             $table->integer('female_count')->default(0);
             $table->text('outcomes')->nullable();
@@ -24,6 +27,8 @@ return new class extends Migration
             $table->string('attendance_out')->nullable();
             $table->timestamps();
 
+            $table->foreign('department_id')->references('id')->on('departments')->onDelete('no action');
+            $table->foreign('event_schedule_id')->references('id')->on('event_schedules')->onDelete('no action');
             $table->foreign('event_id')->references('id')->on('events')->onDelete('no action');
             $table->foreign('created_by')->references('id')->on('admins')->onDelete('no action');
         });

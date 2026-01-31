@@ -6,6 +6,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class EventReport extends Model
 {
+    protected $fillable = [
+        'event_id',
+        'event_schedule_id',
+        'department_id',
+        'event_date',
+        'male_count',
+        'female_count',
+        'outcomes',
+        'feedback_summary',
+        'certificates',
+        'attendance_in',
+        'attendance_out',
+        'created_by'
+    ];
+
     public function get_event_image()
     {
         return $this->hasMany(EventReportImage::class, 'report_id');
@@ -34,5 +49,10 @@ class EventReport extends Model
     public function get_department()
     {
         return $this->belongsTo(Department::class, 'department_id');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo(EventSchedule::class, 'event_schedule_id');
     }
 }

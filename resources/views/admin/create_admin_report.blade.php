@@ -4,11 +4,8 @@
         <h3 class="font-semibold text-primary">Event Report Submission</h3>
         <p>Submit comprehensive reports for completed events</p>
     </div>
-
-    <form id="eventReportForm" action="{{ route('student_register_event') }}" method="POST" enctype="multipart/form-data"
-        class="mt-8 px-4">
+    <form id="eventReportForm" action="{{ route('student_register_event') }}" method="POST" enctype="multipart/form-data" class="mt-8 px-4">
         @csrf
-        <!-- EVENT INFORMATION -->
         <h2 class="text-primary font-semibold mt-10 px-4">Event Information</h2>
         <p class="px-4 text-gray-600 text-sm">Select the completed events and confirm details</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 px-4 mt-4">
@@ -22,21 +19,20 @@
                     @endforeach
                 </select>
             </div>
-             <div>
-                            <label class="block text-sm font-medium">
-                                Department <span class="text-red-500">*</span>
-                            </label>
-                            <select name="department_id"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
-                                <option value="">Select Department</option>
-                                @foreach ($departments as $d)
-                                    <option value="{{ $d->id }}"
-                                        @if (!empty($eve) && $eve->id == $d->id) selected @endif>
-                                        {{ $d->name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
+            <div>
+                <label class="block text-sm font-medium">
+                    Department <span class="text-red-500">*</span>
+                </label>
+                <select name="department_id"
+                    class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
+                    <option value="">Select Department</option>
+                    @foreach ($departments as $d)
+                        <option value="{{ $d->id }}" @if (!empty($eve) && $eve->id == $d->id) selected @endif>
+                            {{ $d->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <div>
                 <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
                 <input type="date" name="event_date" id="event_date"

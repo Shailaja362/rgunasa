@@ -21,7 +21,7 @@
             <th>Email</th>
             <th>Event</th>
             <th>Status</th>
-            <th>Date</th>
+            <th>Registered Date</th>
         </tr>
     </thead>
     <tbody>

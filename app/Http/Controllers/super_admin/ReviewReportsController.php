@@ -14,7 +14,7 @@ class ReviewReportsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         $this->data['events'] = Event::with('registrations')->where('created_by', $adminId)->get();
-        $this->data['reports'] = EventReport::with('creator','get_event_image', 'get_event.get_task')->get();
+        $this->data['reports'] = EventReport::with('creator','get_event_image', 'get_event.get_task', 'schedule.department')->get();
         return view('super_admin.review_reports_index')->with($this->data);
     }
 }

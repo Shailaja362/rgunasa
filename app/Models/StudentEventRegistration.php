@@ -6,6 +6,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class StudentEventRegistration extends Model
 {
+    protected $fillable = [
+        'event_id',
+        'student_id',
+        'event_schedule_id',
+        'status',
+        'grade',
+        'registered_at',
+        'created_at',
+        'updated_at'
+    ];
+
     public function event()
     {
         return $this->belongsTo(Event::class, 'event_id', 'id');

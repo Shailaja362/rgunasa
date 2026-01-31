@@ -33,7 +33,8 @@ class EventRegisterdReportController extends Controller
             $this->data['registrations'] = StudentEventRegistration::with([
                 'event:id,title',
                 'student:id,name,email,department_id',
-                'student.get_department'
+                'student.get_department',
+                'get_event_schedule'
             ])
                 ->when($request->event_id, function ($q) use ($request) {
                     $q->where('event_id', $request->event_id);
@@ -42,10 +43,16 @@ class EventRegisterdReportController extends Controller
                     $q->where('status', $request->status);
                 })
                 ->when($request->from_date, function ($q) use ($request) {
-                    $q->whereDate('created_at', '>=', $request->from_date);
-                })
+                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
+                       $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%')
+                             ->orWhereDate('reserve_date', 'like', '%' . $request->from_date . '%');
+                   });
+             })
                 ->when($request->to_date, function ($q) use ($request) {
-                    $q->whereDate('created_at', '<=', $request->to_date);
+                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
+                    $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%')
+                        ->orWhereDate('reserve_date', 'like', '%' . $request->to_date . '%');
+                });
                 })
                 ->when($request->search, function ($q) use ($request) {
                     $q->whereHas('student', function ($student) use ($request) {

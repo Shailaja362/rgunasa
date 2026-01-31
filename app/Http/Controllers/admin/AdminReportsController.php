@@ -13,12 +13,18 @@ use App\Models\EventReportImage;
 use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\EventSchedule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StudentEventRegistration;
+use App\Traits\ResolvesEventSchedule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AdminReportsController extends Controller
 {
+    use ResolvesEventSchedule;
+
     public function index(Request $request)
     {
         $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')->get();
@@ -44,118 +50,49 @@ class AdminReportsController extends Controller
 
     public function saveReport(Request $request)
     {
+        $request->validate([
+            'event_id'        => 'required|exists:events,id',
+            'department_id'   => 'required',
+            'event_date'      => 'required|date',
+            'male_count'      => 'required|numeric',
+            'female_count'    => 'required|numeric',
+            'outcome_results' => 'required',
+            'feedback_summary' => 'required'
+        ]);
+        DB::beginTransaction();
         try {
-            $rules = [
-                'event_id'  => 'required',
-                'proof.*'    => 'required|mimes:jpg,jpeg,png',
-                'male_count'   => 'required|numeric',
-                'female_count'   => 'required|numeric',
-                'outcome_results' => 'required',
-                'feedback_summary' => 'required',
-                'certificates' => 'required',
-                'attendance_in' => 'required',
-                'attendance_out' => 'required',
-                'department_id' => 'required',
-                'event_date' => 'required'
-            ];
-            $request->validate($rules);
-            if (!empty($request->report_id)) {
-                $report = EventReport::findOrFail($request->report_id);
-                $message = "Report Updated Successfully";
-            } else {
-                $report = new EventReport();
-                $message = "Report Created Successfully";
+            $schedule = $this->resolveSchedule(
+                $request->event_id,
+                $request->department_id,
+                $request->event_date
+            );
+            if (!$schedule) {
+                throw new \Exception('Schedule not found');
             }
+            $report = EventReport::updateOrCreate(
+                [
+                    'event_id' => $request->event_id,
+                    'event_schedule_id' => $schedule->id
+                ],
+                [
+                    'department_id' => $request->department_id,
+                    'event_date' => $request->event_date,
+                    'male_count' => $request->male_count,
+                    'female_count' => $request->female_count,
+                    'outcomes' => $request->outcome_results,
+                    'feedback_summary' => $request->feedback_summary,
+                    'created_by' => auth('admin')->id()
+                ]
+            );
 
-            // SINGLE FILE UPLOADS
-            $cer_path = $request->hasFile('certificates')
-                ? $request->certificates->storeAs(
-                    'report_certificate',
-                    time() . '_' . uniqid() . '.' . $request->certificates->extension(),
-                    'public'
-                )
-                : $report->certificates;
-
-            $attendance_in_path = $request->hasFile('attendance_in')
-                ? $request->attendance_in->storeAs(
-                    'report_attendance_in',
-                    time() . '_' . uniqid() . '.' . $request->attendance_in->extension(),
-                    'public'
-                )
-                : $report->attendance_in;
-
-            $attendance_out_path = $request->hasFile('attendance_out')
-                ? $request->attendance_out->storeAs(
-                    'report_attendance_out',
-                    time() . '_' . uniqid() . '.' . $request->attendance_out->extension(),
-                    'public'
-                )
-                : $report->attendance_out;
-            $user = auth('admin')->user();
-            $exist_report = EventReport::where(['event_id' => $request->event_id, 'created_by' => $user->id])->exists();
-
-            if ($exist_report) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'This event report already exists!'
-                ], 500);
-            }
-            // SAVE MAIN REPORT
-            $report->event_id = $request->event_id;
-            $report->created_by = $user->id;
-            $report->department_id = $request->department_id;
-            $report->event_date = $request->event_date;
-            $report->male_count = $request->male_count;
-            $report->female_count = $request->female_count;
-            $report->outcomes = $request->outcome_results;
-            $report->feedback_summary = $request->feedback_summary;
-            $report->certificates = $cer_path;
-            $report->attendance_in = $attendance_in_path;
-            $report->attendance_out = $attendance_out_path;
-            $report->save();
-
-            // DELETE REMOVED IMAGES
-            if (!empty($request->removed_images)) {
-                $ids = json_decode($request->removed_images);
-                foreach ($ids as $id) {
-                    $img = EventReportImage::find($id);
-                    if ($img && Storage::disk('public')->exists($img->file_path)) {
-                        Storage::disk('public')->delete($img->file_path);
-                        $img->delete();
-                    }
-                }
-            }
-
-            // MULTIPLE PROOF IMAGES
-            if ($request->hasFile('proof')) {
-                foreach ($request->proof as $file) {
-                    $imageName = \Illuminate\Support\Str::uuid() . '.' . $file->extension();
-                    $path = $file->storeAs('report_images', $imageName, 'public');
-
-                    $reportimage = new EventReportImage();
-                    $reportimage->report_id = $report->id;
-                    $reportimage->file_name = $imageName;
-                    $reportimage->file_path = $path;
-                    $reportimage->file_type = $file->getClientOriginalExtension();
-                    $reportimage->save();
-                }
-            }
-
-            // Load event relation for logging
-            $report->load('get_event');
-            $eventTitle = $report->get_event->title ?? 'Unknown Event';
-
-            if (!empty($request['report_id'])) {
-                ActivityLog::add("{$user->name} - {$eventTitle} - Report Updated", auth('admin')->user());
-            } else {
-                ActivityLog::add("{$user->name} - {$eventTitle} - New Report Created", auth('admin')->user());
-            }
-
+            DB::commit();
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => 'Event report saved successfully'
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Event Report Save Failed', ['error' => $e->getMessage()]);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -165,117 +102,113 @@ class AdminReportsController extends Controller
 
     public function viewPdf($id)
     {
-        $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
-        $attended_students = StudentAttendance::with(['student', 'student.get_department', 'get_grade',  'grades' => function ($q) use ($event) {
-            $q->where('event_id', $event->event_id);
-        }])
-            ->whereHas('grades', function ($query) use ($event) {
-                $query->where('event_id', $event->event_id);
-            })
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->where('event_id', $event->event_id)
-            ->get();
-        $singleFeedback = StudentFeedback::with([
-            'student',
-            'uploads' => function ($q) use ($event) {
-                $q->where('event_id', $event->event_id);
+        $report = EventReport::with([
+            'get_event.get_task',
+            'get_event_image',
+            'creator',
+            'student_uploads',
+            'schedule.department'
+        ])->findOrFail($id);
+
+        $scheduleId = $report->event_schedule_id;
+        $eventId    = $report->event_id;
+        $attendedStudents = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
             }
         ])
-            ->where('event_id', $event->event_id)
-            ->latest()
-            ->first();
-        // Calculate average ratings
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
         $feedbacks = StudentFeedback::with('student')
-            ->where('event_id', $event->event_id)->get();
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->get();
 
+        $singleFeedback = $feedbacks->last();
         $keys = [
             'overall_experience',
             'engagement',
             'organization',
             'coordination',
-            'recommendation',
+            'recommendation'
         ];
 
         $totals = array_fill_keys($keys, 0);
         $counts = array_fill_keys($keys, 0);
 
         foreach ($feedbacks as $feedback) {
-
-            // normalize here
             $ratings = $this->normalizeRatings($feedback->ratings);
 
             foreach ($keys as $key) {
-                if (isset($ratings[$key]) && is_numeric($ratings[$key])) {
+                if (isset($ratings[$key])) {
                     $totals[$key] += (int) $ratings[$key];
                     $counts[$key]++;
                 }
             }
         }
 
-        // Final averages
         $avgRatings = [];
         foreach ($keys as $key) {
             $avgRatings[$key] = $counts[$key] > 0
                 ? round($totals[$key] / $counts[$key], 1)
                 : 0;
         }
+        $registeredCount = StudentEventRegistration::where([
+            'event_id' => $eventId,
+            'event_schedule_id' => $scheduleId
+        ])->count();
 
-
-        // Gender counts
-        $studentIds = $feedbacks->pluck('student_id')->toArray();
-
-        // Prepare gender chart via QuickChart.io
+        $attendedCount = $attendedStudents->count();
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
             'data' => [
                 'labels' => ['Male', 'Female'],
                 'datasets' => [[
-                    'data' => [$event->male_count, $event->female_count],
+                    'data' => [$report->male_count, $report->female_count],
                     'backgroundColor' => ['#7A1C73', '#C36BCB']
                 ]]
-            ],
-            'options' => ['plugins' => ['legend' => ['position' => 'bottom']]]
+            ]
         ]));
-        // Counts
-        $registeredCount = StudentEventRegistration::where('event_id', $event->event_id)->count();
-        $attendedCount   =  StudentAttendance::where('event_id', $event->event_id)
-                            ->whereNotNull('entry_time')
-                            ->whereNotNull('exit_time')
-                            ->count();
 
-        // Prepare PDF data
         $data = [
             'report' => (object)[
-                'get_event' => $event->get_event,
-                'feedback' =>  $singleFeedback,
+                'get_event' => $report->get_event,
+                'schedule' => $report->schedule,
+                'feedback' => $singleFeedback,
                 'avgRatings' => $avgRatings,
-                'male_count' => $event->male_count,
-                'female_count' => $event->female_count,
+                'male_count' => $report->male_count,
+                'female_count' => $report->female_count,
                 'registered_count' => $registeredCount,
                 'attended_count' => $attendedCount,
-                'geo_images' => $event->get_event_image,
-                'student_uploads' => $event->student_uploads,
-                'event_image' => $event->image, // optional main event image
-                'outcomes' => $event->outcomes,
-                'feedback_summary' => $event->feedback_summary
+                'geo_images' => $report->get_event_image,
+                'student_uploads' => $report->student_uploads,
+                'event_image' => $report->image,
+                'outcomes' => $report->outcomes,
+                'feedback_summary' => $report->feedback_summary,
+                'creator' => $report->creator,
             ],
             'genderChartUrl' => $genderChartUrl,
-            'attended_students' =>  $attended_students
+            'attended_students' => $attendedStudents
         ];
 
-        // Generate PDF
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
-        $user = auth('admin')->user();
-        ActivityLog::add($user->name  . ' - ' . $event->get_event->title . ' - Report Viewed', $user);
-        return $pdf->stream("event_report_{$event->get_event->title}.pdf");
+
+        ActivityLog::add(
+            auth('admin')->user()->name . ' - ' . $report->get_event->title . ' - Report Viewed',
+            auth('admin')->user()
+        );
+
+        return $pdf->stream((($report->schedule?->department?->name) ?? '') . ' - ' . $report->get_event->title . ".pdf");
     }
 
     public function downloadPdf($id)
     {
-        $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads'])->findOrFail($id);
-        // Get feedbacks
+        $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads', 'schedule.department'])->findOrFail($id);
         $attended_students = StudentAttendance::with(['student', 'student.get_department', 'get_grade',  'grades' => function ($q) use ($event) {
             $q->where('event_id', $event->event_id);
         }])
@@ -356,6 +289,7 @@ class AdminReportsController extends Controller
         $data = [
             'report' => (object)[
                 'get_event' => $event->get_event,
+                'schedule' => $event->schedule,
                 'feedback' => $singleFeedback,
                 'avgRatings' => $avgRatings,
                 'male_count' => $event->male_count,
@@ -376,7 +310,7 @@ class AdminReportsController extends Controller
         ActivityLog::add($user->name . ' - ' .  $event->get_event->title . 'Report Downloaded', $user);
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
-        return $pdf->download("event_report_{$event->get_event->title}.pdf");
+        return $pdf->download((($event->schedule?->department?->name) ?? '') . ' - ' . $event->get_event->title .".pdf");
     }
 
     private function normalizeRatings($value)

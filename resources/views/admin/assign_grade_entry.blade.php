@@ -101,7 +101,8 @@
                                     $grade = $registration->grades->first();
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition">
-                                    <input type="hidden" name="schedule_id" value="{{ $registration->event_schedule_id }}">
+                                    <input type="hidden" name="schedule_id"
+                                        value="{{ $registration->event_schedule_id }}">
                                     <td class="px-4 py-3">{{ $index + 1 }}</td>
                                     <td class="px-4 py-3">{{ $registration->student->register_number ?? '' }}</td>
                                     <td class="px-4 py-3">{{ $registration->student->name ?? '' }}</td>
@@ -151,7 +152,8 @@
                             @empty
                                 <tr>
                                     <td colspan="7" class="text-center text-gray-500 py-4">
-                                        No records found for this department & date.
+                                        No attendance records found for the selected department and date. Please enter
+                                        the attendance.
                                     </td>
                                 </tr>
                             @endforelse

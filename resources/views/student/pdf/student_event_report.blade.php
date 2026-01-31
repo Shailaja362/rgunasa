@@ -115,11 +115,11 @@
             </tr>
             <tr>
                 <td><strong>Date</strong></td>
-                <td>{{ \Carbon\Carbon::parse($event->event_date)->format('d M Y') }}</td>
+                <td>{{ \Carbon\Carbon::parse($event_schedule->event_date)->format('d M Y') }}</td>
             </tr>
             <tr>
                 <td><strong>Time</strong></td>
-                <td>{{ $event->stat_time ?? ''  }} - {{ $event->end_time ?? '' }}</td>
+                <td>{{ $event->stat_time ?? '' }} - {{ $event->end_time ?? '' }}</td>
             </tr>
             <tr>
                 <td><strong>Location</strong></td>

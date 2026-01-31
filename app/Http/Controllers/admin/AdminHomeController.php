@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\Event;
-use App\Models\EventReport;
-use App\Models\StudentEventRegistration;
 use App\Models\Tasks;
+use App\Models\EventReport;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\StudentEventRegistration;
 
 class AdminHomeController extends Controller
 {
@@ -21,22 +22,32 @@ class AdminHomeController extends Controller
         }
 
         $adminId = Auth::guard('admin')->id();
-        $today = now();
+        // $today = now();
         $this->data['events'] = Event::with('registrations')
             ->where('created_by', $adminId)
             ->orderBy('created_at', 'DESC')
             ->get();
+        $today = now()->toDateString();
+
         $this->data['upcoming_events'] = Event::where('created_by', $adminId)
-            // ->whereDate('event_date', '>=', $today)
-            // ->orderBy('event_date', 'asc')
+            ->whereHas('schedules', function ($query) use ($today) {
+                $query->whereDate('event_date', '>=', $today);
+            })
+            ->with(['schedules' => function ($query) use ($today) {
+                $query->whereDate('event_date', '>=', $today)->orderBy('event_date', 'asc');
+            }])
             ->get();
+
         $this->data['pending_approvals'] = StudentEventRegistration::with('event')
                                              ->whereHas('event' , function($query) use($adminId) {
                                                  $query->where('created_by',  $adminId);
                                              })
                                              ->where('status',1)
                                              ->get();
-        $this->data['submitted_reports'] = EventReport::where('created_by', $adminId)->get();
+        $this->data['submitted_reports'] = EventReport::where('created_by', $adminId)
+            ->select('event_id', DB::raw('COUNT(*) as total_reports'))
+            ->groupBy('event_id')
+            ->get();
         $this->data['total_tasks'] = Tasks::where('admin_id', $adminId)->count();
         $this->data['pending_tasks'] = Tasks::where('admin_id', $adminId)->where('status','pending')->count();
         $this->data['completed_tasks'] = Tasks::where('admin_id', $adminId)->whereNot('status', 'pending')->count();

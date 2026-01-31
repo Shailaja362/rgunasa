@@ -17,7 +17,7 @@
                 <p class="text-xs mt-2">
                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                     Event -
-                    {{ \Carbon\Carbon::parse($report->get_event->event_date)->format('F d, Y') }}
+                    {{ \Carbon\Carbon::parse($report->schedule->event_date)->format('F d, Y') }}
                     ({{ \Carbon\Carbon::parse($report->get_event->start_time)->format('h.iA') }})
                 </p>
                 <p class="mt-2 text-xs">
