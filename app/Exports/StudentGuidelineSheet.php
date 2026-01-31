@@ -33,7 +33,7 @@ class StudentGuidelineSheet implements FromArray, WithHeadings, WithTitle
             ['Date of Birth', 'Format: YYYY-MM-DD, 2026-01-01'],
             ['Department', 'Refer Department Sheet'],
             ['Programme', 'Refer Programme Sheet'],
-            ['Section', 'Allowed values: a, b, c'],
+            ['Section', 'Allowed values: a, b, c, d, r'],
         ];
     }
 }

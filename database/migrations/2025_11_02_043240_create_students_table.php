@@ -23,7 +23,7 @@ return new class extends Migration
             $table->string('profile_pic')->nullable();
             $table->date('date_of_birth')->nullable();
             $table->enum('gender', ['m', 'f', 'o'])->comment('m -> Male, f -> Female , o -> others ');
-            $table->enum('section', ['a', 'b', 'c'])->nullable();
+            $table->enum('section', ['a', 'b', 'c', 'd', 'e', 'f', 'r'])->nullable();
             $table->timestamps();
 
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('no action');

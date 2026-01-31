@@ -89,12 +89,13 @@
             </div>
             <div>
                 <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
-                <select name="section" id="section"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="section" id="section" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="" selected disabled>Select Section</option>
                     <option value="a">A</option>
                     <option value="b">B</option>
                     <option value="c">C</option>
+                    <option value="d">D</option>
+                    <option value="r">R</option>
                 </select>
             </div>
         </div>

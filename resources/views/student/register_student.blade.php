@@ -110,6 +110,8 @@
                             <option value="a">A</option>
                             <option value="b">B</option>
                             <option value="c">C</option>
+                            <option value="d">D</option>
+                            <option value="r">R</option>
                         </select>
                     </div>
                     <div>

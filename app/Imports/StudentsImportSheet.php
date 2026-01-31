@@ -105,7 +105,7 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
                 'required',
                 Rule::exists('programmes', 'name'),
             ],
-            '*.section' => ['bail', 'required', 'in:a,b,c,A,B,C'],
+            '*.section' => ['bail', 'required', 'in:a,b,c,A,B,C,d,D,E,F,R,e,f,r'],
             '*.register_number' => [
                 'bail',
                 'required',
