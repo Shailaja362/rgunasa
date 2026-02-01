@@ -78,9 +78,20 @@
                 @foreach ($upcomingEvents as $event)
                     @foreach ($event->get_dep_events as $dept)
                         @php
+
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $event->registrations->count();
+                            $registeredCount = $event->registrations()
+    ->where('event_schedule_id', $dept->id)
+    ->whereHas('student', function ($query) use ($dept) {
+        $query->where('department_id', $dept->department_id);
+    })
+    ->count();
+echo '<pre>';
+                      print_r($dept );
+                        echo '</pre>';
+
+exit;
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
@@ -242,7 +253,12 @@
                             /* ===========================
                    Seat Availability
                 ============================ */
-                            $registeredCount = $ongoing_event->registrations->count();
+                 $registeredCount = $ongoing_event->registrations()
+                            ->where('event_schedule_id', $dept->id)
+    ->whereHas('student', function ($query) use ($dept) {
+        $query->where('department_id', $dept->department_id);
+    })
+    ->count();
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
 
                             /* ===========================
@@ -412,12 +428,16 @@
                 @foreach ($registeredEvents as $register_event)
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
-                            'event_id' => $register_event->event->id,
-                        ])->count();
-
+                            'event_id' => $register_event->event_id,
+                            'event_schedule_id' => $register_event->event_schedule_id,
+                        ])
+                        ->whereHas('student', function ($query) use ($register_event) {
+                           $query->where('department_id', $register_event->student->department_id);
+                        })->count();
                         $available = $register_event->schedule
-                            ? $register_event->schedule->seat_count - $registered
-                            : 0;
+                        ? $register_event->schedule->seat_count - $registered
+                        : 0;
+
                     @endphp
 
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
