@@ -25,7 +25,7 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] = Event::with('registrations')->whereHas('get_dep_events', function ($q) use ($student) {
+        $this->data['ongoingEvents'] = Event::with('registrations.student')->whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('department_id', $student->department_id)
                 ->where('event_date', Carbon::now()->toDateString());
         })
@@ -35,16 +35,16 @@ class RegisterEventController extends Controller
             }, 'get_dep_events.registrations'])
             ->get();
         // Upcoming Events
-        $this->data['upcomingEvents'] = Event::with('registrations')
+        $this->data['upcomingEvents'] = Event::with('registrations.student')
             ->whereHas('get_dep_events', function ($q) use ($student) {
-               $q->where('department_id', $student->department_id)
-                ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
-             })
+                $q->where('department_id', $student->department_id)
+                    ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
+            })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('department_id', $student->department_id)
-                    ->where('event_date', '>', Carbon::now()->toDateString())
+                    ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
-             }, 'get_dep_events.registrations'])
+            }, 'get_dep_events.registrations'])
             ->get();
 
         $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
@@ -64,7 +64,6 @@ class RegisterEventController extends Controller
             ->get();
         return view('student.register_event_index')->with($this->data);
     }
-
 
     public function studentRegisterEvent(Request $request)
     {

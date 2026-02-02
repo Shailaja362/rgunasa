@@ -87,11 +87,7 @@
                                     $query->where('department_id', $dept->department_id);
                                 })
                                 ->count();
-                            // echo '<pre>';
-                            //                       print_r($dept );
-                            //                         echo '</pre>';
 
-                            // exit;
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
@@ -103,12 +99,9 @@
                             $nextAllowedDate = null;
 
                             if ($lastRegistration) {
-                                // No duration → permanent block
                                 if (empty($event->duration_months) || $event->duration_months == 0) {
                                     $permanentBlock = true;
                                 }
-
-                                // Duration exists → cooldown logic
                                 if (!$permanentBlock && $event->duration_months) {
                                     $nextAllowedDate = \Carbon\Carbon::parse(
                                         $lastRegistration->registered_at,
@@ -119,18 +112,10 @@
                                     }
                                 }
                             }
-
-                            /* ===========================
-                   Paid Event Same-Date Conflict
-                ============================ */
                             $paidEventConflict = $studentRegistrations
                                 ->where('event.event_type', 'paid')
                                 ->where('event.event_date', $eventDate)
                                 ->first();
-
-                            /* ===========================
-                   Final Register Permission
-                ============================ */
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -249,10 +234,6 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-
-                            /* ===========================
-                   Seat Availability
-                ============================ */
                             $registeredCount = $ongoing_event
                                 ->registrations()
                                 ->where('event_schedule_id', $department->id)
@@ -261,34 +242,18 @@
                                 })
                                 ->count();
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
-
-                            /* ===========================
-                   Registration Deadline
-                ============================ */
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
-
-                            /* ===========================
-                   Student Registration History
-                ============================ */
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
                                 ->sortByDesc('registered_at')
                                 ->first();
-
-                            /* ===========================
-                   Registration Restriction Logic
-                ============================ */
                             $cooldownActive = false;
                             $permanentBlock = false;
                             $nextAllowedDate = null;
-
                             if ($lastRegistration) {
-                                // No duration → permanent block
                                 if (empty($ongoing_event->duration_months) || $ongoing_event->duration_months == 0) {
                                     $permanentBlock = true;
                                 }
-
-                                // Duration exists → cooldown logic
                                 if (!$permanentBlock && $ongoing_event->duration_months) {
                                     $nextAllowedDate = \Carbon\Carbon::parse(
                                         $lastRegistration->registered_at,
@@ -299,18 +264,10 @@
                                     }
                                 }
                             }
-
-                            /* ===========================
-                   Paid Event Same-Date Conflict
-                ============================ */
                             $paidEventConflict = $studentRegistrations
                                 ->where('event.event_type', 'paid')
                                 ->where('event.event_date', $eventDate)
                                 ->first();
-
-                            /* ===========================
-                   Final Register Permission
-                ============================ */
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&

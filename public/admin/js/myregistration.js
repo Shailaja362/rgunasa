@@ -40,7 +40,7 @@ $(function () {
         "application/msword",
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     ];
 
     function fileLabel(type) {
@@ -69,9 +69,11 @@ $(function () {
             previewArea.append(`
                 <div class="img-wrapper relative inline-block m-2"
                      data-type="existing" data-idx="${index}">
-                    ${isImage
-                        ? `<img src="/storage/${img.file_path}" class="w-24 h-24 object-cover rounded-lg">`
-                        : `<div class="w-24 h-24 flex items-center justify-center bg-gray-200 text-white text-sm rounded-lg">${fileLabel(img.file_type)}</div>`}
+                    ${
+                        isImage
+                            ? `<img src="/storage/${img.file_path}" class="w-24 h-24 object-cover rounded-lg">`
+                            : `<div class="w-24 h-24 flex items-center justify-center bg-gray-200 text-white text-sm rounded-lg">${fileLabel(img.file_type)}</div>`
+                    }
                     <button type="button" class="remove-img absolute -top-2 -right-2
                         bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">×</button>
                     <p class="text-xs truncate w-24 mt-1">${img.file_name}</p>
@@ -81,22 +83,32 @@ $(function () {
 
         // New files
         filesArr.forEach((file, index) => {
-            const wrapper = $(`<div class="img-wrapper relative inline-block m-2" data-type="new" data-idx="${index}"></div>`);
+            const wrapper = $(
+                `<div class="img-wrapper relative inline-block m-2" data-type="new" data-idx="${index}"></div>`,
+            );
 
             if (file.type.startsWith("image/")) {
                 const reader = new FileReader();
-                reader.onload = e => {
-                    wrapper.append(`<img src="${e.target.result}" class="w-24 h-24 object-cover rounded-lg">`);
+                reader.onload = (e) => {
+                    wrapper.append(
+                        `<img src="${e.target.result}" class="w-24 h-24 object-cover rounded-lg">`,
+                    );
                     wrapper.append(`<button type="button" class="remove-img absolute -top-2 -right-2
                         bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">×</button>`);
-                    wrapper.append(`<p class="text-xs truncate w-24 mt-1">${file.name}</p>`);
+                    wrapper.append(
+                        `<p class="text-xs truncate w-24 mt-1">${file.name}</p>`,
+                    );
                 };
                 reader.readAsDataURL(file);
             } else {
-                wrapper.append(`<div class="w-24 h-24 flex items-center justify-center bg-gray-200 text-white text-sm rounded-lg">${fileLabel(file.type)}</div>`);
+                wrapper.append(
+                    `<div class="w-24 h-24 flex items-center justify-center bg-gray-200 text-white text-sm rounded-lg">${fileLabel(file.type)}</div>`,
+                );
                 wrapper.append(`<button type="button" class="remove-img absolute -top-2 -right-2
                     bg-red-600 hover:bg-red-700 text-white rounded-full w-6 h-6 flex items-center justify-center font-bold">×</button>`);
-                wrapper.append(`<p class="text-xs truncate w-24 mt-1">${file.name}</p>`);
+                wrapper.append(
+                    `<p class="text-xs truncate w-24 mt-1">${file.name}</p>`,
+                );
             }
 
             previewArea.append(wrapper);
@@ -106,15 +118,17 @@ $(function () {
     function handleNewFiles(newFiles) {
         const total = existingImages.length + filesArr.length + newFiles.length;
         if (total > MAX_FILES) {
-            alert("Maximum 4 files allowed");
+            showToast("Maximum 4 files allowed", "error", 2000);
             return;
         }
 
-        newFiles.forEach(file => {
+        newFiles.forEach((file) => {
             if (!ALLOWED_TYPES.includes(file.type)) return;
             if (file.size > MAX_SIZE) return;
 
-            const duplicate = filesArr.some(f => f.name === file.name && f.size === file.size);
+            const duplicate = filesArr.some(
+                (f) => f.name === file.name && f.size === file.size,
+            );
             if (!duplicate) filesArr.push(file);
         });
 
@@ -144,9 +158,11 @@ $(function () {
 
         $("#uploadModal").removeClass("hidden").addClass("flex");
 
-        fetch(`/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`)
-            .then(res => res.json())
-            .then(data => {
+        fetch(
+            `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
+        )
+            .then((res) => res.json())
+            .then((data) => {
                 if (data.proofs?.length) {
                     existingImages = data.proofs;
                     showPreviews();
@@ -154,8 +170,10 @@ $(function () {
 
                 if (data.feedback) {
                     const ratings = JSON.parse(data.feedback.ratings);
-                    Object.keys(ratings).forEach(key => {
-                        $(`input[name="ratings[${key}]"][value="${ratings[key]}"]`).prop("checked", true);
+                    Object.keys(ratings).forEach((key) => {
+                        $(
+                            `input[name="ratings[${key}]"][value="${ratings[key]}"]`,
+                        ).prop("checked", true);
                     });
                     $("#comments").val(data.feedback.comments);
                 }
@@ -164,7 +182,11 @@ $(function () {
 
     /* ================= DROP / FILE ================= */
     $("#dropArea").on("click", function (e) {
-        if ($(e.target).closest(".remove-img").length || $(e.target).closest(".img-wrapper").length) return;
+        if (
+            $(e.target).closest(".remove-img").length ||
+            $(e.target).closest(".img-wrapper").length
+        )
+            return;
         $("#fileInput")[0].click();
     });
 
@@ -213,13 +235,18 @@ $(function () {
         e.preventDefault();
 
         if (!filesArr.length && !existingImages.length) {
-            alert("Please upload at least one file");
+            showToast("Please upload at least one file", "error", 2000);
             return;
         }
-
+        if ($("#comments").val() == "") {
+            showToast("Please enter your comments", "error", 2000);
+            return;
+        }
         const formData = new FormData();
-        filesArr.forEach(f => formData.append("proof[]", f));
-        removedExistingIds.forEach(id => formData.append("removed_proofs[]", id));
+        filesArr.forEach((f) => formData.append("proof[]", f));
+        removedExistingIds.forEach((id) =>
+            formData.append("removed_proofs[]", id),
+        );
         formData.append("event_id", $("#event_id").val());
         formData.append("student_id", $("#student_id").val());
         formData.append("schedule_id", $("#schedule_id").val());
@@ -232,17 +259,17 @@ $(function () {
 
         fetch("/student/upload-proof", {
             method: "POST",
-            body: formData
+            body: formData,
         })
-        .then(res => res.json())
-        .then(res => {
-            if (res.success) {
-                $("#uploadBox").addClass("hidden");
-                $("#successBox").removeClass("hidden");
-            } else {
-                alert(res.message || "Upload failed");
-            }
-        });
+            .then((res) => res.json())
+            .then((res) => {
+                if (res.success) {
+                    $("#uploadBox").addClass("hidden");
+                    $("#successBox").removeClass("hidden");
+                } else {
+                    showToast("Upload failed", "error", 2000);
+                }
+            });
     });
 
     /* ================= CLOSE MODAL ================= */
@@ -250,10 +277,3 @@ $(function () {
         $("#uploadModal").addClass("hidden").removeClass("flex");
     });
 });
-
-
-
-
-
-
-

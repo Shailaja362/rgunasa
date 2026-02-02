@@ -284,7 +284,7 @@ $(document).on("change", "#club_id", function () {
                 }
             },
             error: function () {
-                alert("Unable to fetch programme officers!");
+                showToast("Unable to fetch programme officers!", "error", 2000);
             },
         });
     } else {

@@ -64,12 +64,14 @@
                             /* ===========================
                    Seat Availability
                 ============================ */
-                            $registeredCount = $event->registrations->count();
+                            $registeredCount = $event
+                                ->registrations()
+                                ->where('event_schedule_id', $department->id)
+                                ->whereHas('student', function ($query) use ($department) {
+                                    $query->where('department_id', $department->department_id);
+                                })
+                                ->count();
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
-
-                            /* ===========================
-                   Registration Deadline
-                ============================ */
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
 
                             /* ===========================
@@ -104,17 +106,11 @@
                                 }
                             }
 
-                            /* ===========================
-                   Paid Event Same-Date Conflict
-                ============================ */
                             $paidEventConflict = $studentRegistrations
                                 ->where('event.event_type', 'paid')
                                 ->where('event.event_date', $eventDate)
                                 ->first();
 
-                            /* ===========================
-                   Final Register Permission
-                ============================ */
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -223,7 +219,6 @@
                 @endforeach
             </div>
         </div>
-
         <!-- Ongoing Events -->
         <div id="ongoing-section" class="mt-6 hidden">
             <h4 class="font-semibold text-gray-800 mb-4">Ongoing Events</h4>
@@ -233,29 +228,19 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-
-                            /* ===========================
-                   Seat Availability
-                ============================ */
-                            $registeredCount = $ongoing_event->registrations->count();
+                            $registeredCount = $ongoing_event
+                             ->registrations()
+                             ->where('event_schedule_id', $dept->id)
+                                ->whereHas('student', function ($query) use ($dept) {
+                                    $query->where('department_id', $dept->department_id);
+                                })
+                                ->count();
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
-
-                            /* ===========================
-                   Registration Deadline
-                ============================ */
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
-
-                            /* ===========================
-                   Student Registration History
-                ============================ */
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
                                 ->sortByDesc('registered_at')
                                 ->first();
-
-                            /* ===========================
-                   Registration Restriction Logic
-                ============================ */
                             $cooldownActive = false;
                             $permanentBlock = false;
                             $nextAllowedDate = null;
@@ -277,18 +262,10 @@
                                     }
                                 }
                             }
-
-                            /* ===========================
-                   Paid Event Same-Date Conflict
-                ============================ */
                             $paidEventConflict = $studentRegistrations
                                 ->where('event.event_type', 'paid')
                                 ->where('event.event_date', $eventDate)
                                 ->first();
-
-                            /* ===========================
-                   Final Register Permission
-                ============================ */
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&

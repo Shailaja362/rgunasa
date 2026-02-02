@@ -11,53 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class StudentDashboardController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $now = Carbon::now();
-    //     $student = session()->get('student');
-    //     $this->data['studentId'] = $student->id;
-    //     $this->data['events'] = Event::get();
-    //     $this->data['registered_count'] = StudentEventRegistration::where('student_id', $student->id)->get();
-    //     $this->data['completed_events'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
-    //         ->whereHas('get_event_attendance', function ($query) use ($now) {
-    //             $query->whereNotNull('entry_time')
-    //                 ->whereNotNull('exit_time');
-    //         })
-    //         ->where('status', 3)
-    //         ->get();
-
-    //     $this->data['certificate_earned'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
-    //         ->whereNotNull('grade')
-    //         ->where('status', 2)
-    //         ->get();
-
-    //     $this->data['ongoingEvents'] = Event::with('registrations')
-    //         ->whereDate('event_date', $now->toDateString())
-    //         // ->whereTime('start_time', '<=', $now->toTimeString())
-    //         // ->whereTime('end_time', '>=', $now->toTimeString())
-    //         ->orderBy('start_time', 'asc')
-    //         ->get();
-
-    //     // Upcoming Events
-    //     $this->data['upcomingEvents'] = Event::with('registrations')
-    //         ->where(function ($query) use ($now) {
-    //             $query->whereDate('event_date', '>', $now->toDateString())
-    //                 ->orWhere(function ($q) use ($now) {
-    //                     $q->whereDate('event_date', '=', $now->toDateString())
-    //                         ->whereTime('start_time', '>', $now->toTimeString());
-    //                 });
-    //         })
-    //         ->orderBy('event_date', 'asc')
-    //         ->orderBy('start_time', 'asc')
-    //         ->get();
-    //     $this->data['registeredEvents'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
-    //         ->get();
-    //     $this->data['studentRegistrations'] = \App\Models\StudentEventRegistration::where('student_id', $student->id)
-    //         ->with('event') // eager load event for date and type
-    //         ->get();
-    //     return view('student.student_dashboard')->with($this->data);
-    // }
-
     public function index(Request $request)
     {
         $now = Carbon::now();
@@ -93,23 +46,23 @@ class StudentDashboardController extends Controller
             }, 'get_dep_events.registrations'])
             ->get();
 
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'schedule','student')->where('student_id', $student->id)
-                                           ->get();
+        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'schedule', 'student')->where('student_id', $student->id)
+            ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-             $q->where('department_id', $student->department_id)
-                 ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
-            })
+            $q->where('department_id', $student->department_id)
+                ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
+        })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('department_id', $student->department_id)
-                    ->where('event_date', '>', Carbon::now()->toDateString())
+                    ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
             ->get();
 
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
-                 $q->where('department_id', $student->department_id)
-                    ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
-                  })
+            $q->where('department_id', $student->department_id)
+                ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
+        })
             ->with(['schedule' => function ($q) use ($student) {
                 $q->where('department_id', $student->department_id)
                     ->where('event_date', '>', Carbon::now()->toDateString())

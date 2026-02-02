@@ -187,7 +187,7 @@
             .then(res => res.json())
             .then(data => {
                 if (!data.success || !Array.isArray(data.files)) {
-                    alert(data.message || 'No files to download.');
+                    showToast("No files to download.", "error", 2000);
                     return;
                 }
                 data.files.forEach(file => {
@@ -200,8 +200,8 @@
                 });
             })
             .catch(err => {
-                console.error(err);
-                alert('Something went wrong while downloading files.');
+                 showToast("Something went wrong while downloading files.", "error", 2000);
+                 return;
             });
 
     });

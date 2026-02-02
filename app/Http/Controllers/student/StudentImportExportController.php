@@ -31,7 +31,6 @@ class StudentImportExportController extends Controller
                 return back()->with('failures', $failures);
             }
 
-            // // If you used SkipsOnFailure in your Import class and didn't catch the exception
             if ($import->failures()->isNotEmpty()) {
                 $failures = $import->failures();
                 return back()->with('failures', $failures);

@@ -50,9 +50,15 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
-                        ])->count();
-                        $available = $event->schedule
-                            ? $event->schedule->seat_count - $registered
+                            'event_schedule_id' => $event->get_event_schedule->id,
+                        ])
+                            ->whereHas('student', function ($query) use ($event) {
+                                $query->where('department_id', $event->student->department_id);
+                            })
+                            ->count();
+
+                        $available = $event->get_event_schedule
+                            ? $event->get_event_schedule->seat_count - $registered
                             : 0;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -89,7 +95,7 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                       {{ optional($event->schedule)->event_date ? \Carbon\Carbon::parse($event->schedule->event_date)->format('F j, Y') : '-' }}
+                                        {{ optional($event->schedule)->event_date ? \Carbon\Carbon::parse($event->schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
@@ -111,7 +117,12 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
-                        ])->count();
+                            'event_schedule_id' => $event->get_event_schedule->id
+                        ])
+                        ->whereHas('student', function ($query) use ($event) {
+                                $query->where('department_id', $event->student->department_id);
+                            })
+                        ->count();
                         $available = $event->get_event_schedule->seat_count - $registered;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -162,8 +173,12 @@
                                         View Details
                                     </p>
                                 </div>
-                                <div class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
-                                 <p id="openUploadModal" class="px-2 text-center upload" data-event_id={{ $event->event->id }} data-schedule_id={{ $event->get_event_schedule->id }}  data-student_id={{ $event->student_id }}>Upload Proof</p>
+                                <div
+                                    class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
+                                    <p id="openUploadModal" class="px-2 text-center upload"
+                                        data-event_id={{ $event->event->id }}
+                                        data-schedule_id={{ $event->get_event_schedule->id }}
+                                        data-student_id={{ $event->student_id }}>Upload Proof</p>
                                 </div>
                             </div>
                         </div>
@@ -226,8 +241,7 @@
                             JPG, PNG, PDF, Word, Excel — Max 10MB each • Max 4 files
                         </p>
                     </div>
-                    <input type="file" id="fileInput" multiple
-                        class="hidden" />
+                    <input type="file" id="fileInput" multiple class="hidden" />
                 </div>
 
                 <!-- Divider -->
@@ -272,7 +286,7 @@
                     @endforeach
                     <!-- Optional Comment -->
                     <label class="text-white text-sm block mt-4 mb-2">
-                        Additional Comments (Optional)
+                        Additional Comments  <span class="text-red-600">*</span>
                     </label>
 
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
@@ -290,9 +304,10 @@
                     <img src="{{ asset('/images/upload_sucessfull.png') }}" width="70" />
                     <p class="text-white font-semibold">Proof uploaded successfully!</p>
                     <p class="text-white text-sm">Your attendance is marked as present</p>
-                    <button id="uploadAnother" class="upload border border-white text-white px-6 py-2 rounded-full mt-3">
+                    {{-- <button id="uploadAnother"
+                        class="upload border border-white text-white px-6 py-2 rounded-full mt-3">
                         Upload another proof
-                    </button>
+                    </button> --}}
                 </div>
             </div>
         </div>
