@@ -47,10 +47,13 @@
                     <label class="block text-sm font-medium mb-1">Department</label>
                     <select name="department_id" class="border rounded-lg px-3 py-2 w-full">
                         <option value="">-- Select Department --</option>
-                        @foreach ($schedule_department as $dept)
-                            <option value="{{ $dept->department->id }}"
-                                {{ request('department_id') == $dept->department->id ? 'selected' : '' }}>
-                                {{ $dept->department->name ?? '' }}
+                        @foreach ($schedule_department as $departmentId => $schedules)
+                            @php
+                                $schedule = $schedules->first(); // get one EventSchedule model
+                            @endphp
+                            <option value="{{ $schedule->department->id }}"
+                                {{ request('department_id') == $schedule->department->id ? 'selected' : '' }}>
+                                {{ $schedule->department->name }}
                             </option>
                         @endforeach
                     </select>
@@ -83,14 +86,14 @@
                     <table class="min-w-full divide-y text-sm mt-5">
                         <thead>
                             <tr class="bg-primary text-white uppercase tracking-wider">
-                                <th class="px-4 py-3 text-left font-semibold">S.No</th>
-                                <th class="px-4 py-3 text-left font-semibold">Register Number</th>
-                                <th class="px-4 py-3 text-left font-semibold">Student Name</th>
-                                <th class="px-4 py-3 text-left font-semibold">Department Name</th>
-                                <th class="px-4 py-3 text-left font-semibold">Section</th>
-                                <th class="px-4 py-3 text-left font-semibold">Student Report</th>
-                                <th class="px-4 py-3 text-left font-semibold">Download Files</th>
-                                <th class="px-4 py-3 text-left font-semibold">Grade</th>
+                                <th class="px-2 py-3 text-left font-semibold">S.No</th>
+                                <th class="px-2 py-3 text-left font-semibold">Register Number</th>
+                                <th class="px-2 py-3 text-left font-semibold">Student Name</th>
+                                <th class="px-2 py-3 text-left font-semibold">Department Name</th>
+                                <th class="px-2 py-3 text-left font-semibold">Section</th>
+                                <th class="px-2 py-3 text-left font-semibold">Student Report</th>
+                                <th class="px-2 py-3 text-left font-semibold">Download Files</th>
+                                <th class="px-2 py-3 text-left font-semibold">Grade</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
@@ -103,21 +106,21 @@
                                 <tr class="hover:bg-gray-50 transition">
                                     <input type="hidden" name="schedule_id"
                                         value="{{ $registration->event_schedule_id }}">
-                                    <td class="px-4 py-3">{{ $index + 1 }}</td>
-                                    <td class="px-4 py-3">{{ $registration->student->register_number ?? '' }}</td>
-                                    <td class="px-4 py-3">{{ $registration->student->name ?? '' }}</td>
-                                    <td class="px-4 py-3">{{ $registration->student->get_department->name ?? '' }}</td>
-                                    <td class="px-4 py-3">{{ $registration->student->section ?? '' }}</td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-2 py-3">{{ $index + 1 }}</td>
+                                    <td class="px-2 py-3">{{ $registration->student->register_number ?? '' }}</td>
+                                    <td class="px-2 py-3">{{ $registration->student->name ?? '' }}</td>
+                                    <td class="px-2 py-3">{{ $registration->student->get_department->name ?? '' }}</td>
+                                    <td class="px-2 py-3">{{ $registration->student->section ?? '' }}</td>
+                                    <td class="px-2 py-3">
                                         @if ($feedback && $proofs->count() > 0)
                                             <a href="{{ route('student_event_report', ['student' => $registration->student_id, 'event' => $event->id, 'schedule_id' => $registration->event_schedule_id]) }}"
                                                 target="_blank"
                                                 class="bg-green-600 text-white px-4 py-2 rounded-full text-sm">
-                                                View Report
+                                                View
                                             </a>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3 text-center">
+                                    <td class="px-2 py-3 text-center">
                                         @php
                                             $docFiles = $proofs->filter(function ($file) {
                                                 $ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
@@ -131,11 +134,11 @@
                                                 data-event_id="{{ $event->id }}"
                                                 data-student_id="{{ $registration->student_id }}"
                                                 data-schedule_id="{{ $registration->event_schedule_id }}">
-                                                Download All Files
+                                                Download
                                             </a>
                                         @endif
                                     </td>
-                                    <td class="px-4 py-3">
+                                    <td class="px-2 py-3">
                                         <select name="grades[{{ $registration->student_id }}]">
                                             <option value="">Select Grade</option>
                                             <option value="a" {{ $grade?->grade === 'a' ? 'selected' : '' }}>A

@@ -86,12 +86,14 @@
                     <tbody>
                         @forelse ($registeredStudents as $attendance)
                             @php
-                                $studentEntryExists = $attendance_entry
+                                $studentEntryExists =
+                                    $attendance_entry
                                         ->where('student_id', $attendance->student_id)
                                         ->where('event_schedule_id', $attendance->event_schedule_id)
                                         ->whereNotNull('entry_time')
                                         ->count() > 0;
-                                $studentExitExists = $attendance_entry
+                                $studentExitExists =
+                                    $attendance_entry
                                         ->where('student_id', $attendance->student_id)
                                         ->where('event_schedule_id', $attendance->event_schedule_id)
                                         ->whereNotNull('exit_time')
@@ -104,14 +106,20 @@
                                 <td class="px-4 py-3">{{ $attendance->student?->get_department?->name }}</td>
                                 <td class="px-4 py-3">{{ $attendance->student?->section }}</td>
                                 <td class="px-4 py-3 text-center">
-                                    <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"
+                                    {{-- <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"
                                         class="entry-checkbox" {{ $studentEntryExists ? 'checked disabled' : '' }}
-                                        {{ $anyEntryExists ? 'disabled' : '' }}>
+                                        {{ $anyEntryExists ? 'disabled' : '' }}> --}}
+                                    <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"
+                                        class="entry-checkbox" {{ $studentEntryExists ? 'checked' : '' }}
+                                        {{ $anyEntryExists }}>
                                 </td>
                                 <td class="px-4 py-3 text-center">
-                                    <input type="checkbox" name="attendance[{{ $attendance->student_id }}][exit]"
+                                    {{-- <input type="checkbox" name="attendance[{{ $attendance->student_id }}][exit]"
                                         class="exit-checkbox" {{ $studentExitExists ? 'checked disabled' : '' }}
-                                        {{ $anyExitExists ? 'disabled' : '' }}>
+                                        {{ $anyExitExists ? 'disabled' : '' }}> --}}
+                                    <input type="checkbox" name="attendance[{{ $attendance->student_id }}][exit]"
+                                        class="exit-checkbox" {{ $studentExitExists ? 'checked' : '' }}
+                                        {{ $anyExitExists }}>
                                 </td>
                             </tr>
                         @empty

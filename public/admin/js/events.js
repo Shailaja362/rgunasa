@@ -359,7 +359,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         card.innerHTML = `
             <button type="button"
-                class="removeDept absolute top-2 right-2 text-red-500 font-bold">&times;</button>
+                class="removeDept absolute top-2 right-1 text-red-500 font-bold">&times;</button>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
-                    <input type="date"
+                    <input type="text"
                         name="departments[${deptIndex}][section]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 section">
                 </div>
@@ -402,6 +402,9 @@ document.addEventListener("DOMContentLoaded", function () {
         `;
 
         deptContainer.appendChild(card);
+        flatpickr(card.querySelectorAll(".date_field"), {
+            dateFormat: "d/m/Y",
+        });
         deptIndex++; // critical
     }
 
@@ -411,6 +414,4 @@ document.addEventListener("DOMContentLoaded", function () {
             e.target.closest(".dept-card")?.remove();
         }
     });
-
-
 });

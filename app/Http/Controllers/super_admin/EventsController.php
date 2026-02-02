@@ -89,7 +89,7 @@ class EventsController extends Controller
                 ->orWhere(function ($q2) use ($now) {
                     $q2->whereDate('event_date', $now->toDateString());
                 });
-            })
+        })
             ->whereTime('end_time', '<', $now->toTimeString())->get();
         $this->data['registeredEvents'] = StudentEventRegistration::with('event.schedules')->get();
         return view('super_admin.event_index')->with($this->data);
@@ -129,8 +129,6 @@ class EventsController extends Controller
 
     public function saveEvent(Request $request)
     {
-
-
         try {
             $rules = [
                 'event_title'   => 'required',
@@ -159,7 +157,7 @@ class EventsController extends Controller
                 $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
             }
             $request->validate($rules);
-            
+
             if (!empty($request['event_id'])) {
                 $message = 'Event Updated successfully';
                 $event = Event::find($request['event_id']);
@@ -198,25 +196,37 @@ class EventsController extends Controller
             $event->location  = $request['location'] ?? '';
             $event->session = $request['session']  ?? '';
             $event->eligibility_criteria = $request['eligibility']  ?? '';
-            $event->end_registration = $request['registration_deadline']  ?? '';
+            $event->end_registration = Carbon::createFromFormat('d/m/Y', $request['registration_deadline'])
+                ->format('Y/m/d');
             $event->contact_person = $request['contact_person']  ?? '';
             $event->contact_email = $request['contact_email']  ?? '';
             $event->duration_months = $request['duration_months'];
             $event->save();
 
-            EventSchedule::where(['event_id' => $event->id])->delete();
-
+            $submittedScheduleIds = collect($request->departments)
+                ->pluck('schedule_id')
+                ->filter() // removes null / empty
+                ->values();
+            EventSchedule::where('event_id', $event->id)
+                ->whereNotIn('id', $submittedScheduleIds)
+                ->delete();
             foreach ($request->departments as $schedule) {
-                $exists_schedule = EventSchedule::where(['event_id' => $event->id,
-                      'department_id' => $schedule['department_id'], 'section' => $schedule['section'] ,
-                      'event_date' => $schedule['event_date']])->first();
-                if(empty($exists_schedule)){
+                $exists_schedule = EventSchedule::where([
+                    'event_id' => $event->id,
+                    'department_id' => $schedule['department_id'],
+                    'section' => $schedule['section'],
+                    'event_date' => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])
+                        ->format('Y-m-d')
+                ])->first();
+                if (empty($exists_schedule)) {
                     $create_event_schedule = new EventSchedule();
                     $create_event_schedule->event_id = $event->id;
                     $create_event_schedule->department_id = $schedule['department_id'];
                     $create_event_schedule->section = $schedule['section'];
-                    $create_event_schedule->event_date = $schedule['event_date'];
-                    $create_event_schedule->reserve_date = $schedule['reserve_date'];
+                    $create_event_schedule->event_date = Carbon::createFromFormat('d/m/Y', $schedule['event_date'])
+                        ->format('Y-m-d');
+                    $create_event_schedule->reserve_date = Carbon::createFromFormat('d/m/Y', $schedule['reserve_date'])
+                        ->format('Y-m-d');
                     $create_event_schedule->seat_count = $schedule['seat_count'];
                     $create_event_schedule->save();
                 }

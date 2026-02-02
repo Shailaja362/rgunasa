@@ -34,7 +34,8 @@ class AssignGradeController extends Controller
         $this->data['registrations'] = collect();
         $this->data['schedule_department'] = EventSchedule::with('department')
             ->where('event_id', $eventId)
-            ->get();
+            ->get()
+            ->groupBy('department_id');
         if ($request->filled('department_id') && $request->filled('event_date')) {
             $schedule = $this->resolveSchedule(
                 $eventId,

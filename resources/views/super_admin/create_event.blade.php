@@ -96,7 +96,6 @@
         <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
         <p>Add one or more department schedules</p>
         <div id="departmentContainer" class="space-y-6 mt-6">
-
             @php
                 if (!empty($edit_event) && $edit_event->get_dep_events->count() > 0) {
                     $deptData = $edit_event->get_dep_events;
@@ -108,7 +107,8 @@
 
             @foreach ($deptData as $index => $dept)
                 <div class="bg-[#F0F0F0] p-5 rounded-2xl relative dept-card">
-
+                    <input type="hidden" name="departments[{{ $index }}][schedule_id]"
+                        value="{{ $dept->id }}">
                     @if ($index > 0)
                         <button type="button" class="absolute top-2 right-2 text-red-500 font-bold removeDept">
                             &times;
@@ -135,25 +135,29 @@
                         <div>
                             <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
                             <input type="text" name="departments[{{ $index }}][section]"
-                                value="{{ $dept->section ?? '' }}" class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                                value="{{ $dept->section ?? '' }}"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
                         </div>
                         {{-- Event Date --}}
                         <div>
-                            <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
+                            <label class="block text-sm font-medium">Event Date <span
+                                    class="text-red-600">*</span></label>
                             <input type="text" name="departments[{{ $index }}][event_date]"
                                 value="{{ \Carbon\Carbon::parse($dept->event_date)->format('d/m/Y') }}"
                                 class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
                         </div>
                         {{-- Reserve Date --}}
                         <div>
-                            <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
+                            <label class="block text-sm font-medium">Reserve Date <span
+                                    class="text-red-600">*</span></label>
                             <input type="text" name="departments[{{ $index }}][reserve_date]"
                                 value="{{ \Carbon\Carbon::parse($dept->reserve_date)->format('d/m/Y') }}"
                                 class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 reserve_date">
                         </div>
                         {{-- Seat Count --}}
                         <div>
-                            <label class="block text-sm font-medium">Seat Count <span class="text-red-600">*</span></label>
+                            <label class="block text-sm font-medium">Seat Count <span
+                                    class="text-red-600">*</span></label>
                             <input type="number" name="departments[{{ $index }}][seat_count]"
                                 value="{{ $dept->seat_count ?? '' }}"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 seat_count">
@@ -162,7 +166,6 @@
                 </div>
             @endforeach
         </div>
-
         <button type="button" id="addDeptBtn" class="px-4 py-2 bg-primary text-white rounded-full mt-4">
             + Add Department
         </button>
@@ -227,7 +230,9 @@
             <div>
                 <label class="block text-sm font-medium">Registration Deadline<span
                         class="text-red-500">*</span></label>
-                <input type="text" name="registration_deadline" id="registration_deadline" value="{{ \Carbon\Carbon::parse($edit_event->end_registration)->format('d/m/Y') }}" class="date_field w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <input type="text" name="registration_deadline" id="registration_deadline"
+                    value="{{ \Carbon\Carbon::parse($edit_event->end_registration)->format('d/m/Y') }}"
+                    class="date_field w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
 
             <div>
@@ -275,8 +280,9 @@
         </div>
         <!-- Center-Aligned Button -->
         <div class="flex justify-center mt-10">
-        <button type="submit" id="submitBtn" class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
-            <i class="fas fa-save"></i> Create Event </button>
+            <button type="submit" id="submitBtn"
+                class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
+                <i class="fas fa-save"></i> Create Event </button>
         </div>
     </form>
 </x-layouts.app>
@@ -286,9 +292,9 @@
         $departments->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];
         }));
-        flatpickr(".date_field", {
-    dateFormat: "d/m/Y",
-});
+    flatpickr(".date_field", {
+        dateFormat: "d/m/Y",
+    });
 </script>
 
 

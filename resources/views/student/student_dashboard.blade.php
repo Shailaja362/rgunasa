@@ -78,7 +78,6 @@
                 @foreach ($upcomingEvents as $event)
                     @foreach ($event->get_dep_events as $dept)
                         @php
-
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
                             $registeredCount = $event
@@ -256,9 +255,9 @@
                 ============================ */
                             $registeredCount = $ongoing_event
                                 ->registrations()
-                                ->where('event_schedule_id', $dept->id)
-                                ->whereHas('student', function ($query) use ($dept) {
-                                    $query->where('department_id', $dept->department_id);
+                                ->where('event_schedule_id', $department->id)
+                                ->whereHas('student', function ($query) use ($department) {
+                                    $query->where('department_id', $department->department_id);
                                 })
                                 ->count();
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
