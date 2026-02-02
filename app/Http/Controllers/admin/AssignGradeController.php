@@ -94,7 +94,7 @@ class AssignGradeController extends Controller
 
     public function downloadEventReport(Request $request)
     {
-        $student = Student::findOrFail($request->student);
+        $student = Student::with('get_department')->findOrFail($request->student);
         $event   = Event::findOrFail($request->event);
         $event_schedule   = EventSchedule::findOrFail($request->schedule_id);
         $proofs = StudentUploadProof::where([

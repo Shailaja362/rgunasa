@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <title>Event Participation Report</title>
-
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
@@ -84,23 +83,24 @@
 
 <body>
     <img src="{{ public_path('images/rtc_logo.png') }}" style="width:100%; margin-bottom:10px;">
-    <!-- ================= HEADER ================= -->
     <div class="header">
         <h1>Event Participation Report</h1>
         <p>Attendance & Feedback Summary</p>
     </div>
-
-    <!-- ================= STUDENT INFO ================= -->
     <div class="section">
         <div class="section-title">Student Information</div>
         <table>
             <tr>
                 <td><strong>Name</strong></td>
-                <td>{{ $student->name }}</td>
+                <td>{{ $student->name ?? '' }}</td>
             </tr>
             <tr>
-                <td><strong>Student ID</strong></td>
-                <td>{{ $student->id }}</td>
+                <td><strong>Register Number</strong></td>
+                <td>{{ $student->register_number }}</td>
+            </tr>
+            <tr>
+                <td><strong>Department Name</strong></td>
+                <td>{{ $student?->get_department->name ?? '' }}</td>
             </tr>
         </table>
     </div>
@@ -119,7 +119,11 @@
             </tr>
             <tr>
                 <td><strong>Time</strong></td>
-                <td>{{ $event->stat_time ?? '' }} - {{ $event->end_time ?? '' }}</td>
+                <td>
+                    {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:i A') : '' }}
+                    -
+                    {{ $event->end_time ? \Carbon\Carbon::parse($event->end_time)->format('h:i A') : '' }}
+                </td>
             </tr>
             <tr>
                 <td><strong>Location</strong></td>
@@ -135,23 +139,31 @@
     <!-- ================= PROOF IMAGES ================= -->
     <div class="section">
         <div class="section-title">Uploaded Proof</div>
-
         <div class="images">
             @foreach ($proofs as $proof)
-                <div class="image-box">
-                    <img src="{{ public_path('storage/' . $proof->file_path) }}">
-                </div>
+                @if ($proof->file_type == 'jpg' || $proof->file_type == 'jpeg' || $proof->file_type == 'png')
+                    <div class="image-box">
+                        <img src="{{ public_path('storage/' . $proof->file_path) }}">
+                    </div>
+                @else
+                    <div class="file-box"
+                        style="display: flex; align-items: center; gap: 8px; padding: 8px; border: 1px solid #ccc; border-radius: 6px; max-width: 200px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#555"
+                            viewBox="0 0 24 24">
+                            <path
+                                d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm7 1.5V9h5.5L13 3.5z" />
+                        </svg>
+                        <span style="font-size: 14px; color: #333;">{{ $proof->file_name ?? 'Unknown file' }}</span>
+                    </div>
+                @endif
             @endforeach
         </div>
-
     </div>
 
     <!-- ================= FEEDBACK ================= -->
     <div class="section">
         <div class="section-title">Event Feedback</div>
-
         @php $ratings = json_decode($feedback->ratings, true); @endphp
-
         <table>
             @foreach ($ratings as $key => $value)
                 <tr>
@@ -164,18 +176,12 @@
             @endforeach
         </table>
     </div>
-
-    <!-- ================= COMMENTS ================= -->
     <div class="section">
         <div class="section-title">Additional Comments</div>
         <p>{{ $feedback->comments ?? '— No comments provided —' }}</p>
     </div>
-
-    <!-- ================= FOOTER ================= -->
     <div class="footer">
         Generated on {{ now()->format('d M Y, h:i A') }}
     </div>
-
 </body>
-
 </html>
