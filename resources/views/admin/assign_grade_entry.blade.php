@@ -183,7 +183,8 @@
         e.preventDefault();
         const eventId = $(this).data('event_id');
         const studentId = $(this).data('student_id');
-        fetch(`/admin/download-otherfiles/${eventId}/${studentId}`)
+        const schedule_id = $(this).data('schedule_id');
+        fetch(`/admin/download-otherfiles/${eventId}/${studentId}/${schedule_id}`)
             .then(res => res.json())
             .then(data => {
                 if (!data.success || !Array.isArray(data.files)) {

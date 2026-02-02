@@ -122,7 +122,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/task-view', [AssignTasksController::class, 'viewTask'])
             ->name('task_view');
 
-        Route::get('/student-event-report',[AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
-        Route::get('/download-otherfiles/{event}/{student}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
+        Route::get('/student-event-report', [AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
+        Route::get('/download-otherfiles/{event}/{student}/{schedule_id}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
     });
 });

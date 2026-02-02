@@ -117,12 +117,12 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
-                            'event_schedule_id' => $event->get_event_schedule->id
+                            'event_schedule_id' => $event->get_event_schedule->id,
                         ])
-                        ->whereHas('student', function ($query) use ($event) {
+                            ->whereHas('student', function ($query) use ($event) {
                                 $query->where('department_id', $event->student->department_id);
                             })
-                        ->count();
+                            ->count();
                         $available = $event->get_event_schedule->seat_count - $registered;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -268,25 +268,25 @@
                             <p class="text-white text-sm mb-2">
                                 {{ $question }}
                             </p>
-
                             <div class="flex gap-1">
-                                @for ($i = 1; $i <= 5; $i++)
+                                @for ($i = 5; $i >= 1; $i--)
                                     <input type="radio" id="{{ $key }}_{{ $i }}"
                                         name="ratings[{{ $key }}]" value="{{ $i }}"
                                         class="hidden peer">
                                     <label for="{{ $key }}_{{ $i }}"
                                         class="cursor-pointer text-xl text-gray-300
-                                                  peer-checked:text-yellow-400
-                                                  hover:text-yellow-300 transition">
+                   peer-checked:text-yellow-400
+                   hover:text-yellow-300 transition">
                                         ★
                                     </label>
                                 @endfor
                             </div>
+
                         </div>
                     @endforeach
                     <!-- Optional Comment -->
                     <label class="text-white text-sm block mt-4 mb-2">
-                        Additional Comments  <span class="text-red-600">*</span>
+                        Additional Comments <span class="text-red-600">*</span>
                     </label>
 
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"

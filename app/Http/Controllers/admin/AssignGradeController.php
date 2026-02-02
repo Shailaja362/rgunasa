@@ -120,17 +120,17 @@ class AssignGradeController extends Controller
         return $pdf->stream('event-report.pdf');
     }
 
-    public function downloadAll($eventId, $studentId)
+    public function downloadAll($eventId, $studentId, $scheduleId)
     {
         $proofs = StudentUploadProof::where('event_id', $eventId)
             ->where('student_id', $studentId)
-            ->where('event_schedule_id', request()->schedule_id)
+            ->where('event_schedule_id', $scheduleId)
             ->get();
 
         // Filter only document files
         $docFiles = $proofs->filter(function ($file) {
             $ext = strtolower(pathinfo($file->file_name, PATHINFO_EXTENSION));
-            return in_array($ext, ['pdf', 'doc', 'docx', 'xls', 'xlsx']);
+            return in_array($ext, ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'rtf']);
         });
 
         if ($docFiles->isEmpty()) {
