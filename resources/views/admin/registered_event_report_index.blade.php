@@ -33,11 +33,8 @@
             </div>
 
         </div>
-
-        {{-- Filter Section --}}
         <form method="GET" action="" class="bg-white rounded-lg shadow p-4 mb-6">
             <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                {{-- Event --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">Event</label>
                     <select name="event_id" class="w-full border rounded px-3 py-2">
@@ -50,8 +47,6 @@
                         @endforeach
                     </select>
                 </div>
-
-                {{-- Status --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">Status</label>
                     <select name="status" class="w-full border rounded px-3 py-2">
@@ -64,21 +59,16 @@
                     </select>
 
                 </div>
-
-                {{-- From Date --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}"
                         class="w-full border rounded px-3 py-2">
                 </div>
-
-                {{-- To Date --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}"
                         class="w-full border rounded px-3 py-2">
                 </div>
-                {{-- Search --}}
                 <div>
                     <label class="block text-sm font-medium mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}"
@@ -96,8 +86,6 @@
                 </a>
             </div>
         </form>
-
-        {{-- Table --}}
         <div class="bg-white rounded-lg shadow overflow-x-auto">
             <table class="min-w-full border-collapse">
                 <thead class="bg-primary text-white uppercase text-sm">
@@ -107,8 +95,8 @@
                         <th class="px-2 py-3 text-left text-sm font-semibold">Student</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Department</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Section</th>
-                        <th class="px-2 py-3 text-left text-sm font-semibold">Email</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Event</th>
+                        <th class="px-2 py-3 text-left text-sm font-semibold">Event Date</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Registered At</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Status</th>
                     </tr>
@@ -122,8 +110,16 @@
                             <td class="px-2 py-3">{{ $row->student?->name }}</td>
                             <td class="px-2 py-3">{{ $row->student?->get_department?->name }}</td>
                             <td class="px-2 py-3">{{ $row->student?->section }}</td>
-                            <td class="px-2 py-3">{{ $row->student->email }}</td>
                             <td class="px-2 py-3">{{ $row->event->title }}</td>
+                            <td class="px-2 py-3">
+                                @if ($row->get_event_schedule)
+                                    {{ \Carbon\Carbon::parse(
+                                        $row->get_event_schedule->event_date ?? $row->get_event_schedule->reserve_date,
+                                    )->format('d M Y') }}
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td class="px-2 py-3">{{ $row->created_at->format('d M Y') }}</td>
                             <td class="px-2 py-3">
                                 <span

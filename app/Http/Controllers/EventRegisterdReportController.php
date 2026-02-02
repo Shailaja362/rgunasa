@@ -29,7 +29,7 @@ class EventRegisterdReportController extends Controller
             4 => 'bg-red-100 text-red-700',
         ];
         // Registrations query
-        if(!empty($request->all())){
+        if (!empty($request->all())) {
             $this->data['registrations'] = StudentEventRegistration::with([
                 'event:id,title',
                 'student:id,name,email,department_id',
@@ -44,15 +44,15 @@ class EventRegisterdReportController extends Controller
                 })
                 ->when($request->from_date, function ($q) use ($request) {
                     $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                       $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%')
-                             ->orWhereDate('reserve_date', 'like', '%' . $request->from_date . '%');
-                   });
-             })
+                        $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%')
+                            ->orWhereDate('reserve_date', 'like', '%' . $request->from_date . '%');
+                    });
+                })
                 ->when($request->to_date, function ($q) use ($request) {
-                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                    $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%')
-                        ->orWhereDate('reserve_date', 'like', '%' . $request->to_date . '%');
-                });
+                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
+                        $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%')
+                                 ->orWhereDate('reserve_date', 'like', '%' . $request->to_date . '%');
+                    });
                 })
                 ->when($request->search, function ($q) use ($request) {
                     $q->whereHas('student', function ($student) use ($request) {
@@ -62,7 +62,7 @@ class EventRegisterdReportController extends Controller
                 })
                 ->latest()
                 ->paginate(10);
-            }else{
+        } else {
             $this->data['registrations'] = new LengthAwarePaginator(
                 collect(), // empty collection
                 0,         // total
@@ -70,7 +70,7 @@ class EventRegisterdReportController extends Controller
                 1,         // current page
                 ['path' => request()->url(), 'query' => request()->query()]
             );
-           }
+        }
 
         return view('admin.registered_event_report_index')->with($this->data);
     }
@@ -116,11 +116,10 @@ class EventRegisterdReportController extends Controller
         if ($request->type === 'pdf') {
             $pdf = Pdf::loadView(
                 'admin.event_registrations.export_pdf',
-                 $this->data
+                $this->data
             );
 
             return $pdf->download('event-registrations.pdf');
         }
-
     }
 }

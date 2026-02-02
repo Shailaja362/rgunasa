@@ -100,7 +100,6 @@
                 if (!empty($edit_event) && $edit_event->get_dep_events->count() > 0) {
                     $deptData = $edit_event->get_dep_events;
                 } else {
-                    // always force one empty section
                     $deptData = collect([null]);
                 }
             @endphp
@@ -110,12 +109,11 @@
                     <input type="hidden" name="departments[{{ $index }}][schedule_id]"
                         value="{{ $dept->id }}">
                     @if ($index > 0)
-                        <button type="button" class="absolute top-2 right-2 text-red-500 font-bold removeDept">
-                            &times;
+                        <button type="button" class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">
+                           Remove
                         </button>
                     @endif
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {{-- Department dropdown --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                         <div>
                             <label class="block text-sm font-medium">
                                 Department <span class="text-red-500">*</span>

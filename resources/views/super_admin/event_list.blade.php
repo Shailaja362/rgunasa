@@ -3,7 +3,9 @@
         <h3 class="font-semibold text-primary">Events</h3>
     </div>
     <div class="flex justify-end">
-            <a href="{{ route('create_event') }}" class="px-2 w-40 mt-3 bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full"><i class="fa fa-plus" aria-hidden="true"></i>Create Event</a>
+        <a href="{{ route('create_event') }}"
+            class="px-2 w-40 mt-3 bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full"><i
+                class="fa fa-plus" aria-hidden="true"></i>Create Event</a>
     </div>
     <!-- Dashboard Header -->
     @if (!empty(session()->get('admin')))
@@ -72,10 +74,10 @@
                                     <i class="fa fa-plus" aria-hidden="true"></i> Create Event
                                 </a>
                             @endif
- <a href="{{ route('task_view', ['task_id' => encrypt($task->id)]) }}"
-           class="px-2 w-30 mt-3 bg-gray-200 text-gray-800 font-medium py-1 rounded-full flex items-center justify-center hover:bg-gray-300">
-            <i class="fa fa-eye mr-1" aria-hidden="true"></i> View
-        </a>
+                            <a href="{{ route('task_view', ['task_id' => encrypt($task->id)]) }}"
+                                class="px-2 w-30 mt-3 bg-gray-200 text-gray-800 font-medium py-1 rounded-full flex items-center justify-center hover:bg-gray-300">
+                                <i class="fa fa-eye mr-1" aria-hidden="true"></i> View
+                            </a>
                         </div>
                     </div>
                 @endif
@@ -89,54 +91,83 @@
                 <table class="w-full text-sm text-left text-gray-700 border-collapse">
                     <thead>
                         <tr class="bg-primary text-white text-sm uppercase tracking-wider">
-                            <th class="px-2 py-2">ID</th>
-                            <th class="px-2 py-2">Banner Image</th>
+                            <th class="px-2 py-2">#</th>
+                            <th class="px-2 py-2">Banner</th>
                             <th class="px-2 py-2">Event Name</th>
                             <th class="px-2 py-2">Programme Officer</th>
-                            <th class="px-2 py-2">Start Time</th>
-                            <th class="px-2 py-2">End Time</th>
-                            <th class="px-2 py-2">End Date</th>
+                            <th class="px-2 py-2">Departments</th>
                             <th class="px-2 py-2">Action</th>
                         </tr>
                     </thead>
-                    <tbody id="categoryTableBody" class="divide-y divide-gray-200">
+
+                    <tbody class="divide-y divide-gray-200">
                         @foreach ($events as $event)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">
+                                <td class="px-3 py-2 font-medium">{{ $loop->iteration }}</td>
+                                <td class="px-3 py-2">
                                     @if ($event->banner_image)
                                         <img src="{{ asset('storage/' . $event->banner_image) }}"
-                                            class="h-10 w-10 object-cover rounded-lg shadow-sm border" />
+                                            class="h-10 w-10 object-cover rounded-lg border" />
                                     @else
                                         <span class="text-gray-400 italic">No Image</span>
                                     @endif
                                 </td>
-                                <td class="px-2 py-3">{{ $event->title ?? '' }}</td>
-                                <td class="px-2 py-3">{{ $event->get_faculty->name }}</td>
-                                <td class="px-2 py-3">
-                                    {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:i A') : '-' }}
-                                </td>
-                                <td class="px-2 py-3">
-                                    {{ $event->end_time ? \Carbon\Carbon::parse($event->end_time)->format('h:i A') : '-' }}
-                                </td>
-                                <td class="px-2 py-3">{{ $event->end_registration ?? '' }}</td>
-                                <td class="px-2 py-3 flex justify-center gap-4">
-                                    <!-- Edit -->
-                                    <a href="{{ route('create_event', ['event_id' => encrypt($event->id)]) }}">
+                                <td class="px-3 py-2">{{ $event->title }}</td>
+                                <td class="px-3 py-2">{{ $event->get_faculty->name ?? '-' }}</td>
+                                <!-- Departments -->
+                               <td class="px-3 py-2">
+    <div class="space-y-2">
+        @foreach ($event->schedules as $schedule)
+            <div class="border rounded-lg p-2 bg-gray-50">
+
+                <div class="text-sm font-semibold text-gray-800">
+                    {{ $schedule->department->name }}
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Event Date:</span>
+                    {{ \Carbon\Carbon::parse($schedule->event_date)->format('d-m-Y') }}
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Reserve Date:</span>
+                    {{ \Carbon\Carbon::parse($schedule->reserve_date)->format('d-m-Y') }}
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Section:</span>
+                    {{ strtoupper($schedule->section) }}
+                </div>
+
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Seats:</span>
+                    {{ $schedule->seat_count }}
+                </div>
+
+            </div>
+        @endforeach
+    </div>
+</td>
+
+                                <!-- Action -->
+                                <td class="px-3 py-2 text-center">
+                                    <a href="{{ route('create_event', ['event_id' => encrypt($event->id)]) }}"
+                                        class="text-blue-600 hover:text-blue-800">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
                                 </td>
+
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
+
             </div>
             <div class="p-4">
                 {{ $events->links() }}
             </div>
         </div>
     </section>
-
 </x-layouts.app>
 
 <script src="{{ asset('admin/js/events.js') }}"></script>

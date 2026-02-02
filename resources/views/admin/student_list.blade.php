@@ -66,6 +66,37 @@
         </form>
     </div>
 
+  <h4 class="font-semibold text-gray-800 mb-4">Student Filter</h4>
+    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
+        <div class="mt-6">
+            <form method="GET" action="{{ route('student_list') }}" class="flex gap-3 mb-4">
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Search name / email / mobile"
+                    class="border border-gray-300 rounded-full px-4 py-2 w-[300px] text-sm">
+                <select name="department_id" class="border border-gray-300 rounded-full px-4 py-2 text-sm">
+                    <option value="">All Departments</option>
+                    @foreach ($departments as $dept)
+                        <option value="{{ $dept->id }}"
+                            {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                            {{ $dept->name }}
+                        </option>
+                    @endforeach
+                </select>
+
+                <button type="submit"
+                    class="px-5 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full">
+                    <i class="fa fa-search"></i> Search
+                </button>
+
+                @if (request()->hasAny(['search', 'department_id']))
+                    <a href="{{ route('student_list') }}" class="px-5 py-2 bg-gray-400 text-white rounded-full">
+                        Reset
+                    </a>
+                @endif
+            </form>
+        </div>
+    </section>
+
     <section class="p-2">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Student List</h4>
@@ -79,7 +110,7 @@
                             <th class="px-3 py-2">Mobile Number</th>
                             <th class="px-3 py-2">Date of Birth</th>
                             <th class="px-3 py-2">Department</th>
-                            <th class="px-3 py-2">Designation</th>
+                            <th class="px-3 py-2">Programme</th>
                             <th class="px-3 py-2">Action</th>
                         </tr>
                     </thead>

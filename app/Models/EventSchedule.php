@@ -6,6 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class EventSchedule extends Model
 {
+    protected $fillable = [
+        'event_id',
+        'department_id',
+        'section',
+        'event_date',
+        'reserve_date',
+        'seat_count',
+    ];
+    
     public function registrations()
     {
         return $this->hasMany(StudentEventRegistration::class, 'event_id','event_id');

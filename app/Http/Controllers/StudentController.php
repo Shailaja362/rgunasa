@@ -14,11 +14,36 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->data['student'] = Student::with('get_department', 'get_programme')->paginate(10);
-        return view('admin/student_list')->with($this->data);
+        $query = Student::with('get_department', 'get_programme');
+
+        //  Text search
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('mobile_number', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Department filter
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        $this->data['student'] = $query
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString(); 
+
+        $this->data['departments'] = Department::orderBy('name')->get();
+
+        return view('admin.student_list')->with($this->data);
     }
+
 
     public function createStudent(Request $request)
     {

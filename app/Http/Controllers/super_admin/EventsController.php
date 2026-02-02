@@ -22,7 +22,6 @@ class EventsController extends Controller
     public function index(Request $request)
     {
         $now = Carbon::now();
-
         $this->data['ongoingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
             $q->whereDate('event_date', $now->toDateString());
         }])->whereHas('schedules', function ($q) use ($now) {
@@ -31,7 +30,6 @@ class EventsController extends Controller
             ->whereTime('start_time', '<=', $now->toTimeString())
             ->whereTime('end_time', '>=', $now->toTimeString())
             ->get();
-
         // Upcoming Events
         $this->data['upcomingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
             $q->whereDate('event_date', '>', $now->toDateString())
@@ -45,7 +43,6 @@ class EventsController extends Controller
                 });
         })
             ->whereTime('start_time', '>', $now->toTimeString())->get();
-
         // Completed Events
         $this->data['completedEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
             $q->whereDate('event_date', '<', $now->toDateString())
@@ -90,7 +87,7 @@ class EventsController extends Controller
     public function eventlist(Request $request)
     {
         $adminId = Auth::guard('admin')->id();
-        $this->data['events'] = Event::with('get_faculty')->paginate(10);
+        $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
         return view('super_admin.event_list')->with($this->data);
     }
@@ -179,24 +176,22 @@ class EventsController extends Controller
                 ->whereNotIn('id', $submittedScheduleIds)
                 ->delete();
             foreach ($request->departments as $schedule) {
-                $exists_schedule = EventSchedule::where([
-                    'event_id' => $event->id,
+
+                $data = [
+                    'event_id'      => $event->id,
                     'department_id' => $schedule['department_id'],
-                    'section' => $schedule['section'],
-                    'event_date' => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])
-                        ->format('Y-m-d')
-                ])->first();
-                if (empty($exists_schedule)) {
-                    $create_event_schedule = new EventSchedule();
-                    $create_event_schedule->event_id = $event->id;
-                    $create_event_schedule->department_id = $schedule['department_id'];
-                    $create_event_schedule->section = $schedule['section'];
-                    $create_event_schedule->event_date = Carbon::createFromFormat('d/m/Y', $schedule['event_date'])
-                        ->format('Y-m-d');
-                    $create_event_schedule->reserve_date = Carbon::createFromFormat('d/m/Y', $schedule['reserve_date'])
-                        ->format('Y-m-d');
-                    $create_event_schedule->seat_count = $schedule['seat_count'];
-                    $create_event_schedule->save();
+                    'section'       => $schedule['section'],
+                    'event_date'    => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
+                    'reserve_date'  => Carbon::createFromFormat('d/m/Y', $schedule['reserve_date'])->format('Y-m-d'),
+                    'seat_count'    => $schedule['seat_count'],
+                ];
+
+                if (!empty($schedule['schedule_id'])) {
+                    EventSchedule::where('id', $schedule['schedule_id'])
+                        ->where('event_id', $event->id)
+                        ->update($data);
+                } else {
+                    EventSchedule::create($data);
                 }
             }
 

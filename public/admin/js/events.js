@@ -358,10 +358,8 @@ document.addEventListener("DOMContentLoaded", function () {
         card.className = "bg-[#F0F0F0] p-5 rounded-2xl relative dept-card";
 
         card.innerHTML = `
-            <button type="button"
-                class="removeDept absolute top-2 right-1 text-red-500 font-bold">&times;</button>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <button type="button" class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">Remove</button>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                 <div>
                     <label class="block text-sm font-medium">Department <span class="text-red-600">*</span></label>
                     <select name="departments[${deptIndex}][department_id]"
@@ -370,21 +368,18 @@ document.addEventListener("DOMContentLoaded", function () {
                         ${deptOptionsHtml}
                     </select>
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
                     <input type="text"
                         name="departments[${deptIndex}][section]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 section">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
                     <input type="date"
                         name="departments[${deptIndex}][event_date]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date date_field">
                 </div>
-
                 <div>
                     <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
                     <input type="date"
