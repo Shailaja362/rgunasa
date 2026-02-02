@@ -82,20 +82,20 @@
                 <select name="gender" id="gender"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="" selected disabled>Select Gender</option>
-                    <option value="m">Male</option>
-                    <option value="f">FeMale</option>
-                    <option value="o">Others</option>
+                    <option value="m"  {{  $edit_student->gender == "m" ? 'selected' : '' }}>Male</option>
+                    <option value="f"  {{  $edit_student->gender == "f" ? 'selected' : '' }}>FeMale</option>
+                    <option value="o" {{  $edit_student->gender == "o" ? 'selected' : '' }}>Others</option>
                 </select>
             </div>
             <div>
                 <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
                 <select name="section" id="section" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="" selected disabled>Select Section</option>
-                    <option value="a">A</option>
-                    <option value="b">B</option>
-                    <option value="c">C</option>
-                    <option value="d">D</option>
-                    <option value="r">R</option>
+                    <option value="a" {{  $edit_student->section == "a" ? 'selected' : '' }}>A</option>
+                    <option value="b" {{  $edit_student->section == "b" ? 'selected' : '' }}>B</option>
+                    <option value="c" {{  $edit_student->section == "c" ? 'selected' : '' }}>C</option>
+                    <option value="d" {{  $edit_student->section == "d" ? 'selected' : '' }}>D</option>
+                    <option value="r" {{  $edit_student->section == "r" ? 'selected' : '' }}>R</option>
                 </select>
             </div>
         </div>

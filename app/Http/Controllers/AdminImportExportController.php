@@ -7,6 +7,8 @@ use App\Imports\AdminImport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+
 
 class AdminImportExportController extends Controller
 {
@@ -21,20 +23,26 @@ class AdminImportExportController extends Controller
             $request->validate([
                 'file' => 'required|mimes:xlsx'
             ]);
+
             $import = new AdminImport();
+
             try {
                 Excel::import($import, $request->file('file'));
-            } catch (ValidationException $e) {
-                $failures = $e->failures();
+            } catch (ExcelValidationException $e) {
+                $failures = $e->failures(); // This contains all row-level errors
                 return back()->with('failures', $failures);
             }
-            // // If you used SkipsOnFailure in your Import class and didn't catch the exception
+
+            // If you use SkipsOnFailure in your import
             if ($import->failures()->isNotEmpty()) {
                 $failures = $import->failures();
                 return back()->with('failures', $failures);
             }
+
             return back()->with('success', 'Students Uploaded Successfully');
-        } catch (ValidationException $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // This will catch file upload errors
+            return back()->withErrors($e->errors());
         }
     }
 }

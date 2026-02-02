@@ -19,7 +19,7 @@ use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-
+use Illuminate\Validation\ValidationException;
 
 class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, SkipsOnFailure, SkipsOnError, SkipsEmptyRows
 {
@@ -29,22 +29,44 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
     {
         $department = Department::where('name', strtolower(trim($row['department'])))->first();
         $programme  = Programme::where('name', strtolower(trim($row['programme'])))->first();
-        // Find existing student by email or mobile number
+
+        // Find the student by email or mobile_number (existing record to update)
         $student = Student::where('email', $row['email'])
             ->orWhere('mobile_number', $row['mobile_number'])
             ->first();
 
+        // Check for conflicts in the database
+        $conflict = Student::where(function ($q) use ($row) {
+            $q->where('email', $row['email'])
+                ->orWhere('mobile_number', $row['mobile_number'])
+                ->orWhere('register_number', $row['register_number']);
+        })
+            ->when($student, function ($q) use ($student) {
+                // Exclude the student we are updating
+                $q->where('id', '!=', $student->id);
+            })
+            ->exists();
+
+        if ($conflict) {
+            throw ValidationException::withMessages([
+                'email' => "Email {$row['email']} is already taken by another student.",
+                'mobile_number' => "Mobile number {$row['mobile_number']} is already taken by another student.",
+                'register_number' => "Register number {$row['register_number']} is already taken by another student.",
+            ]);
+        }
+
+        //  Update existing student
         if ($student) {
             $student->update([
                 'section' => $row['section'],
                 'register_number' => $row['register_number'],
-                // 'department_id' => $department?->id,
-                // 'programme_id'  => $programme?->id,
+                'department_id' => $department?->id,
+                'programme_id'  => $programme?->id,
             ]);
-
-            return null; // Skip inserting a new record
+            return null; // skip creating new
         }
 
+        //  Insert new student if not exists
         return new Student([
             'department_id' => $department?->id,
             'programme_id'  => $programme?->id,
@@ -58,6 +80,7 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
             'section' => $row['section'],
         ]);
     }
+
 
     private function transformDate($value)
     {
@@ -95,38 +118,13 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
     {
         return [
             '*.name' => ['bail', 'required', 'string'],
-            '*.email' => [
-                'bail',
-                'required',
-                'email',
-                'distinct', // prevents duplicate emails inside Excel
-                Rule::unique('students', 'email'), // prevents DB duplicates
-            ],
-            '*.mobile_number' => [
-                'bail',
-                'required',
-                'digits:10',
-                'distinct', // prevents duplicate mobile numbers inside Excel
-                Rule::unique('students', 'mobile_number'), // REQUIRED
-            ],
+            '*.email' => ['bail', 'required', 'email', 'distinct'],
+            '*.mobile_number' => ['bail', 'required', 'digits:10', 'distinct'],
             '*.gender' => ['bail', 'required', 'in:m,f,o,M,F,O'],
-            '*.department' => [
-                'bail',
-                'required',
-                Rule::exists('departments', 'name'),
-            ],
-            '*.programme' => [
-                'bail',
-                'required',
-                Rule::exists('programmes', 'name'),
-            ],
+            '*.department' => ['bail', 'required', Rule::exists('departments', 'name')],
+            '*.programme' => ['bail', 'required', Rule::exists('programmes', 'name')],
             '*.section' => ['bail', 'required', 'in:a,b,c,A,B,C,d,D,E,F,R,e,f,r'],
-            '*.register_number' => [
-                'bail',
-                'required',
-                'distinct', // prevents duplicate mobile numbers inside Excel
-                Rule::unique('students', 'register_number'), // REQUIRED
-            ],
+            '*.register_number' => ['bail', 'required', 'distinct'],
         ];
     }
 }
