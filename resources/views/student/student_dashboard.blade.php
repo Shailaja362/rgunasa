@@ -81,17 +81,18 @@
 
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $event->registrations()
-    ->where('event_schedule_id', $dept->id)
-    ->whereHas('student', function ($query) use ($dept) {
-        $query->where('department_id', $dept->department_id);
-    })
-    ->count();
-echo '<pre>';
-                      print_r($dept );
-                        echo '</pre>';
+                            $registeredCount = $event
+                                ->registrations()
+                                ->where('event_schedule_id', $dept->id)
+                                ->whereHas('student', function ($query) use ($dept) {
+                                    $query->where('department_id', $dept->department_id);
+                                })
+                                ->count();
+                            // echo '<pre>';
+                            //                       print_r($dept );
+                            //                         echo '</pre>';
 
-exit;
+                            // exit;
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
@@ -253,12 +254,13 @@ exit;
                             /* ===========================
                    Seat Availability
                 ============================ */
-                 $registeredCount = $ongoing_event->registrations()
-                            ->where('event_schedule_id', $dept->id)
-    ->whereHas('student', function ($query) use ($dept) {
-        $query->where('department_id', $dept->department_id);
-    })
-    ->count();
+                            $registeredCount = $ongoing_event
+                                ->registrations()
+                                ->where('event_schedule_id', $dept->id)
+                                ->whereHas('student', function ($query) use ($dept) {
+                                    $query->where('department_id', $dept->department_id);
+                                })
+                                ->count();
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
 
                             /* ===========================
@@ -431,12 +433,13 @@ exit;
                             'event_id' => $register_event->event_id,
                             'event_schedule_id' => $register_event->event_schedule_id,
                         ])
-                        ->whereHas('student', function ($query) use ($register_event) {
-                           $query->where('department_id', $register_event->student->department_id);
-                        })->count();
+                            ->whereHas('student', function ($query) use ($register_event) {
+                                $query->where('department_id', $register_event->student->department_id);
+                            })
+                            ->count();
                         $available = $register_event->schedule
-                        ? $register_event->schedule->seat_count - $registered
-                        : 0;
+                            ? $register_event->schedule->seat_count - $registered
+                            : 0;
 
                     @endphp
 
@@ -474,7 +477,7 @@ exit;
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                       {{ optional($register_event->schedule)->event_date ? \Carbon\Carbon::parse($register_event->schedule->event_date)->format('F j, Y') : '-' }}
+                                        {{ optional($register_event->schedule)->event_date ? \Carbon\Carbon::parse($register_event->schedule->event_date)->format('F j, Y') : '-' }}
 
                                     </p>
                                 </div>
