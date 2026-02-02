@@ -29,6 +29,21 @@ class StudentsImportSheet implements ToModel, WithHeadingRow, WithValidation, Sk
     {
         $department = Department::where('name', strtolower(trim($row['department'])))->first();
         $programme  = Programme::where('name', strtolower(trim($row['programme'])))->first();
+        // Find existing student by email or mobile number
+        $student = Student::where('email', $row['email'])
+            ->orWhere('mobile_number', $row['mobile_number'])
+            ->first();
+
+        if ($student) {
+            $student->update([
+                'section' => $row['section'],
+                'register_number' => $row['register_number'],
+                // 'department_id' => $department?->id,
+                // 'programme_id'  => $programme?->id,
+            ]);
+
+            return null; // Skip inserting a new record
+        }
 
         return new Student([
             'department_id' => $department?->id,
