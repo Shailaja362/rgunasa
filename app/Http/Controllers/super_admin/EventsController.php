@@ -55,12 +55,13 @@ class EventsController extends Controller
                     $q2->whereDate('event_date', $now->toDateString());
                 });
         })
-            ->whereTime('end_time', '<', $now->toTimeString())->get();
+            // ->whereTime('end_time', '<', $now->toTimeString())
+            ->get();
+
+
         $this->data['registeredEvents'] = StudentEventRegistration::with('event.schedules')->get();
         return view('super_admin.event_index')->with($this->data);
     }
-
-
 
     public function createEvent(Request $request)
     {
@@ -71,7 +72,7 @@ class EventsController extends Controller
             $eventId = decrypt($request->event_id);
             $this->data['edit_event'] = Event::where('id', $eventId)->first();
             $this->data['edit_faculty'] = Faculty::where('id', $this->data['edit_event']->faculty_id)->first();
-        }else{
+        } else {
             $this->data['edit_event'] = null;
         }
         if ($request->ajax()) {
@@ -89,7 +90,12 @@ class EventsController extends Controller
     public function eventlist(Request $request)
     {
         $adminId = Auth::guard('admin')->id();
-        $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
+         if (!empty(session()->get('super_admin'))){
+             $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
+         }else{
+            $this->data['events'] = Event::with('get_faculty', 'schedules')
+                                    ->where('created_by' , $adminId)->paginate(10);
+         }
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
         return view('super_admin.event_list')->with($this->data);
     }

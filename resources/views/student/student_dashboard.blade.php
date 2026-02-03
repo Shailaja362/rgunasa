@@ -87,7 +87,13 @@
                                     $query->where('department_id', $dept->department_id);
                                 })
                                 ->count();
-
+                            if ($dept->is_reserve_date == 'y') {
+                                $start_time = $event->reserve_start_time;
+                                $end_time = $event->reserve_end_time;
+                            } else {
+                                $start_time = $event->start_time;
+                                $end_time = $event->end_time;
+                            }
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
@@ -149,9 +155,9 @@
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                         <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                         <p class="px-1">
-                                            {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:iA') : '-' }}
+                                            {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                             -
-                                            {{ $event->end_time ? \Carbon\Carbon::parse($event->end_time)->format('h:iA') : '-' }}
+                                            {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                         </p>
                                     </div>
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
@@ -241,6 +247,13 @@
                                     $query->where('department_id', $department->department_id);
                                 })
                                 ->count();
+                            if ($department->is_reserve_date == 'y') {
+                                $start_time = $ongoing_event->reserve_start_time;
+                                $end_time = $ongoing_event->reserve_end_time;
+                            } else {
+                                $start_time = $ongoing_event->start_time;
+                                $end_time = $ongoing_event->end_time;
+                            }
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
@@ -301,9 +314,9 @@
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                         <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                         <p class="px-1">
-                                            {{ $ongoing_event->start_time ? \Carbon\Carbon::parse($ongoing_event->start_time)->format('h:iA') : '-' }}
+                                            {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                             -
-                                            {{ $ongoing_event->end_time ? \Carbon\Carbon::parse($ongoing_event->end_time)->format('h:iA') : '-' }}
+                                            {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                         </p>
                                     </div>
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
@@ -393,6 +406,13 @@
                                 $query->where('department_id', $register_event->student->department_id);
                             })
                             ->count();
+                        if ($register_event->schedule->is_reserve_date == 'y') {
+                            $start_time = $register_event->event->reserve_start_time;
+                            $end_time = $register_event->event->reserve_end_time;
+                        } else {
+                            $start_time = $register_event->event->start_time;
+                            $end_time = $register_event->event->end_time;
+                        }
                         $available = $register_event->schedule
                             ? $register_event->schedule->seat_count - $registered
                             : 0;
@@ -425,9 +445,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ $register_event->event->start_time ? \Carbon\Carbon::parse($register_event->event->start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                         -
-                                        {{ $register_event->event->end_time ? \Carbon\Carbon::parse($register_event->event->end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">

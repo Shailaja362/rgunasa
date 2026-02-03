@@ -1,6 +1,6 @@
 <aside class="fixed top-0 left-0 h-full w-64 mx-3 overflow-y-auto border-r-1 border-zinc-300 bg-[#FCF7FC]">
     <!-- Brand Logo -->
-    <div class="p-5">
+    <div class="p-3">
         <x-app-logo />
     </div>
     {{-- PROFILE SEGMENT IN SIDEBAR --}}

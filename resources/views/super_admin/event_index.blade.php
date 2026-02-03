@@ -23,7 +23,14 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($upcomingEvents as $event)
                     @php
-                        $schedule = $event->schedules->first(); // pick first schedule
+                        $schedule = $event->schedules->first();
+                        if ($schedule->is_reserve_date == 'y') {
+                            $start_time = $event->reserve_start_time;
+                            $end_time = $event->reserve_end_time;
+                        } else {
+                            $start_time = $event->start_time;
+                            $end_time = $event->end_time;
+                        }
                         $registered = $schedule
                             ? \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count()
                             : 0;
@@ -36,7 +43,8 @@
                                 class="rounded-t-2xl w-full h-48 object-cover">
 
                             @if ($event->event_type == 'paid')
-                                <span class="absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
+                                <span
+                                    class="absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
                                     Premium
                                 </span>
                             @endif
@@ -54,9 +62,8 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary"></i>
                                     <p class="px-1">
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->start_time)->format('h:iA') : '-' }}
-                                        -
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->end_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }} -
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
@@ -83,6 +90,13 @@
                 @foreach ($ongoingEvents as $event)
                     @php
                         $schedule = $event->schedules->first();
+                        if ($schedule->is_reserve_date == 'y') {
+                            $start_time = $event->reserve_start_time;
+                            $end_time = $event->reserve_end_time;
+                        } else {
+                            $start_time = $event->start_time;
+                            $end_time = $event->end_time;
+                        }
                         $registered = $schedule
                             ? \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count()
                             : 0;
@@ -117,9 +131,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary"></i>
                                     <p class="px-1">
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                         -
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
 
@@ -149,6 +163,13 @@
                     @php
                         $event = $registration->event;
                         $schedule = $event->schedules->first();
+                        if ($schedule->is_reserve_date == 'y') {
+                            $start_time = $event->reserve_start_time;
+                            $end_time = $event->reserve_end_time;
+                        } else {
+                            $start_time = $event->start_time;
+                            $end_time = $event->end_time;
+                        }
                         $registered = $schedule
                             ? \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count()
                             : 0;
@@ -183,9 +204,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary"></i>
                                     <p class="px-1">
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                         -
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
 
@@ -215,9 +236,14 @@
                     @php
                         $event = $registration->event;
                         $schedule = $event->schedules->first();
-                        $registered = $schedule
-                            ? \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count()
-                            : 0;
+                        if ($schedule->is_reserve_date == 'y') {
+                            $start_time = $event->reserve_start_time;
+                            $end_time = $event->reserve_end_time;
+                        } else {
+                            $start_time = $event->start_time;
+                            $end_time = $event->end_time;
+                        }
+                        $registered = $schedule ? \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count() : 0;
                         $available = $schedule ? $schedule->seat_count - $registered : 0;
                     @endphp
 
@@ -244,9 +270,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary"></i>
                                     <p class="px-1">
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                         -
-                                        {{ $schedule ? \Carbon\Carbon::parse($schedule->end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
 

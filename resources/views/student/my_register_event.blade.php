@@ -56,7 +56,13 @@
                                 $query->where('department_id', $event->student->department_id);
                             })
                             ->count();
-
+                        if($event->get_event_schedule->is_reserve_date == 'y'){
+                                $start_time = $event->event->reserve_start_time;
+                                $end_time = $event->event->reserve_end_time;
+                        }else{
+                                $start_time = $event->event->start_time;
+                                $end_time = $event->event->end_time;
+                        }
                         $available = $event->get_event_schedule
                             ? $event->get_event_schedule->seat_count - $registered
                             : 0;
@@ -87,9 +93,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ $event->event->start_time ? \Carbon\Carbon::parse($event->event->start_time)->format('h:i A') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:i A') : '-' }}
                                         -
-                                        {{ $event->event->end_time ? \Carbon\Carbon::parse($event->event->end_time)->format('h:i A') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:i A') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
@@ -123,6 +129,13 @@
                                 $query->where('department_id', $event->student->department_id);
                             })
                             ->count();
+                        if($event->get_event_schedule->is_reserve_date == 'y'){
+                                $start_time = $event->event->reserve_start_time;
+                                $end_time = $event->event->reserve_end_time;
+                        }else{
+                                $start_time = $event->event->start_time;
+                                $end_time = $event->event->end_time;
+                        }
                         $available = $event->get_event_schedule->seat_count - $registered;
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -143,9 +156,9 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ $event->event->start_time ? \Carbon\Carbon::parse($event->event->start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                         -
-                                        {{ $event->event->end_time ? \Carbon\Carbon::parse($event->event->end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
@@ -167,8 +180,8 @@
                                         data-image="{{ asset('storage/' . $event->event->banner_image) }}"
                                         data-description="{{ $event->event->description }}"
                                         data-date=" {{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}"
-                                        data-start="{{ \Carbon\Carbon::parse($event->event->start_time)->format('h:i A') }}"
-                                        data-end="{{ \Carbon\Carbon::parse($event->event->end_time)->format('h:i A') }}"
+                                        data-start="{{ \Carbon\Carbon::parse($start_time)->format('h:i A') }}"
+                                        data-end="{{ \Carbon\Carbon::parse($end_time)->format('h:i A') }}"
                                         data-location="{{ $event->event->location }}">
                                         View Details
                                     </p>

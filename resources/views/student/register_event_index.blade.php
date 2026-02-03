@@ -60,10 +60,6 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-
-                            /* ===========================
-                   Seat Availability
-                ============================ */
                             $registeredCount = $event
                                 ->registrations()
                                 ->where('event_schedule_id', $department->id)
@@ -71,20 +67,19 @@
                                     $query->where('department_id', $department->department_id);
                                 })
                                 ->count();
+                            if ($department->is_reserve_date == 'y') {
+                                $start_time = $event->reserve_start_time;
+                                $end_time = $event->reserve_end_time;
+                            } else {
+                                $start_time = $event->start_time;
+                                $end_time = $event->end_time;
+                            }
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
-
-                            /* ===========================
-                   Student Registration History
-                ============================ */
                             $lastRegistration = $event->registrations
                                 ->where('student_id', $studentId)
                                 ->sortByDesc('registered_at')
                                 ->first();
-
-                            /* ===========================
-                   Registration Restriction Logic
-                ============================ */
                             $cooldownActive = false;
                             $permanentBlock = false;
                             $nextAllowedDate = null;
@@ -144,9 +139,9 @@
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                         <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                         <p class="px-1">
-                                            {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:iA') : '-' }}
+                                            {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                             -
-                                            {{ $event->end_time ? \Carbon\Carbon::parse($event->end_time)->format('h:iA') : '-' }}
+                                            {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                         </p>
                                     </div>
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
@@ -229,12 +224,19 @@
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
                             $registeredCount = $ongoing_event
-                             ->registrations()
-                             ->where('event_schedule_id', $dept->id)
+                                ->registrations()
+                                ->where('event_schedule_id', $dept->id)
                                 ->whereHas('student', function ($query) use ($dept) {
                                     $query->where('department_id', $dept->department_id);
                                 })
                                 ->count();
+                            if ($dept->is_reserve_date == 'y') {
+                                $start_time = $ongoing_event->reserve_start_time;
+                                $end_time = $ongoing_event->reserve_end_time;
+                            } else {
+                                $start_time = $ongoing_event->start_time;
+                                $end_time = $ongoing_event->end_time;
+                            }
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
@@ -246,12 +248,10 @@
                             $nextAllowedDate = null;
 
                             if ($lastRegistration) {
-                                // No duration → permanent block
                                 if (empty($ongoing_event->duration_months) || $ongoing_event->duration_months == 0) {
                                     $permanentBlock = true;
                                 }
 
-                                // Duration exists → cooldown logic
                                 if (!$permanentBlock && $ongoing_event->duration_months) {
                                     $nextAllowedDate = \Carbon\Carbon::parse(
                                         $lastRegistration->registered_at,
@@ -262,6 +262,7 @@
                                     }
                                 }
                             }
+
                             $paidEventConflict = $studentRegistrations
                                 ->where('event.event_type', 'paid')
                                 ->where('event.event_date', $eventDate)
@@ -299,9 +300,9 @@
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                         <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                         <p class="px-1">
-                                            {{ $ongoing_event->start_time ? \Carbon\Carbon::parse($ongoing_event->start_time)->format('h:iA') : '-' }}
+                                            {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
                                             -
-                                            {{ $ongoing_event->end_time ? \Carbon\Carbon::parse($ongoing_event->end_time)->format('h:iA') : '-' }}
+                                            {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                         </p>
                                     </div>
                                     <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
