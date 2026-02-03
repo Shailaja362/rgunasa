@@ -126,7 +126,7 @@
                                                     {{ \Carbon\Carbon::parse($schedule->event_date)->format('d-m-Y') }}
                                                 </div>
                                                 <div class="text-xs text-gray-600">
-                                                    <span class="font-medium">Is Reserve Date</span>
+                                                    <span class="font-medium">Is Reserve Date : </span>
                                                     @if ($schedule->is_reserve_date == 'yes')
                                                         Yes
                                                     @else
