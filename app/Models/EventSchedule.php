@@ -29,4 +29,9 @@ class EventSchedule extends Model
     {
         return $this->hasOne(EventReport::class, 'event_schedule_id');
     }
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class, 'event_id');
+    }
 }

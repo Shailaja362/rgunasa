@@ -19,50 +19,55 @@ use Illuminate\Support\Facades\Auth;
 class EventsController extends Controller
 {
 
-    public function index(Request $request)
+    public function index()
     {
         $now = Carbon::now();
-        $this->data['ongoingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
-            $q->whereDate('event_date', $now->toDateString());
-        }])->whereHas('schedules', function ($q) use ($now) {
-            $q->whereDate('event_date', $now->toDateString());
-        })
-            ->whereTime('start_time', '<=', $now->toTimeString())
-            ->whereTime('end_time', '>=', $now->toTimeString())
-            ->get();
-        // Upcoming Events
-        $this->data['upcomingEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
-            $q->whereDate('event_date', '>', $now->toDateString())
-                ->orWhere(function ($q2) use ($now) {
-                    $q2->whereDate('event_date', $now->toDateString());
-                });
-        }])->whereHas('schedules', function ($q) use ($now) {
-            $q->whereDate('event_date', '>', $now->toDateString())
-                ->orWhere(function ($q2) use ($now) {
-                    $q2->whereDate('event_date', $now->toDateString());
-                });
-        })
-            ->whereTime('start_time', '>', $now->toTimeString())->get();
-        // Completed Events
-        $this->data['completedEvents'] = Event::with(['registrations', 'schedules' => function ($q) use ($now) {
-            $q->whereDate('event_date', '<', $now->toDateString())
-                ->orWhere(function ($q2) use ($now) {
-                    $q2->whereDate('event_date', $now->toDateString());
-                });
-        }])->whereHas('schedules', function ($q) use ($now) {
-            $q->whereDate('event_date', '<', $now->toDateString())
-                ->orWhere(function ($q2) use ($now) {
-                    $q2->whereDate('event_date', $now->toDateString());
-                });
-        })
-            // ->whereTime('end_time', '<', $now->toTimeString())
+
+        /** Upcoming Events */
+        $this->data['upcomingEvents'] =  EventSchedule::with(['event', 'department'])
+            ->where(function ($q) use ($now) {
+                $q->whereDate('event_date', '>', $now->toDateString())
+                    ->orWhere(function ($q2) use ($now) {
+                        $q2->whereDate('event_date', $now->toDateString())
+                            ->whereHas('event', function ($e) use ($now) {
+                                $e->whereTime('start_time', '>', $now->toTimeString());
+                            });
+                    });
+            })
             ->get();
 
+        /** Ongoing Events */
+        $this->data['ongoingEvents'] = EventSchedule::with(['event', 'department'])
+            ->whereDate('event_date', $now->toDateString())
+            ->whereHas('event', function ($q) use ($now) {
+                $q->whereTime('start_time', '<=', $now->toTimeString())
+                ->whereTime('end_time', '>=', $now->toTimeString());
+            })
+            ->get();
 
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event.schedules')->get();
+        /** Completed Events */
+        $this->data['completedEvents']  = EventSchedule::with(['event', 'department'])
+            ->where(function ($q) use ($now) {
+                $q->whereDate('event_date', '<', $now->toDateString())
+                    ->orWhere(function ($q2) use ($now) {
+                        $q2->whereDate('event_date', $now->toDateString())
+                            ->whereHas('event', function ($e) use ($now) {
+                                $e->whereTime('end_time', '<', $now->toTimeString());
+                            });
+                    });
+            })
+            ->get();
+
+        /** Registered Events */
+        $this->data['registeredEvents'] = StudentEventRegistration::with([
+            'get_event_schedule.event',
+            'get_event_schedule.department'
+        ])->get();
+
+
         return view('super_admin.event_index')->with($this->data);
     }
-
+   
     public function createEvent(Request $request)
     {
         $this->data['faculty'] = Faculty::get();
@@ -90,12 +95,12 @@ class EventsController extends Controller
     public function eventlist(Request $request)
     {
         $adminId = Auth::guard('admin')->id();
-         if (!empty(session()->get('super_admin'))){
-             $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
-         }else{
+        if (!empty(session()->get('super_admin'))) {
+            $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
+        } else {
             $this->data['events'] = Event::with('get_faculty', 'schedules')
-                                    ->where('created_by' , $adminId)->paginate(10);
-         }
+                ->where('created_by', $adminId)->paginate(10);
+        }
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
         return view('super_admin.event_list')->with($this->data);
     }

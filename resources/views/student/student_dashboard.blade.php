@@ -413,8 +413,8 @@
                             $start_time = $register_event->event->start_time;
                             $end_time = $register_event->event->end_time;
                         }
-                        $available = $register_event->schedule
-                            ? $register_event->schedule->seat_count - $registered
+                        $available = $register_event->get_event_schedule
+                            ? $register_event->get_event_schedule->seat_count - $registered
                             : 0;
 
                     @endphp

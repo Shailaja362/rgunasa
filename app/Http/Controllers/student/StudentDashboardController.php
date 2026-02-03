@@ -46,7 +46,7 @@ class StudentDashboardController extends Controller
             }, 'get_dep_events.registrations'])
             ->get();
 
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'schedule', 'student')->where('student_id', $student->id)
+        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')->where('student_id', $student->id)
             ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('department_id', $student->department_id)
