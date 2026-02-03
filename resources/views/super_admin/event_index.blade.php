@@ -139,36 +139,43 @@
             <h4 class="font-semibold mb-4">Registered Events</h4>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                @forelse ($registeredEvents as $reg)
-                    @php
-                        $schedule = $reg->get_event_schedule;
-                        $event = $schedule->event;
+               @forelse ($registeredEvents as $reg)
+    @php
+        $schedule = $reg->get_event_schedule;
 
-                        if ($schedule->is_reserve_date === 'Y') {
-                            $start = $event->reserve_start_time;
-                            $end = $event->reserve_end_time;
-                        } else {
-                            $start = $event->start_time;
-                            $end = $event->end_time;
-                        }
-                    @endphp
+        if (!$schedule || !$schedule->event) {
+            continue;
+        }
 
-                    <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
-                        <img src="{{ asset('storage/' . $event->banner_image) }}"
-                            class="rounded-t-2xl w-full h-48 object-cover">
+        $event = $schedule->event;
 
-                        <div class="p-3 text-xs space-y-1">
-                            <div class="font-semibold">{{ $event->title }}</div>
-                            <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
-                            <div>⏰ {{ \Carbon\Carbon::parse($start)->format('h:i A') }} -
-                                {{ \Carbon\Carbon::parse($end)->format('h:i A') }}</div>
-                            <div>🏢 {{ $schedule->department->name }}</div>
-                            <div>📍 {{ $event->location }}</div>
-                        </div>
-                    </div>
-                @empty
-                    <p class="text-gray-500">No registered events.</p>
-                @endforelse
+        if ($schedule->is_reserve_date === 'Y') {
+            $start = $event->reserve_start_time;
+            $end = $event->reserve_end_time;
+        } else {
+            $start = $event->start_time;
+            $end = $event->end_time;
+        }
+    @endphp
+
+    <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
+        <img src="{{ asset('storage/' . $event->banner_image) }}"
+             class="rounded-t-2xl w-full h-48 object-cover">
+
+        <div class="p-3 text-xs space-y-1">
+            <div class="font-semibold">{{ $event->title }}</div>
+            <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
+            <div>⏰ {{ \Carbon\Carbon::parse($start)->format('h:i A') }} -
+                {{ \Carbon\Carbon::parse($end)->format('h:i A') }}</div>
+            <div>🏢 {{ $schedule->department->name ?? '-' }}</div>
+            <div>📍 {{ $event->location }}</div>
+        </div>
+    </div>
+
+@empty
+    <p class="text-gray-500">No registered events.</p>
+@endforelse
+
             </div>
         </div>
 

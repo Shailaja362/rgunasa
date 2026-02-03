@@ -92,8 +92,7 @@
                         required>
                 @endif
             </div>
-
-            {{-- <div>
+            <div>
                  <label class="block text-sm font-medium"> Is Technical Event </label>
                 <div class="flex items-center gap-6 mt-2">
                                 <label class="inline-flex items-center">
@@ -108,7 +107,7 @@
                                      <span class="ml-2 text-sm">No</span>
                                 </label>
                     </div>
-                </div> --}}
+                </div>
         </div>
         <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
         <p>Add one or more department schedules</p>
