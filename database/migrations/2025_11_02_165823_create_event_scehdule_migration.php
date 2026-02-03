@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('event_id');
             $table->unsignedBigInteger('department_id');
-            $table->enum('section', ['a','b','c']);
+            $table->enum('section', ['a', 'b', 'c']);
             $table->date('event_date');
-            $table->date('reserve_date')->nullable();
+            $table->enum('is_reserve_date', ['y', 'n'])->default('n')->comment('Y - Yes , N - No');
             $table->unsignedInteger('seat_count');
             $table->timestamps();
 
@@ -29,8 +29,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-   
-    }
+    public function down(): void {}
 };

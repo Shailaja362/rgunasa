@@ -44,14 +44,12 @@ class EventRegisterdReportController extends Controller
                 })
                 ->when($request->from_date, function ($q) use ($request) {
                     $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%')
-                            ->orWhereDate('reserve_date', 'like', '%' . $request->from_date . '%');
+                        $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%');
                     });
                 })
                 ->when($request->to_date, function ($q) use ($request) {
                     $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%')
-                                 ->orWhereDate('reserve_date', 'like', '%' . $request->to_date . '%');
+                        $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%');
                     });
                 })
                 ->when($request->search, function ($q) use ($request) {

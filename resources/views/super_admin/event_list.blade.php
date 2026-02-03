@@ -114,41 +114,35 @@
                                 </td>
                                 <td class="px-3 py-2">{{ $event->title }}</td>
                                 <td class="px-3 py-2">{{ $event->get_faculty->name ?? '-' }}</td>
-                                <!-- Departments -->
-                               <td class="px-3 py-2">
-    <div class="space-y-2">
-        @foreach ($event->schedules as $schedule)
-            <div class="border rounded-lg p-2 bg-gray-50">
-
-                <div class="text-sm font-semibold text-gray-800">
-                    {{ $schedule->department->name }}
-                </div>
-
-                <div class="text-xs text-gray-600">
-                    <span class="font-medium">Event Date:</span>
-                    {{ \Carbon\Carbon::parse($schedule->event_date)->format('d-m-Y') }}
-                </div>
-
-                <div class="text-xs text-gray-600">
-                    <span class="font-medium">Reserve Date:</span>
-                    {{ \Carbon\Carbon::parse($schedule->reserve_date)->format('d-m-Y') }}
-                </div>
-
-                <div class="text-xs text-gray-600">
-                    <span class="font-medium">Section:</span>
-                    {{ strtoupper($schedule->section) }}
-                </div>
-
-                <div class="text-xs text-gray-600">
-                    <span class="font-medium">Seats:</span>
-                    {{ $schedule->seat_count }}
-                </div>
-
-            </div>
-        @endforeach
-    </div>
-</td>
-
+                                <td class="px-3 py-2">
+                                    <div class="space-y-2">
+                                        @foreach ($event->schedules as $schedule)
+                                            <div class="border rounded-lg p-2 bg-gray-50">
+                                                <div class="text-sm font-semibold text-gray-800">
+                                                    {{ $schedule->department->name }}
+                                                </div>
+                                                <div class="text-xs text-gray-600">
+                                                    <span class="font-medium">Event Date:</span>
+                                                    {{ \Carbon\Carbon::parse($schedule->event_date)->format('d-m-Y') }}
+                                                </div>
+                                                <div class="text-xs text-gray-600">
+                                                    <span class="font-medium">Is Reserve Date</span>
+                                                    @if ($schedule->is_reserve_date == 'yes')
+                                                        Yes
+                                                    @else
+                                                        No
+                                                    @endif
+                                                </div>
+                                                <div class="text-xs text-gray-600">
+                                                    <span class="font-medium">Section:</span>
+                                                    {{ strtoupper($schedule->section) }} , <span
+                                                        class="font-medium">Seats:</span>
+                                                    {{ $schedule->seat_count }}
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </td>
                                 <!-- Action -->
                                 <td class="px-3 py-2 text-center">
                                     <a href="{{ route('create_event', ['event_id' => encrypt($event->id)]) }}"

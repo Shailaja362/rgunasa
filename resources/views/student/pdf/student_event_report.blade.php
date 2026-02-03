@@ -104,7 +104,15 @@
             </tr>
         </table>
     </div>
-
+@php
+    if($event_schedule->is_reserve_date == 'y'){
+         $start_time = $event->reserve_start_time;
+         $end_time = $event->reserve_end_time;
+    }else{
+         $start_time = $event->start_time;
+         $end_time = $event->end_time;
+    }
+@endphp
     <!-- ================= EVENT INFO ================= -->
     <div class="section">
         <div class="section-title">Event Details</div>
@@ -120,9 +128,9 @@
             <tr>
                 <td><strong>Time</strong></td>
                 <td>
-                    {{ $event->start_time ? \Carbon\Carbon::parse($event->start_time)->format('h:i A') : '' }}
+                    {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:i A') : '' }}
                     -
-                    {{ $event->end_time ? \Carbon\Carbon::parse($event->end_time)->format('h:i A') : '' }}
+                    {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:i A') : '' }}
                 </td>
             </tr>
             <tr>

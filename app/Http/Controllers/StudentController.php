@@ -17,7 +17,6 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $query = Student::with('get_department', 'get_programme');
-
         //  Text search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -28,19 +27,15 @@ class StudentController extends Controller
                     ->orWhere('mobile_number', 'LIKE', "%{$search}%");
             });
         }
-
         // Department filter
         if ($request->filled('department_id')) {
             $query->where('department_id', $request->department_id);
         }
-
         $this->data['student'] = $query
             ->orderBy('id', 'desc')
-            ->paginate(10)
-            ->withQueryString(); 
-
+            ->paginate(25)
+            ->withQueryString();
         $this->data['departments'] = Department::orderBy('name')->get();
-
         return view('admin.student_list')->with($this->data);
     }
 

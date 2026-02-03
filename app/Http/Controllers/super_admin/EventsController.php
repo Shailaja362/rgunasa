@@ -71,6 +71,8 @@ class EventsController extends Controller
             $eventId = decrypt($request->event_id);
             $this->data['edit_event'] = Event::where('id', $eventId)->first();
             $this->data['edit_faculty'] = Faculty::where('id', $this->data['edit_event']->faculty_id)->first();
+        }else{
+            $this->data['edit_event'] = null;
         }
         if ($request->ajax()) {
             if ($request->get_programme_officer) {
@@ -182,7 +184,7 @@ class EventsController extends Controller
                     'department_id' => $schedule['department_id'],
                     'section'       => $schedule['section'],
                     'event_date'    => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
-                    'reserve_date'  => Carbon::createFromFormat('d/m/Y', $schedule['reserve_date'])->format('Y-m-d'),
+                    'is_reserve_date'  => $schedule['is_reserve_date'] ?? 'n',
                     'seat_count'    => $schedule['seat_count'],
                 ];
 
@@ -217,6 +219,10 @@ class EventsController extends Controller
                 'event' => $event,
             ]);
         } catch (Exception $e) {
+            echo '<pre>';
+            print_r($e->getMessage());
+            echo '</pre>';
+            exit;
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save event',

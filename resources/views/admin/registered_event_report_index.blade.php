@@ -113,9 +113,7 @@
                             <td class="px-2 py-3">{{ $row->event->title }}</td>
                             <td class="px-2 py-3">
                                 @if ($row->get_event_schedule)
-                                    {{ \Carbon\Carbon::parse(
-                                        $row->get_event_schedule->event_date ?? $row->get_event_schedule->reserve_date,
-                                    )->format('d M Y') }}
+                                    {{ \Carbon\Carbon::parse($row->get_event_schedule->event_date)->format('d M Y') }}
                                 @else
                                     —
                                 @endif

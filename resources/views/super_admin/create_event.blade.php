@@ -107,10 +107,11 @@
             @foreach ($deptData as $index => $dept)
                 <div class="bg-[#F0F0F0] p-5 rounded-2xl relative dept-card">
                     <input type="hidden" name="departments[{{ $index }}][schedule_id]"
-                        value="{{ $dept->id }}">
+                        value="{{ $dept->id ?? ''}}">
                     @if ($index > 0)
-                        <button type="button" class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">
-                           Remove
+                        <button type="button"
+                            class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">
+                            Remove
                         </button>
                     @endif
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
@@ -140,18 +141,41 @@
                         <div>
                             <label class="block text-sm font-medium">Event Date <span
                                     class="text-red-600">*</span></label>
-                            <input type="text" name="departments[{{ $index }}][event_date]"
-                                value="{{ \Carbon\Carbon::parse($dept->event_date)->format('d/m/Y') }}"
-                                class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
+                          <input type="text"
+       name="departments[{{ $index }}][event_date]"
+       value="{{ old("departments.$index.event_date", optional($dept)->event_date
+            ? \Carbon\Carbon::parse($dept->event_date)->format('d/m/Y')
+            : '') }}"
+       class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
+
                         </div>
                         {{-- Reserve Date --}}
-                        <div>
-                            <label class="block text-sm font-medium">Reserve Date <span
-                                    class="text-red-600">*</span></label>
-                            <input type="text" name="departments[{{ $index }}][reserve_date]"
-                                value="{{ \Carbon\Carbon::parse($dept->reserve_date)->format('d/m/Y') }}"
-                                class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 reserve_date">
-                        </div>
+                      <div>
+    <label class="block text-sm font-medium">
+        Is Reserve Date
+    </label>
+
+    <div class="flex items-center gap-6 mt-2">
+        <label class="inline-flex items-center">
+            <input type="radio"
+                   name="departments[{{ $index }}][is_reserve_date]"
+                   value="Y"
+                   class="text-primary focus:ring-primary is_reserve_date"
+                   {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'Y' ? 'checked' : '' }}>
+            <span class="ml-2 text-sm">Yes</span>
+        </label>
+
+        <label class="inline-flex items-center">
+            <input type="radio"
+                   name="departments[{{ $index }}][is_reserve_date]"
+                   value="N"
+                   class="text-primary focus:ring-primary is_reserve_date"
+                   {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'N' ? 'checked' : '' }}>
+            <span class="ml-2 text-sm">No</span>
+        </label>
+    </div>
+</div>
+
                         {{-- Seat Count --}}
                         <div>
                             <label class="block text-sm font-medium">Seat Count <span
@@ -183,13 +207,13 @@
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
             <div>
-                <label class="block text-sm font-medium">Reserve Start Time<span class="text-red-600">*</span></label>
+                <label class="block text-sm font-medium">Reserve Start Time</label>
                 <input type="time" name="reserve_start_time" id="reserve_start_time"
                     value="{{ $edit_event->reserve_start_time ?? '' }}"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
             <div>
-                <label class="block text-sm font-medium">Reserve End Time<span class="text-red-600">*</span></label>
+                <label class="block text-sm font-medium">Reserve End Time</label>
                 <input type="time" name="reserve_end_time" id="reserve_end_time"
                     value="{{ $edit_event->reserve_end_time ?? '' }}"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
@@ -229,7 +253,7 @@
                 <label class="block text-sm font-medium">Registration Deadline<span
                         class="text-red-500">*</span></label>
                 <input type="text" name="registration_deadline" id="registration_deadline"
-                    value="{{ \Carbon\Carbon::parse($edit_event->end_registration)->format('d/m/Y') }}"
+                    value="{{ $edit_event ? \Carbon\Carbon::parse($edit_event->end_registration)->format('d/m/Y') : '' }}"
                     class="date_field w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
             </div>
 

@@ -11,14 +11,24 @@
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 mt-5">
         @foreach ($reports as $report)
+            @php
+                if ($report->schedule->is_reserve_date == 'y') {
+                    $start_time = $report->get_event->reserve_start_time;
+                    $end_time = $report->get_event->reserve_end_time;
+                } else {
+                    $start_time = $report->get_event->start_time;
+                    $end_time = $report->get_event->end_time;
+                }
+            @endphp
             <div class="bg-white rounded-2xl shadow hover:shadow-lg transition p-5">
                 <!-- Header -->
-                <p class="font-semibold text-lg">{{ $report->get_event->title ?? '' }} - {{ $report->get_department->name ?? '' }} - {{  $report->event_date ?? ''  }}</p>
+                <p class="font-semibold text-lg">{{ $report->get_event->title ?? '' }} -
+                    {{ $report->get_department->name ?? '' }} - {{ $report->event_date ?? '' }}</p>
                 <p class="text-xs mt-2">
                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                     Event -
                     {{ \Carbon\Carbon::parse($report->schedule->event_date)->format('F d, Y') }}
-                    ({{ \Carbon\Carbon::parse($report->get_event->start_time)->format('h.iA') }})
+                    ({{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h.iA') : '' }})
                 </p>
                 <p class="mt-2 text-xs">
                     <i class="fa fa-clock text-primary" aria-hidden="true"></i>

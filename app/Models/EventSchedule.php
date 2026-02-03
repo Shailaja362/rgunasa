@@ -11,13 +11,13 @@ class EventSchedule extends Model
         'department_id',
         'section',
         'event_date',
-        'reserve_date',
+        'is_reserve_date',
         'seat_count',
     ];
-    
+
     public function registrations()
     {
-        return $this->hasMany(StudentEventRegistration::class, 'event_id','event_id');
+        return $this->hasMany(StudentEventRegistration::class, 'event_id', 'event_id');
     }
 
     public function department()

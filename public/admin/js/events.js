@@ -175,11 +175,6 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "",
             message: "Please Select Event Date",
         },
-        {
-            id: ".reserve_date",
-            condition: (val) => val === "",
-            message: "Please Select Reserve Date",
-        },
     ];
 
     let isValid = true;
@@ -380,13 +375,23 @@ document.addEventListener("DOMContentLoaded", function () {
                         name="departments[${deptIndex}][event_date]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date date_field">
                 </div>
-                <div>
-                    <label class="block text-sm font-medium">Reserve Date <span class="text-red-600">*</span></label>
-                    <input type="date"
-                        name="departments[${deptIndex}][reserve_date]"
-                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 reserve_date date_field">
-                </div>
-
+                 <div>
+                            <label class="block text-sm font-medium">
+                                Is Reserve Date <span class="text-red-600">*</span>
+                            </label>
+                            <div class="flex items-center gap-6 mt-2">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="departments[${deptIndex}][is_reserve_date]"
+                                        value="Y" class="text-primary focus:ring-primary is_reserve_date">
+                                    <span class="ml-2 text-sm">Yes</span>
+                                </label>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="departments[${deptIndex}][is_reserve_date]"
+                                        value="N" class="text-primary focus:ring-primary is_reserve_date">
+                                    <span class="ml-2 text-sm">No</span>
+                                </label>
+                            </div>
+                        </div>
                 <div>
                     <label class="block text-sm font-medium">Seat Count <span class="text-red-600">*</span></label>
                     <input type="number"
