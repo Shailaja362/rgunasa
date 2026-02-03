@@ -2,20 +2,21 @@
 
 namespace App\Http\Controllers\admin;
 
+use ZipArchive;
 use App\Models\Event;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use App\Models\EventSchedule;
 use App\Models\StudentFeedback;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\StudentAttendance;
 use App\Models\StudentUploadProof;
-use App\Http\Controllers\Controller;
-use App\Models\EventSchedule;
-use App\Models\StudentEventRegistration;
-use App\Traits\ResolvesEventSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use ZipArchive;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Traits\ResolvesEventSchedule;
+use App\Models\StudentEventRegistration;
 
 class AssignGradeController extends Controller
 {
@@ -23,7 +24,13 @@ class AssignGradeController extends Controller
 
     public function index()
     {
-        $this->data['events'] = Event::with('get_club')->get();
+        $adminId = Auth::guard('admin')->id();
+        if (!empty(session()->get('super_admin'))) {
+            $this->data['events'] = Event::with('get_club')->paginate(10);
+        } else {
+            $this->data['events'] = Event::with('get_club')
+                ->where('created_by', $adminId)->paginate(10);
+        }
         return view('admin.assign_grade_index')->with($this->data);
     }
 

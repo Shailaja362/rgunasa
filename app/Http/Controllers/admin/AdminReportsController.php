@@ -27,7 +27,13 @@ class AdminReportsController extends Controller
 
     public function index(Request $request)
     {
-        $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')->get();
+        $adminId = Auth::guard('admin')->id();
+        if (!empty(session()->get('super_admin'))) {
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')->paginate(10);
+        } else {
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')
+                ->where('created_by', $adminId)->paginate(10);
+        }
         return view('admin.admin_reports_index')->with($this->data);
     }
 
@@ -310,7 +316,7 @@ class AdminReportsController extends Controller
         ActivityLog::add($user->name . ' - ' .  $event->get_event->title . 'Report Downloaded', $user);
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
-        return $pdf->download((($event->schedule?->department?->name) ?? '') . ' - ' . $event->get_event->title .".pdf");
+        return $pdf->download((($event->schedule?->department?->name) ?? '') . ' - ' . $event->get_event->title . ".pdf");
     }
 
     private function normalizeRatings($value)
