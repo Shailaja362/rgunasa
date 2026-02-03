@@ -92,6 +92,23 @@
                         required>
                 @endif
             </div>
+
+            {{-- <div>
+                 <label class="block text-sm font-medium"> Is Technical Event </label>
+                <div class="flex items-center gap-6 mt-2">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="is_technical_event"
+                                        value="y" class="text-primary focus:ring-primary is_technical_event">
+                                     <span class="ml-2 text-sm">Yes</span>
+                                </label>
+
+                            <label class="inline-flex items-center">
+                                    <input type="radio" name="is_technical_event"
+                                        value="n" class="text-primary focus:ring-primary is_technical_event">
+                                     <span class="ml-2 text-sm">No</span>
+                                </label>
+                    </div>
+                </div> --}}
         </div>
         <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
         <p>Add one or more department schedules</p>
@@ -158,14 +175,14 @@
                             <div class="flex items-center gap-6 mt-2">
                                 <label class="inline-flex items-center">
                                     <input type="radio" name="departments[{{ $index }}][is_reserve_date]"
-                                        value="Y" class="text-primary focus:ring-primary is_reserve_date"
+                                        value="y" class="text-primary focus:ring-primary is_reserve_date"
                                         {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'y' ? 'checked' : '' }}>
                                     <span class="ml-2 text-sm">Yes</span>
                                 </label>
 
                                 <label class="inline-flex items-center">
                                     <input type="radio" name="departments[{{ $index }}][is_reserve_date]"
-                                        value="N" class="text-primary focus:ring-primary is_reserve_date"
+                                        value="n" class="text-primary focus:ring-primary is_reserve_date"
                                         {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'n' ? 'checked' : '' }}>
                                     <span class="ml-2 text-sm">No</span>
                                 </label>

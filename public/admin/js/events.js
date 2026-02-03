@@ -382,12 +382,12 @@ document.addEventListener("DOMContentLoaded", function () {
                             <div class="flex items-center gap-6 mt-2">
                                 <label class="inline-flex items-center">
                                     <input type="radio" name="departments[${deptIndex}][is_reserve_date]"
-                                        value="Y" class="text-primary focus:ring-primary is_reserve_date">
+                                        value="y" class="text-primary focus:ring-primary is_reserve_date">
                                     <span class="ml-2 text-sm">Yes</span>
                                 </label>
                                 <label class="inline-flex items-center">
                                     <input type="radio" name="departments[${deptIndex}][is_reserve_date]"
-                                        value="N" class="text-primary focus:ring-primary is_reserve_date">
+                                        value="n" class="text-primary focus:ring-primary is_reserve_date">
                                     <span class="ml-2 text-sm">No</span>
                                 </label>
                             </div>
