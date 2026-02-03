@@ -56,12 +56,12 @@
                                 $query->where('department_id', $event->student->department_id);
                             })
                             ->count();
-                        if($event->get_event_schedule->is_reserve_date == 'y'){
-                                $start_time = $event->event->reserve_start_time;
-                                $end_time = $event->event->reserve_end_time;
-                        }else{
-                                $start_time = $event->event->start_time;
-                                $end_time = $event->event->end_time;
+                        if ($event->get_event_schedule->is_reserve_date == 'y') {
+                            $start_time = $event->event->reserve_start_time;
+                            $end_time = $event->event->reserve_end_time;
+                        } else {
+                            $start_time = $event->event->start_time;
+                            $end_time = $event->event->end_time;
                         }
                         $available = $event->get_event_schedule
                             ? $event->get_event_schedule->seat_count - $registered
@@ -101,7 +101,7 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ optional($event->schedule)->event_date ? \Carbon\Carbon::parse($event->schedule->event_date)->format('F j, Y') : '-' }}
+                                        {{ optional($event->get_event_schedule)->event_date ? \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
@@ -129,12 +129,12 @@
                                 $query->where('department_id', $event->student->department_id);
                             })
                             ->count();
-                        if($event->get_event_schedule->is_reserve_date == 'y'){
-                                $start_time = $event->event->reserve_start_time;
-                                $end_time = $event->event->reserve_end_time;
-                        }else{
-                                $start_time = $event->event->start_time;
-                                $end_time = $event->event->end_time;
+                        if ($event->get_event_schedule->is_reserve_date == 'y') {
+                            $start_time = $event->event->reserve_start_time;
+                            $end_time = $event->event->reserve_end_time;
+                        } else {
+                            $start_time = $event->event->start_time;
+                            $end_time = $event->event->end_time;
                         }
                         $available = $event->get_event_schedule->seat_count - $registered;
                     @endphp
@@ -164,7 +164,7 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}
+                                        {{ optional($event->get_event_schedule)->event_date ? \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
@@ -189,9 +189,12 @@
                                 <div
                                     class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
                                     <p id="openUploadModal" class="px-2 text-center upload"
-                                        data-event_id={{ $event->event->id }}
-                                        data-schedule_id={{ $event->get_event_schedule->id }}
-                                        data-student_id={{ $event->student_id }}>Upload Proof</p>
+                                        data-event_id="{{ $event->event->id }}"
+                                        data-schedule_id="{{ $event->get_event_schedule->id }}"
+                                        data-student_id="{{ $event->student_id }}"
+                                        data-is_technical="{{ $event->event->is_technical_event }}">
+                                        Upload Proof
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -240,7 +243,6 @@
             <input id="event_id" type="hidden" />
             <input id="student_id" type="hidden" />
             <input id="schedule_id" type="hidden" />
-
             <!-- Upload Box -->
             <div id="uploadBox" class="space-y-6">
                 <div id="dropArea"
@@ -256,16 +258,14 @@
                     </div>
                     <input type="file" id="fileInput" multiple class="hidden" />
                 </div>
-
                 <!-- Divider -->
                 <div class="my-6 border-t border-white/30"></div>
                 <!-- ================= Feedback Section ================= -->
-                <div class="bg-white/10 rounded-2xl p-5 text-left">
+                {{-- <div class="bg-white/10 rounded-2xl p-5 text-left">
 
                     <h4 class="text-white font-semibold mb-4">
                         Event Feedback
                     </h4>
-
                     @php
                         $questions = [
                             'overall_experience' => 'How exciting was the overall event experience?',
@@ -275,7 +275,6 @@
                             'recommendation' => 'How likely are you to attend similar events again?',
                         ];
                     @endphp
-
                     @foreach ($questions as $key => $question)
                         <div class="mb-4">
                             <p class="text-white text-sm mb-2">
@@ -287,14 +286,11 @@
                                         name="ratings[{{ $key }}]" value="{{ $i }}"
                                         class="hidden peer">
                                     <label for="{{ $key }}_{{ $i }}"
-                                        class="cursor-pointer text-xl text-gray-300
-                   peer-checked:text-yellow-400
-                   hover:text-yellow-300 transition">
+                                        class="cursor-pointer text-xl text-gray-300  peer-checked:text-yellow-400  hover:text-yellow-300 transition">
                                         ★
                                     </label>
                                 @endfor
                             </div>
-
                         </div>
                     @endforeach
                     <!-- Optional Comment -->
@@ -304,7 +300,20 @@
 
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
                         placeholder="Any memorable moment or suggestion?"></textarea>
+                </div> --}}
+                <div class="bg-white/10 rounded-2xl p-5 text-left">
+                    <h4 class="text-white font-semibold mb-4">Event Feedback</h4>
+
+                    <div id="feedbackContainer"></div>
+
+                    <label class="text-white text-sm block mt-4 mb-2">
+                        Additional Comments <span class="text-red-600">*</span>
+                    </label>
+
+                    <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
+                        placeholder="Any memorable moment or suggestion?"></textarea>
                 </div>
+
                 <button id="submitUpload"
                     class="bg-gradient-to-r from-primary to-pink-600 text-white px-6 py-2 rounded-full">
                     Submit Here

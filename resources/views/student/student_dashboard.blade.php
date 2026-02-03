@@ -98,6 +98,7 @@
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
                                 ->where('student_id', $studentId)
+                                ->where('event_schedule_id', $dept->id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -258,6 +259,7 @@
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
+                                ->where('event_schedule_id', $department->id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -406,7 +408,7 @@
                                 $query->where('department_id', $register_event->student->department_id);
                             })
                             ->count();
-                        if ($register_event->schedule->is_reserve_date == 'y') {
+                        if ($register_event->get_event_schedule->is_reserve_date == 'y') {
                             $start_time = $register_event->event->reserve_start_time;
                             $end_time = $register_event->event->reserve_end_time;
                         } else {
@@ -453,8 +455,7 @@
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ optional($register_event->schedule)->event_date ? \Carbon\Carbon::parse($register_event->schedule->event_date)->format('F j, Y') : '-' }}
-
+                                        {{ optional($register_event->get_event_schedule)->event_date ? \Carbon\Carbon::parse($register_event->get_event_schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">

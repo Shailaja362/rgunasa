@@ -209,6 +209,20 @@ $(document).on("submit", "#eventForm", function (e) {
     } else {
         $("#dropArea").removeClass("border-red-500 ring-2 ring-red-500");
     }
+    // Is Technical Event validation
+    if ($('input[name="is_technical_event"]:checked').length === 0) {
+        showToast("Is Technical Event field is required", "error", 2000);
+
+        $('input[name="is_technical_event"]')
+            .closest("div")
+            .addClass("ring-2 ring-red-500 rounded");
+
+        isValid = false;
+    } else {
+        $('input[name="is_technical_event"]')
+            .closest("div")
+            .removeClass("ring-2 ring-red-500 rounded");
+    }
 
     if (!isValid) return;
     $("#submitBtn")
@@ -252,7 +266,6 @@ $(document).on("submit", "#eventForm", function (e) {
 
 $(document).on("change", "#club_id", function () {
     var clubId = $(this).val();
-
     if (clubId) {
         $.ajax({
             url: "/admin/create-event", // Route to get officers

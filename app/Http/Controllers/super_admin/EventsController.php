@@ -41,7 +41,7 @@ class EventsController extends Controller
             ->whereDate('event_date', $now->toDateString())
             ->whereHas('event', function ($q) use ($now) {
                 $q->whereTime('start_time', '<=', $now->toTimeString())
-                ->whereTime('end_time', '>=', $now->toTimeString());
+                    ->whereTime('end_time', '>=', $now->toTimeString());
             })
             ->get();
 
@@ -67,7 +67,7 @@ class EventsController extends Controller
 
         return view('super_admin.event_index')->with($this->data);
     }
-   
+
     public function createEvent(Request $request)
     {
         $this->data['faculty'] = Faculty::get();
@@ -141,6 +141,8 @@ class EventsController extends Controller
                 $event = Event::find($request['event_id']);
             } else {
                 $event = new Event();
+                $adminId = Auth::guard('admin')->id();
+                $event->created_by =  $adminId ?? '';
                 $message = 'Event saved successfully';
             }
 
@@ -158,10 +160,9 @@ class EventsController extends Controller
             } elseif ($request->has('old_banner')) {
                 $event->banner_image = $request->old_banner;
             }
-            $adminId = Auth::guard('admin')->id();
+
             $event->club_id  = $request['club_id'];
             $event->task_id = $taskId;
-            $event->created_by =  $adminId ?? '';
             $event->price = $request['price'] ?? 0;
             $event->faculty_id = $request['programme_officer'] ?? '';
             $event->title  = $request['event_title'] ?? '';
@@ -179,6 +180,7 @@ class EventsController extends Controller
             $event->contact_person = $request['contact_person']  ?? '';
             $event->contact_email = $request['contact_email']  ?? '';
             $event->duration_months = $request['duration_months'];
+            $event->is_technical_event = $request['is_technical_event'] ?? '';
             $event->save();
 
             $submittedScheduleIds = collect($request->departments)

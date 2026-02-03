@@ -35,6 +35,9 @@ class AssignTasksController extends Controller
                 // ->whereNotIn('status', ['pending', 'accepted']);
             })
             // ->whereDate('event_date', $now->toDateString())
+            ->whereHas('schedules', function ($q) use ($now) {
+                $q->whereDate('event_date',   $now->toTimeString());
+            })
             // ->whereNotIn('status', ['completed'])
             ->count();
         $this->data['completed_tasks'] = Tasks::where(['created_by' => $adminId, 'status' => 'accepted'])->count();

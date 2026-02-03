@@ -50,7 +50,7 @@ return new class extends Migration
             $table->time('end_time');
             $table->time('reserve_start_time');
             $table->time('reserve_end_time');
-            $table->enum('event_type', ['paid','free']);
+            $table->enum('event_type', ['paid', 'free']);
             $table->integer('duration_months')->nullable()->comment('Event validity duration in months');
             $table->string('location');
             $table->enum('session', ['1', '2'])
@@ -61,6 +61,7 @@ return new class extends Migration
             $table->string('contact_email');
             $table->string('banner_image')->nullable(); // store image path
             $table->enum('status', ['pending', 'completed'])->default('pending');
+            $table->enum('is_technical_event', ['y', 'n'])->default('n')->comment('Y - Yes , N - No');
             $table->timestamps();
 
             $table->foreign('faculty_id')->references('id')->on('faculties')->onDelete('no action');
@@ -73,8 +74,5 @@ return new class extends Migration
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-
-     }
+    public function down(): void {}
 };

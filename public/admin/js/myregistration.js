@@ -25,6 +25,25 @@ function showMyregistration(type) {
     }
 }
 
+const nonTechnicalQuestions = {
+    overall_experience: "How exciting was the overall event experience?",
+    engagement: "How engaging were the activities or sessions?",
+    organization: "How well was the event organized?",
+    coordination: "How interactive and friendly were the coordinators?",
+    recommendation: "How likely are you to attend similar events again?",
+};
+
+const technicalQuestions = {
+    understanding: "How well did you understand the topics in the session?",
+    helpfulness: "How helpful were the examples and exercises?",
+    explanation:
+        "How would you rate the instructor's explanation of the topics?",
+    pace: "How would you describe the pace of the session?",
+    satisfaction: "How satisfied are you with the session overall?",
+    takeaway: "What are the key takeaways from the session?",
+    rating: "How would you rate this event?",
+};
+
 $(function () {
     let filesArr = [];
     let existingImages = [];
@@ -142,6 +161,7 @@ $(function () {
         const eventId = $(this).data("event_id");
         const studentId = $(this).data("student_id");
         const scheduleId = $(this).data("schedule_id");
+        const isTechnical = $(this).data("is_technical") === "y";
 
         $("#event_id").val(eventId);
         $("#student_id").val(studentId);
@@ -157,7 +177,9 @@ $(function () {
         $("#successBox").addClass("hidden");
 
         $("#uploadModal").removeClass("hidden").addClass("flex");
-
+        renderFeedback(
+            isTechnical ? technicalQuestions : nonTechnicalQuestions,
+        );
         fetch(
             `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
         )
@@ -277,3 +299,35 @@ $(function () {
         $("#uploadModal").addClass("hidden").removeClass("flex");
     });
 });
+
+function renderFeedback(questions, existingRatings = {}) {
+    let html = "";
+
+    Object.keys(questions).forEach((key) => {
+        html += `
+            <div class="mb-4">
+                <p class="text-white text-sm mb-2">${questions[key]}</p>
+                <div class="flex gap-1">
+                    ${[5, 4, 3, 2, 1]
+                        .map(
+                            (i) => `
+                        <input type="radio"
+                               id="${key}_${i}"
+                               name="ratings[${key}]"
+                               value="${i}"
+                               class="hidden peer"
+                               ${existingRatings[key] == i ? "checked" : ""}>
+                        <label for="${key}_${i}"
+                               class="cursor-pointer text-xl text-gray-300
+                               peer-checked:text-yellow-400
+                               hover:text-yellow-300 transition">★</label>
+                    `,
+                        )
+                        .join("")}
+                </div>
+            </div>
+        `;
+    });
+
+    $("#feedbackContainer").html(html);
+}

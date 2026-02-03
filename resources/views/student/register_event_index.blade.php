@@ -78,6 +78,7 @@
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
                                 ->where('student_id', $studentId)
+                                ->where('event_schedule_id', $department->id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -241,6 +242,7 @@
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
+                                ->where('event_schedule_id', $dept->id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;

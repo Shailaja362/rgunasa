@@ -74,6 +74,23 @@
             </div>
 
             <div>
+                <label class="block text-sm font-medium"> Is Technical Event <span class="text-red-500">*</span></label>
+                <div class="flex items-center gap-6 mt-2">
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_technical_event" value="y"
+                            class="text-primary focus:ring-primary is_technical_event">
+                        <span class="ml-2 text-sm">Yes</span>
+                    </label>
+
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_technical_event" value="n"
+                            class="text-primary focus:ring-primary is_technical_event">
+                        <span class="ml-2 text-sm">No</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
                 <label class="block text-sm font-medium">Event Type <span class="text-red-600">*</span></label>
                 <select name="event_type" id="event_type"
                     class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
@@ -92,22 +109,6 @@
                         required>
                 @endif
             </div>
-            <div>
-                 <label class="block text-sm font-medium"> Is Technical Event </label>
-                <div class="flex items-center gap-6 mt-2">
-                                <label class="inline-flex items-center">
-                                    <input type="radio" name="is_technical_event"
-                                        value="y" class="text-primary focus:ring-primary is_technical_event">
-                                     <span class="ml-2 text-sm">Yes</span>
-                                </label>
-
-                            <label class="inline-flex items-center">
-                                    <input type="radio" name="is_technical_event"
-                                        value="n" class="text-primary focus:ring-primary is_technical_event">
-                                     <span class="ml-2 text-sm">No</span>
-                                </label>
-                    </div>
-                </div>
         </div>
         <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
         <p>Add one or more department schedules</p>
@@ -148,7 +149,8 @@
                         </div>
                         {{-- Section --}}
                         <div>
-                            <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
+                            <label class="block text-sm font-medium">Section <span
+                                    class="text-red-600">*</span></label>
                             <input type="text" name="departments[{{ $index }}][section]"
                                 value="{{ $dept->section ?? '' }}"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
@@ -330,6 +332,4 @@
         dateFormat: "d/m/Y",
     });
 </script>
-
-
 <script src="{{ asset('admin/js/events.js') }}"></script>
