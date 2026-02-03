@@ -107,7 +107,7 @@
             @foreach ($deptData as $index => $dept)
                 <div class="bg-[#F0F0F0] p-5 rounded-2xl relative dept-card">
                     <input type="hidden" name="departments[{{ $index }}][schedule_id]"
-                        value="{{ $dept->id ?? ''}}">
+                        value="{{ $dept->id ?? '' }}">
                     @if ($index > 0)
                         <button type="button"
                             class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">
@@ -141,40 +141,36 @@
                         <div>
                             <label class="block text-sm font-medium">Event Date <span
                                     class="text-red-600">*</span></label>
-                          <input type="text"
-       name="departments[{{ $index }}][event_date]"
-       value="{{ old("departments.$index.event_date", optional($dept)->event_date
-            ? \Carbon\Carbon::parse($dept->event_date)->format('d/m/Y')
-            : '') }}"
-       class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
+                            <input type="text" name="departments[{{ $index }}][event_date]"
+                                value="{{ old(
+                                    "departments.$index.event_date",
+                                    optional($dept)->event_date ? \Carbon\Carbon::parse($dept->event_date)->format('d/m/Y') : '',
+                                ) }}"
+                                class="date_field bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 event_date">
 
                         </div>
                         {{-- Reserve Date --}}
-                      <div>
-    <label class="block text-sm font-medium">
-        Is Reserve Date
-    </label>
+                        <div>
+                            <label class="block text-sm font-medium">
+                                Is Reserve Date
+                            </label>
 
-    <div class="flex items-center gap-6 mt-2">
-        <label class="inline-flex items-center">
-            <input type="radio"
-                   name="departments[{{ $index }}][is_reserve_date]"
-                   value="Y"
-                   class="text-primary focus:ring-primary is_reserve_date"
-                   {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'Y' ? 'checked' : '' }}>
-            <span class="ml-2 text-sm">Yes</span>
-        </label>
+                            <div class="flex items-center gap-6 mt-2">
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="departments[{{ $index }}][is_reserve_date]"
+                                        value="Y" class="text-primary focus:ring-primary is_reserve_date"
+                                        {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'y' ? 'checked' : '' }}>
+                                    <span class="ml-2 text-sm">Yes</span>
+                                </label>
 
-        <label class="inline-flex items-center">
-            <input type="radio"
-                   name="departments[{{ $index }}][is_reserve_date]"
-                   value="N"
-                   class="text-primary focus:ring-primary is_reserve_date"
-                   {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'N' ? 'checked' : '' }}>
-            <span class="ml-2 text-sm">No</span>
-        </label>
-    </div>
-</div>
+                                <label class="inline-flex items-center">
+                                    <input type="radio" name="departments[{{ $index }}][is_reserve_date]"
+                                        value="N" class="text-primary focus:ring-primary is_reserve_date"
+                                        {{ old("departments.$index.is_reserve_date", optional($dept)->is_reserve_date) === 'n' ? 'checked' : '' }}>
+                                    <span class="ml-2 text-sm">No</span>
+                                </label>
+                            </div>
+                        </div>
 
                         {{-- Seat Count --}}
                         <div>
