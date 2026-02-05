@@ -115,28 +115,28 @@
                                 <td class="px-3 py-2">{{ $event->title }}</td>
                                 <td class="px-3 py-2">{{ $event->get_faculty->name ?? '-' }}</td>
                                 <td class="px-3 py-2">
-                                    <div class="space-y-2">
+                                    <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                                         @foreach ($event->schedules as $schedule)
-                                            <div class="border rounded-lg p-2 bg-gray-50">
-                                                <div class="text-sm font-semibold text-gray-800">
+                                            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
+                                                <div class="text-xs font-bold text-gray-800 mb-1">
                                                     {{ $schedule->department->name }}
                                                 </div>
-                                                <div class="text-xs text-gray-600">
+                                                <div class="text-xs text-gray-600 mb-1">
                                                     <span class="font-medium">Event Date:</span>
                                                     {{ \Carbon\Carbon::parse($schedule->event_date)->format('d-m-Y') }}
                                                 </div>
-                                                <div class="text-xs text-gray-600">
-                                                    <span class="font-medium">Is Reserve Date : </span>
-                                                    @if ($schedule->is_reserve_date == 'y')
-                                                        Yes
-                                                    @else
-                                                        No
-                                                    @endif
+                                                <div class="text-xs text-gray-600 mb-1">
+                                                    <span class="font-medium">Reserve Date:</span>
+                                                    <span
+                                                        class="{{ $schedule->is_reserve_date == 'y' ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold' }}">
+                                                        {{ $schedule->is_reserve_date == 'y' ? 'Yes' : 'No' }}
+                                                    </span>
                                                 </div>
                                                 <div class="text-xs text-gray-600">
                                                     <span class="font-medium">Section:</span>
-                                                    {{ strtoupper($schedule->section) }} , <span
-                                                        class="font-medium">Seats:</span>
+                                                    {{ strtoupper($schedule->section) }}
+                                                    <span class="mx-2">|</span>
+                                                    <span class="font-medium">Seats:</span>
                                                     {{ $schedule->seat_count }}
                                                 </div>
                                             </div>
@@ -150,12 +150,10 @@
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
                                 </td>
-
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
-
             </div>
             <div class="p-4">
                 {{ $events->links() }}
