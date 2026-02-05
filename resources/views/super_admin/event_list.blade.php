@@ -127,7 +127,7 @@
                                                 </div>
                                                 <div class="text-xs text-gray-600">
                                                     <span class="font-medium">Is Reserve Date : </span>
-                                                    @if ($schedule->is_reserve_date == 'yes')
+                                                    @if ($schedule->is_reserve_date == 'y')
                                                         Yes
                                                     @else
                                                         No

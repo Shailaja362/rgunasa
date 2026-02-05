@@ -11,9 +11,22 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->data['admins'] = Admin::with('get_role')->paginate(10);
+        $query = Admin::with('get_role');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('mobile_number', 'LIKE', "%{$search}%");
+            });
+        }
+
+        $this->data['admins'] = $query
+            ->orderBy('id', 'desc')
+            ->paginate(25)
+            ->withQueryString();
         return view('super_admin/admin_list')->with($this->data);
     }
 
@@ -118,7 +131,7 @@ class AdminController extends Controller
             } else {
                 ActivityLog::add($admin->name . ' - New Admin Created', auth('admin')->user());
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $message

@@ -26,7 +26,7 @@ class MyRegisterEventsController extends Controller
         $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
-                    ->whereNotNull('exit_time');
+                       ->whereNotNull('exit_time');
             })
             ->where('student_id', $student->id)
             ->get();

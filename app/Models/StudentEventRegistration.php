@@ -29,7 +29,7 @@ class StudentEventRegistration extends Model
 
     public function get_student_proof()
     {
-        return $this->hasMany(StudentUploadProof::class, 'student_id','student_id');
+        return $this->hasMany(StudentUploadProof::class, 'student_id', 'student_id');
     }
 
     public function get_attendance()
@@ -39,7 +39,7 @@ class StudentEventRegistration extends Model
 
     public function get_event_attendance()
     {
-        return $this->hasMany(StudentAttendance::class, 'event_id', 'event_id');
+        return $this->hasMany(StudentAttendance::class, 'event_schedule_id', 'event_schedule_id');
     }
 
     public function schedule()

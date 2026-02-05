@@ -18,13 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('event_schedule_id');
             $table->unsignedBigInteger('department_id');
             $table->date('event_date')->nullable();
-            $table->integer('male_count')->default(0);
-            $table->integer('female_count')->default(0);
             $table->text('outcomes')->nullable();
             $table->text('feedback_summary')->nullable();
-            $table->string('certificates')->nullable();
-            $table->string('attendance_in')->nullable();
-            $table->string('attendance_out')->nullable();
             $table->timestamps();
 
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('no action');

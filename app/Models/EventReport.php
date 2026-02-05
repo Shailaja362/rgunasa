@@ -20,7 +20,7 @@ class EventReport extends Model
         'attendance_out',
         'created_by'
     ];
-
+    public $timestamps = true;
     public function get_event_image()
     {
         return $this->hasMany(EventReportImage::class, 'report_id');

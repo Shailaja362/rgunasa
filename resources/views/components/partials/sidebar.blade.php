@@ -9,8 +9,11 @@
             $user = session()->get('student') ?? (session()->get('admin') ?? session()->get('super_admin'));
             $profile_pict = $user->profile_pic ?? null;
             if (!empty(session()->get('student'))) {
-                $name = session()->get('student')->name;
-                $id = session()->get('student')->id;
+                $student = session()->get('student');
+                $name = $student->name ?? '';
+                $id = $student->register_number ?? '';
+                $get_department = \App\Models\Department::where('id', $student->department_id)->first();
+                $dept_name = $get_department->name ?? '';
                 $route = route('student.logout');
             } elseif (!empty(session()->get('admin'))) {
                 $name = session()->get('admin')->name;
@@ -21,7 +24,6 @@
                 $id = session()->get('super_admin')->emp_code;
                 $route = route('admin.logout');
             }
-
         @endphp
 
         @if (!empty($profile_pict))
@@ -37,6 +39,11 @@
         <div class="text-center font-medium text-md text-primary">
             {{ $name }}
         </div>
+        @if (!empty(session()->get('student')))
+        <div class="text-center font-sm text-sm text-primary">
+             {{  $dept_name }}
+        </div>
+        @endif
         <div class="text-center font-medium text-md text-primary">
             ID - {{ $id }}
         </div>
@@ -60,7 +67,7 @@
             @endif
             @if (!empty(session()->get('admin')))
                 <x-slot:trigger>
-                 </x-slot:trigger>
+                </x-slot:trigger>
                 <x-slot:menus>
                     <x-menu.item name="Home" icon="fa-home" route="home" />
                     <x-menu.item name="Department" icon="fas fa-building" route="department_list" />
@@ -82,6 +89,11 @@
                 <x-slot:menus>
                     <x-menu.item name="Home" icon="fa-home" route="super_admin_home" />
                     <x-menu.item name="Events" icon="fa-calendar-minus" route="events" />
+                    <x-menu.item name="Department" icon="fas fa-building" route="department_list" />
+                    <x-menu.item name="Programme" icon="fas fa-book" route="programme_list" />
+                    <x-menu.item name="Faculty" icon="fas fa-chalkboard-teacher" route="faculty_list" />
+                    <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
+                    <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Admin" icon="fas fa-chalkboard-teacher" route="admin_list" />
                     <x-menu.item name="Assign Tasks" icon="fa-check-circle" route="assign_tasks" />

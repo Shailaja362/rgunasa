@@ -261,55 +261,12 @@
                 <!-- Divider -->
                 <div class="my-6 border-t border-white/30"></div>
                 <!-- ================= Feedback Section ================= -->
-                {{-- <div class="bg-white/10 rounded-2xl p-5 text-left">
-
-                    <h4 class="text-white font-semibold mb-4">
-                        Event Feedback
-                    </h4>
-                    @php
-                        $questions = [
-                            'overall_experience' => 'How exciting was the overall event experience?',
-                            'engagement' => 'How engaging were the activities or sessions?',
-                            'organization' => 'How well was the event organized?',
-                            'coordination' => 'How interactive and friendly were the coordinators?',
-                            'recommendation' => 'How likely are you to attend similar events again?',
-                        ];
-                    @endphp
-                    @foreach ($questions as $key => $question)
-                        <div class="mb-4">
-                            <p class="text-white text-sm mb-2">
-                                {{ $question }}
-                            </p>
-                            <div class="flex gap-1">
-                                @for ($i = 5; $i >= 1; $i--)
-                                    <input type="radio" id="{{ $key }}_{{ $i }}"
-                                        name="ratings[{{ $key }}]" value="{{ $i }}"
-                                        class="hidden peer">
-                                    <label for="{{ $key }}_{{ $i }}"
-                                        class="cursor-pointer text-xl text-gray-300  peer-checked:text-yellow-400  hover:text-yellow-300 transition">
-                                        ★
-                                    </label>
-                                @endfor
-                            </div>
-                        </div>
-                    @endforeach
-                    <!-- Optional Comment -->
-                    <label class="text-white text-sm block mt-4 mb-2">
-                        Additional Comments <span class="text-red-600">*</span>
-                    </label>
-
-                    <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
-                        placeholder="Any memorable moment or suggestion?"></textarea>
-                </div> --}}
                 <div class="bg-white/10 rounded-2xl p-5 text-left">
                     <h4 class="text-white font-semibold mb-4">Event Feedback</h4>
-
                     <div id="feedbackContainer"></div>
-
                     <label class="text-white text-sm block mt-4 mb-2">
-                        Additional Comments <span class="text-red-600">*</span>
+                        Additional Comments(Optional)
                     </label>
-
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
                         placeholder="Any memorable moment or suggestion?"></textarea>
                 </div>

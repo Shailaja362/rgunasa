@@ -39,7 +39,6 @@ class StudentController extends Controller
         return view('admin.student_list')->with($this->data);
     }
 
-
     public function createStudent(Request $request)
     {
         $this->data['department'] = Department::all();
@@ -47,6 +46,8 @@ class StudentController extends Controller
         if ($request->student_id) {
             $studentId = decrypt($request->student_id);
             $this->data['edit_student'] = Student::where('id', $studentId)->first();
+        }else{
+            $this->data['edit_student'] = null;
         }
         return view('admin/create_student')->with($this->data);
     }

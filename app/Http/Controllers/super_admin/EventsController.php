@@ -232,10 +232,6 @@ class EventsController extends Controller
                 'event' => $event,
             ]);
         } catch (Exception $e) {
-            echo '<pre>';
-            print_r($e->getMessage());
-            echo '</pre>';
-            exit;
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save event',

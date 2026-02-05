@@ -52,16 +52,6 @@ $(function () {
     const MAX_FILES = 4;
     const MAX_SIZE = 10 * 1024 * 1024;
 
-    const ALLOWED_TYPES = [
-        "image/jpeg",
-        "image/png",
-        "application/pdf",
-        "application/msword",
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "application/vnd.ms-excel",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ];
-
     function fileLabel(type) {
         if (type === "application/pdf") return "PDF";
         if (type.includes("word")) return "DOC";
@@ -142,7 +132,7 @@ $(function () {
         }
 
         newFiles.forEach((file) => {
-            if (!ALLOWED_TYPES.includes(file.type)) return;
+            // if (!ALLOWED_TYPES.includes(file.type)) return;
             if (file.size > MAX_SIZE) return;
 
             const duplicate = filesArr.some(
@@ -154,7 +144,6 @@ $(function () {
         showPreviews();
     }
 
-    /* ================= OPEN MODAL ================= */
     $(document).on("click", ".upload", function (e) {
         e.preventDefault();
 
@@ -202,7 +191,6 @@ $(function () {
             });
     });
 
-    /* ================= DROP / FILE ================= */
     $("#dropArea").on("click", function (e) {
         if (
             $(e.target).closest(".remove-img").length ||
@@ -260,10 +248,7 @@ $(function () {
             showToast("Please upload at least one file", "error", 2000);
             return;
         }
-        if ($("#comments").val() == "") {
-            showToast("Please enter your comments", "error", 2000);
-            return;
-        }
+
         const formData = new FormData();
         filesArr.forEach((f) => formData.append("proof[]", f));
         removedExistingIds.forEach((id) =>

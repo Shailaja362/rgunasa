@@ -3,7 +3,7 @@
         <h3 class="font-semibold text-primary">Admin</h3>
     </div>
 
-  @if (session()->has('failures'))
+    @if (session()->has('failures'))
         <div class="text-red-700 alert alert-danger border border-danger shadow-sm mt-2">
             <h5 class="mb-3 fw-bold">
                 <i class="fa fa-exclamation-triangle"></i> Import Errors
@@ -65,6 +65,25 @@
             </button>
         </form>
     </div>
+    <h4 class="font-semibold text-gray-800 mb-4">Admin Filter</h4>
+    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
+        <div class="mt-6">
+            <form method="GET" action="{{ route('admin_list') }}" class="flex gap-3 mb-4">
+                <input type="text" name="search" value="{{ request('search') }}"
+                    placeholder="Search name / email / mobile"
+                    class="border border-gray-300 rounded-full px-4 py-2 w-[500px] text-sm">
+                <button type="submit"
+                    class="px-5 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full">
+                    <i class="fa fa-search"></i> Search
+                </button>
+                @if (request()->hasAny(['search']))
+                    <a href="{{ route('admin_list') }}" class="px-5 py-2 bg-gray-400 text-white rounded-full">
+                        Reset
+                    </a>
+                @endif
+            </form>
+        </div>
+    </section>
     <section class="p-2 mt-3">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Admin List</h4>

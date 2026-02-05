@@ -171,10 +171,8 @@
     @endphp
 
     <div class="container">
-
         <!-- LOGO -->
         <img src="{{ public_path('images/rtc_logo.png') }}" style="width:100%; margin-bottom:10px;">
-
         <!-- HEADER -->
         <div class="header">
             <table>
@@ -306,15 +304,10 @@
         <div class="section-title">Average Feedback</div>
 
         <table class="info-table">
-            @foreach ([
-        'overall_experience' => 'Overall Experience',
-        'engagement' => 'Engagement',
-        'organization' => 'Organization',
-        'coordination' => 'Coordination',
-        'recommendation' => 'Recommendation',
-    ] as $key => $label)
+
+            @forelse ($data['report']->avgRatings as $key => $rating)
                 @php
-                    $rating = round($data['report']->avgRatings[$key] ?? 0, 1);
+                    $label = ucwords(str_replace('_', ' ', $key));
                 @endphp
 
                 <tr>
@@ -324,82 +317,50 @@
                         <b>{{ $rating }}/5</b>
                     </td>
                 </tr>
-            @endforeach
-        </table>
 
+            @empty
+                <tr>
+                    <td colspan="2">No ratings available</td>
+                </tr>
+            @endforelse
+
+        </table>
 
         <!-- STUDENT FEEDBACK -->
         <div class="section-title">Student Feedback</div>
+        @php
+            $f = $data['report']->feedback;
+            $ratings = json_decode($f->ratings, true) ?? [];
+        @endphp
 
-        @if ($data['report']->feedback)
-            @php
-                $f = $data['report']->feedback;
-                $r = $f->ratings ?? [];
-                $data_r = json_decode($r, true);
-            @endphp
+        <table class="info-table">
+            <tr>
+                <td class="label">Student Name</td>
+                <td>{{ $f->student->name }}</td>
+            </tr>
+            <tr>
+                <td class="label">Register Number</td>
+                <td>{{ $f->student->register_number }}</td>
+            </tr>
+            @foreach ($ratings as $key => $value)
+                @php
+                    $label = ucwords(str_replace('_', ' ', $key));
+                    $rating = (int) $value;
+                @endphp
+                <tr>
+                    <td class="label">{{ $label }}</td>
+                    <td>
+                        <span class="stars">{{ stars($rating) }}</span>
+                        <b>{{ $rating }}/5</b>
+                    </td>
+                </tr>
+            @endforeach
+            <tr>
+                <td class="label">Comments</td>
+                <td>{{ $f->comments ?? '-' }}</td>
+            </tr>
+        </table>
 
-            <table class="info-table">
-                <tr>
-                    <td class="label">Student Name</td>
-                    <td>{{ $f->student->name }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Register Number</td>
-                    <td>{{ $f->student->register_number }}</td>
-                </tr>
-                <tr>
-                    <td class="label">Overall Experience</td>
-                    <td>
-                        <span class="stars">{{ stars($data_r['overall_experience'] ?? 0) }}</span>
-                        <b>{{ $data_r['overall_experience'] ?? 0 }}/5</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Engagement</td>
-                    <td>
-                        <span class="stars">{{ stars($data_r['engagement'] ?? 0) }}</span>
-                        <b>{{ $data_r['engagement'] ?? 0 }}/5</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Organization</td>
-                    <td>
-                        <span class="stars">{{ stars($data_r['organization'] ?? 0) }}</span>
-                        <b>{{ $data_r['organization'] ?? 0 }}/5</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Coordination</td>
-                    <td>
-                        <span class="stars">{{ stars($data_r['coordination'] ?? 0) }}</span>
-                        <b>{{ $data_r['coordination'] ?? 0 }}/5</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Recommendation</td>
-                    <td>
-                        <span class="stars">{{ stars($data_r['recommendation'] ?? 0) }}</span>
-                        <b>{{ $data_r['recommendation'] ?? 0 }}/5</b>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="label">Comments</td>
-                    <td>{{ $f->comments ?? '-' }}</td>
-                </tr>
-            </table>
-
-            {{-- Student Uploaded Image --}}
-            @if ($f->uploads->count())
-                <div class="section-title">Student Uploaded Proof</div>
-                <div class="image-grid">
-                    @foreach ($f->uploads as $img)
-                        <img src="{{ public_path('storage/' . $img->file_path) }}">
-                    @endforeach
-                </div>
-            @endif
-        @else
-            <p>No feedback available.</p>
-        @endif
         <!-- GEO IMAGES -->
         @if ($data['report']->geo_images->count())
             <div class="section-title">Geo Tagged Photos</div>
@@ -414,5 +375,4 @@
         </div>
     </div>
 </body>
-
 </html>

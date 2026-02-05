@@ -60,11 +60,10 @@ class AdminReportsController extends Controller
             'event_id'        => 'required|exists:events,id',
             'department_id'   => 'required',
             'event_date'      => 'required|date',
-            'male_count'      => 'required|numeric',
-            'female_count'    => 'required|numeric',
             'outcome_results' => 'required',
             'feedback_summary' => 'required'
         ]);
+
         DB::beginTransaction();
         try {
             $schedule = $this->resolveSchedule(
@@ -83,13 +82,43 @@ class AdminReportsController extends Controller
                 [
                     'department_id' => $request->department_id,
                     'event_date' => $request->event_date,
-                    'male_count' => $request->male_count,
-                    'female_count' => $request->female_count,
                     'outcomes' => $request->outcome_results,
                     'feedback_summary' => $request->feedback_summary,
                     'created_by' => auth('admin')->id()
                 ]
             );
+
+            $get_exists_image = EventReportImage::where('report_id', $report->id)->get();
+            foreach ($get_exists_image as $img) {
+                if (Storage::disk('public')->exists($img->file_path)) {
+                    Storage::disk('public')->delete($img->file_path);
+                    $img->delete();
+                }
+            }
+
+            EventReportImage::where('report_id', $report->id)->delete();
+            // MULTIPLE PROOF IMAGES
+            if ($request->hasFile('proof')) {
+                foreach ($request->proof as $file) {
+                    $imageName = \Illuminate\Support\Str::uuid() . '.' . $file->extension();
+                    $path = $file->storeAs('report_images', $imageName, 'public');
+                    $reportimage = new EventReportImage();
+                    $reportimage->report_id = $report->id;
+                    $reportimage->file_name = $imageName;
+                    $reportimage->file_path = $path;
+                    $reportimage->file_type = $file->getClientOriginalExtension();
+                    $reportimage->save();
+                }
+            }
+
+            $report->load('get_event');
+            $eventTitle = $report->get_event->title ?? 'Unknown Event';
+            $user = auth('admin')->user();
+            if (!empty($request['report_id'])) {
+                ActivityLog::add("{$user->name} - {$eventTitle} - Report Updated", auth('admin')->user());
+            } else {
+                ActivityLog::add("{$user->name} - {$eventTitle} - New Report Created", auth('admin')->user());
+            }
 
             DB::commit();
             return response()->json([
@@ -135,46 +164,76 @@ class AdminReportsController extends Controller
             ->get();
 
         $singleFeedback = $feedbacks->last();
-        $keys = [
-            'overall_experience',
-            'engagement',
-            'organization',
-            'coordination',
-            'recommendation'
-        ];
 
-        $totals = array_fill_keys($keys, 0);
-        $counts = array_fill_keys($keys, 0);
+        $totals = [];
+        $counts = [];
 
         foreach ($feedbacks as $feedback) {
             $ratings = $this->normalizeRatings($feedback->ratings);
+            if (!is_array($ratings)) {
+                continue;
+            }
 
-            foreach ($keys as $key) {
-                if (isset($ratings[$key])) {
-                    $totals[$key] += (int) $ratings[$key];
+            foreach ($ratings as $key => $value) {
+                if (!isset($totals[$key])) {
+                    $totals[$key] = 0;
+                    $counts[$key] = 0;
+                }
+                if (is_numeric($value)) {
+                    $totals[$key] += (int) $value;
                     $counts[$key]++;
                 }
             }
         }
 
+        // calculate averages dynamically
         $avgRatings = [];
-        foreach ($keys as $key) {
+
+        foreach ($totals as $key => $total) {
             $avgRatings[$key] = $counts[$key] > 0
-                ? round($totals[$key] / $counts[$key], 1)
+                ? round($total / $counts[$key], 1)
                 : 0;
         }
+
+
         $registeredCount = StudentEventRegistration::where([
             'event_id' => $eventId,
             'event_schedule_id' => $scheduleId
         ])->count();
 
         $attendedCount = $attendedStudents->count();
+        $male_count = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
+            }
+        ])->whereHas('student', function ($query) {
+            $query->where('gender', 'm');
+        })
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
+        $female_count = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
+            }
+        ])->whereHas('student', function ($query) {
+            $query->where('gender', 'f');
+        })
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
             'data' => [
                 'labels' => ['Male', 'Female'],
                 'datasets' => [[
-                    'data' => [$report->male_count, $report->female_count],
+                    'data' => [$male_count->count(), $female_count->count()],
                     'backgroundColor' => ['#7A1C73', '#C36BCB']
                 ]]
             ]
@@ -214,109 +273,134 @@ class AdminReportsController extends Controller
 
     public function downloadPdf($id)
     {
-        $event = EventReport::with(['get_event.get_task', 'get_event_image', 'creator', 'student_uploads', 'schedule.department'])->findOrFail($id);
-        $attended_students = StudentAttendance::with(['student', 'student.get_department', 'get_grade',  'grades' => function ($q) use ($event) {
-            $q->where('event_id', $event->event_id);
-        }])
-            ->whereHas('grades', function ($query) use ($event) {
-                $query->where('event_id', $event->event_id);
-            })
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->where('event_id', $event->event_id)
-            ->get();
+        $report = EventReport::with([
+            'get_event.get_task',
+            'get_event_image',
+            'creator',
+            'student_uploads',
+            'schedule.department'
+        ])->findOrFail($id);
 
-        $singleFeedback = StudentFeedback::with([
-            'student',
-            'uploads' => function ($q) use ($event) {
-                $q->where('event_id', $event->event_id);
+        $scheduleId = $report->event_schedule_id;
+        $eventId    = $report->event_id;
+        $attendedStudents = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
             }
         ])
-            ->where('event_id', $event->event_id)
-            ->latest()
-            ->first();
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
         $feedbacks = StudentFeedback::with('student')
-            ->where('event_id', $event->event_id)->get();
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->get();
 
-        $keys = [
-            'overall_experience',
-            'engagement',
-            'organization',
-            'coordination',
-            'recommendation',
-        ];
+        $singleFeedback = $feedbacks->last();
 
-        $totals = array_fill_keys($keys, 0);
-        $counts = array_fill_keys($keys, 0);
+        $totals = [];
+        $counts = [];
 
         foreach ($feedbacks as $feedback) {
-
-            // normalize here
             $ratings = $this->normalizeRatings($feedback->ratings);
+            if (!is_array($ratings)) {
+                continue;
+            }
 
-            foreach ($keys as $key) {
-                if (isset($ratings[$key]) && is_numeric($ratings[$key])) {
-                    $totals[$key] += (int) $ratings[$key];
+            foreach ($ratings as $key => $value) {
+                if (!isset($totals[$key])) {
+                    $totals[$key] = 0;
+                    $counts[$key] = 0;
+                }
+                if (is_numeric($value)) {
+                    $totals[$key] += (int) $value;
                     $counts[$key]++;
                 }
             }
         }
 
-        // Final averages
+        // calculate averages dynamically
         $avgRatings = [];
-        foreach ($keys as $key) {
+
+        foreach ($totals as $key => $total) {
             $avgRatings[$key] = $counts[$key] > 0
-                ? round($totals[$key] / $counts[$key], 1)
+                ? round($total / $counts[$key], 1)
                 : 0;
         }
 
-        // Gender counts
-        $studentIds = $feedbacks->pluck('student_id')->toArray();
-        // Prepare gender chart via QuickChart.io
+
+        $registeredCount = StudentEventRegistration::where([
+            'event_id' => $eventId,
+            'event_schedule_id' => $scheduleId
+        ])->count();
+
+        $attendedCount = $attendedStudents->count();
+        $male_count = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
+            }
+        ])->whereHas('student', function ($query) {
+            $query->where('gender', 'm');
+        })
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
+        $female_count = StudentAttendance::with([
+            'student.get_department',
+            'grades' => function ($q) use ($eventId) {
+                $q->where('event_id', $eventId);
+            }
+        ])->whereHas('student', function ($query) {
+            $query->where('gender', 'f');
+        })
+            ->where('event_id', $eventId)
+            ->where('event_schedule_id', $scheduleId)
+            ->whereNotNull('entry_time')
+            ->whereNotNull('exit_time')
+            ->get();
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
             'data' => [
                 'labels' => ['Male', 'Female'],
                 'datasets' => [[
-                    'data' => [$event->male_count, $event->female_count],
+                    'data' => [$male_count->count(), $female_count->count()],
                     'backgroundColor' => ['#7A1C73', '#C36BCB']
                 ]]
-            ],
-            'options' => ['plugins' => ['legend' => ['position' => 'bottom']]]
+            ]
         ]));
-        // Counts
-        $registeredCount = StudentEventRegistration::where('event_id', $event->event_id)->count();
-        $attendedCount   =  StudentAttendance::where('event_id', $event->event_id)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->count();
 
         // Prepare PDF data
         $data = [
             'report' => (object)[
-                'get_event' => $event->get_event,
-                'schedule' => $event->schedule,
+                'get_event' => $report->get_event,
+                'schedule' => $report->schedule,
                 'feedback' => $singleFeedback,
                 'avgRatings' => $avgRatings,
-                'male_count' => $event->male_count,
-                'female_count' => $event->female_count,
+                'male_count' => $report->male_count,
+                'female_count' => $report->female_count,
                 'registered_count' => $registeredCount,
                 'attended_count' => $attendedCount,
-                'geo_images' => $event->get_event_image,
-                'student_uploads' => $event->student_uploads,
-                'event_image' => $event->image,
-                'outcomes' => $event->outcomes,
-                'feedback_summary' => $event->feedback_summary
+                'geo_images' => $report->get_event_image,
+                'student_uploads' => $report->student_uploads,
+                'event_image' => $report->image,
+                'outcomes' => $report->outcomes,
+                'feedback_summary' => $report->feedback_summary
             ],
             'genderChartUrl' => $genderChartUrl,
-            'attended_students' => $attended_students
+            'attended_students' => $attendedStudents
         ];
 
         $user = auth('admin')->user();
-        ActivityLog::add($user->name . ' - ' .  $event->get_event->title . 'Report Downloaded', $user);
+        ActivityLog::add($user->name . ' - ' .  $report->get_event->title . 'Report Downloaded', $user);
         $pdf = Pdf::loadView('report.pdf.report_template', compact('data'))
             ->setPaper('a4', 'portrait');
-        return $pdf->download((($event->schedule?->department?->name) ?? '') . ' - ' . $event->get_event->title . ".pdf");
+        return $pdf->download((($report->schedule?->department?->name) ?? '') . ' - ' . $report->get_event->title . ".pdf");
     }
 
     private function normalizeRatings($value)
@@ -324,25 +408,16 @@ class AdminReportsController extends Controller
         if (empty($value) || $value === 'null') {
             return [];
         }
-
-        // If it's already an array, return as-is
         if (is_array($value)) {
             return $value;
         }
-
-        // Only decode if it's a string
         if (is_string($value)) {
             $decoded = json_decode($value, true);
-
-            // Sometimes JSON is double-encoded
             if (is_string($decoded)) {
                 $decoded = json_decode($decoded, true);
             }
-
             return is_array($decoded) ? $decoded : [];
         }
-
-        // For any other type, return empty array
         return [];
     }
 }

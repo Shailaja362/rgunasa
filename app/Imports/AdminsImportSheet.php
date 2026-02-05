@@ -24,8 +24,8 @@ class AdminsImportSheet implements ToModel, WithHeadingRow, WithValidation, Skip
 
     public function model(array $row)
     {
-        $role = Role::where('name', trim($row['role']))->first();
-       
+        $role = Role::where('name', strtolower(trim($row['role'])))->first();
+
         $admin = new Admin();
         $admin->role_id = $role?->id;
         $admin->name  = $row['name'];
@@ -43,7 +43,7 @@ class AdminsImportSheet implements ToModel, WithHeadingRow, WithValidation, Skip
     {
         $this->rows[$index] = $row; // store row for later
         return [
-            'role' => trim($row['role']),
+            'role' => strtolower(trim($row['role'])),
             'name' => trim($row['name']),
             'email' => trim($row['email']),
             'mobile_number' => trim($row['mobile_number']),
