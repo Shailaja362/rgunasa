@@ -292,4 +292,4 @@
         </div>
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/myregistration.js') }}"></script>
+<script src="{{ asset('admin/js/myregistration.js') }}?v={{ time() }}"></script>

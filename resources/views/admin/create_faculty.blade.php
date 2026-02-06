@@ -125,4 +125,4 @@
 
     </form>
 </x-layouts.app>
-<script src="{{ asset('admin/js/faculty.js') }}"></script>
+<script src="{{ asset('admin/js/faculty.js') }}?v={{ time() }}"></script>

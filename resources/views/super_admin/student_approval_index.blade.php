@@ -113,4 +113,4 @@
     </section>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/student_approval.js') }}"></script>
+<script src="{{ asset('admin/js/student_approval.js') }}?v={{ time() }}"></script>

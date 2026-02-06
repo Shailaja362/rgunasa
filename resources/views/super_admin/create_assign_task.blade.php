@@ -116,4 +116,4 @@
     </section>
 
 </x-layouts.app>
-<script src="{{ asset('admin/js/tasks.js') }}"></script>
+<script src="{{ asset('admin/js/tasks.js') }}?v={{ time() }}"></script>

@@ -55,4 +55,4 @@
 
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/student_attendance.js') }}"></script>
+<script src="{{ asset('admin/js/student_attendance.js') }}?v={{ time() }}"></script>

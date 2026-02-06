@@ -93,4 +93,4 @@
     </form>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/report.js') }}"></script>
+<script src="{{ asset('admin/js/report.js') }}?v={{ time() }}"></script>

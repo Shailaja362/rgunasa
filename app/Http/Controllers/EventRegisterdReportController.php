@@ -32,7 +32,7 @@ class EventRegisterdReportController extends Controller
         if (!empty($request->all())) {
             $this->data['registrations'] = StudentEventRegistration::with([
                 'event:id,title',
-                'student:id,name,email,department_id',
+                'student:id,name,email,department_id,register_number,section',
                 'student.get_department',
                 'get_event_schedule'
             ])

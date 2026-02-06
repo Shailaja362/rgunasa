@@ -65,4 +65,4 @@
 
     </form>
 </x-layouts.app>
-<script src="{{ asset('admin/js/club.js') }}"></script>
+<script src="{{ asset('admin/js/club.js') }}?v={{ time() }}"></script>

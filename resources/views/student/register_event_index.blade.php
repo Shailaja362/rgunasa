@@ -387,4 +387,4 @@
     window.username = "{{ Auth::user()->name ?? 'Student' }}";
     window.email = "{{ Auth::user()->email ?? '' }}";
 </script>
-<script src="{{ asset('admin/js/registration_form.js') }}"></script>
+<script src="{{ asset('admin/js/registration_form.js') }}?v={{ time() }}"></script>

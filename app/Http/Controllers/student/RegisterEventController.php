@@ -10,8 +10,10 @@ use App\Helpers\ActivityLog;
 use Illuminate\Http\Request;
 use App\Models\StudentUploadProof;
 use App\Http\Controllers\Controller;
+use App\Models\EventSchedule;
 use Illuminate\Support\Facades\Auth;
 use App\Models\StudentEventRegistration;
+use Illuminate\Support\Facades\DB;
 
 class RegisterEventController extends Controller
 {
@@ -68,33 +70,34 @@ class RegisterEventController extends Controller
     public function studentRegisterEvent(Request $request)
     {
         $request->validate([
-            'stu_id'   => 'required',
-            'event_id' => 'required',
+            'stu_id'      => 'required|exists:students,id',
+            'event_id'    => 'required|exists:events,id',
+            'schedule_id' => 'required|exists:event_schedules,id',
         ]);
-
+        DB::beginTransaction();
         try {
             $event = Event::findOrFail($request->event_id);
-            // Get last registration
+            $schedule = EventSchedule::findOrFail($request->schedule_id);
             $lastRegistration = StudentEventRegistration::where([
                 'student_id' => $request->stu_id,
-                'event_id'   => $event->id
+                'event_id'   => $event->id,
+                'event_schedule_id' => $schedule->id
             ])
                 ->orderBy('registered_at', 'desc')
                 ->first();
+            if ($lastRegistration && (empty($event->duration_months) || $event->duration_months == 0)) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You are already registered for this event.',
+                ]);
+            }
 
-            if ($lastRegistration) {
-                if (empty($event->duration_months) || $event->duration_months == 0) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'You are already registered for this event.',
-                    ]);
-                }
-
-                //  Case 2: Duration set → check time limit
+            if ($lastRegistration && $event->duration_months > 0) {
                 $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
                     ->addMonths($event->duration_months);
-
                 if (Carbon::now()->lt($nextAllowedDate)) {
+                    DB::rollBack();
                     return response()->json([
                         'success' => false,
                         'message' => 'You can register again after ' . $nextAllowedDate->format('d M Y'),
@@ -102,14 +105,26 @@ class RegisterEventController extends Controller
                 }
             }
 
-            // Allow registration
-            $register_student = new StudentEventRegistration();
-            $register_student->student_id     = $request->stu_id;
-            $register_student->event_schedule_id = $request->schedule_id;
-            $register_student->event_id       = $event->id;
-            $register_student->status         = 1;
-            $register_student->registered_at  = Carbon::now();
-            $register_student->save();
+            $registeredCount = StudentEventRegistration::where('event_schedule_id', $schedule->id)
+                ->count();
+            if ($registeredCount >= $schedule->seat_count) {
+                DB::rollBack();
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This event seat is already full.',
+                ]);
+            }
+
+            // Register student
+            StudentEventRegistration::create([
+                'student_id'        => $request->stu_id,
+                'event_id'          => $event->id,
+                'event_schedule_id' => $schedule->id,
+                'status'            => 1,
+                'registered_at'     => Carbon::now(),
+            ]);
+
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -117,9 +132,11 @@ class RegisterEventController extends Controller
             ]);
         } catch (\Exception $e) {
 
+            DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Registration Failed',
+                'message' => 'Registration failed.',
                 'error'   => $e->getMessage(),
             ], 500);
         }

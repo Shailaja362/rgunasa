@@ -162,4 +162,4 @@
     </section>
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/events.js') }}"></script>
+<script src="{{ asset('admin/js/events.js') }}?v={{ time() }}"></script>
