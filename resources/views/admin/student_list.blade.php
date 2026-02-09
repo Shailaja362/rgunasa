@@ -43,7 +43,6 @@
     @endif
 
     <div class="flex justify-end items-center gap-3 mt-3">
-        <!-- Add Student -->
         <a href="{{ route('create_student') }}"
             class="flex items-center justify-center gap-1 w-[140px]
               bg-gradient-to-r from-primary to-pink-600
@@ -51,11 +50,9 @@
             <i class="fa fa-plus"></i>
             Add Student
         </a>
-        <!-- Download Template -->
         <a href="{{ route('students.download.template') }}" class="px-4 py-1 bg-primary text-white rounded-full">
             <i class="fa fa-download"></i> Download Template
         </a>
-        <!-- Upload Students -->
         <form action="{{ route('students.upload') }}" method="POST" enctype="multipart/form-data"
             class="flex items-center gap-2">
             @csrf
@@ -104,27 +101,29 @@
                 <table class="w-full text-sm text-left text-gray-700 border-collapse">
                     <thead>
                         <tr class="bg-primary text-white text-sm uppercase tracking-wider">
-                            <th class="px-3 py-2">ID</th>
-                            <th class="px-3 py-2">Student Name</th>
-                            <th class="px-3 py-2">Email</th>
-                            <th class="px-3 py-2">Mobile Number</th>
-                            <th class="px-3 py-2">Date of Birth</th>
-                            <th class="px-3 py-2">Department</th>
-                            <th class="px-3 py-2">Programme</th>
-                            <th class="px-3 py-2">Action</th>
+                            <th class="px-2 py-2">ID</th>
+                            <th class="px-2 py-2">Student Name</th>
+                            <th class="px-2 py-2">Register Number</th>
+                            <th class="px-2 py-2">Section</th>
+                            <th class="px-2 py-2">Email</th>
+                            <th class="px-2 py-2">Mobile Number</th>
+                            <th class="px-2 py-2">Department</th>
+                            <th class="px-2 py-2">Programme</th>
+                            <th class="px-2 py-2">Action</th>
                         </tr>
                     </thead>
                     <tbody id="studentTableBody" class="divide-y divide-gray-200">
                         @foreach ($student as $stud)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">{{ $stud->name ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $stud->email ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $stud->mobile_number ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $stud->date_of_birth ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $stud->get_department->name }}</td>
-                                <td class="px-4 py-3">{{ $stud->get_programme->name }}</td>
-                                <td class="px-4 py-3 flex justify-center gap-4">
+                                <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-3">{{ $stud->name ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->register_number ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->section ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->email ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->mobile_number ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->get_department?->name }}</td>
+                                <td class="px-2 py-3">{{ $stud->get_programme?->name }}</td>
+                                <td class="px-2 py-3 flex justify-center gap-4">
                                     <a href="{{ route('create_student', ['student_id' => encrypt($stud->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>

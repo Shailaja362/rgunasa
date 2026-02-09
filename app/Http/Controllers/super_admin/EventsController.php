@@ -22,7 +22,6 @@ class EventsController extends Controller
     public function index()
     {
         $now = Carbon::now();
-
         /** Upcoming Events */
         $this->data['upcomingEvents'] =  EventSchedule::with(['event', 'department'])
             ->where(function ($q) use ($now) {
@@ -134,6 +133,7 @@ class EventsController extends Controller
             } else if ($request->hasFile('banner_image')) {
                 $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
             }
+
             $request->validate($rules);
 
             if (!empty($request['event_id'])) {
@@ -169,8 +169,8 @@ class EventsController extends Controller
             $event->description = $request['description'] ?? '';
             $event->start_time  = $request['start_time'] ?? '';
             $event->end_time = $request['end_time']  ?? '';
-            $event->reserve_start_time  = $request['reserve_start_time'] ?? '';
-            $event->reserve_end_time = $request['reserve_end_time']  ?? '';
+            $event->reserve_start_time  = $request['reserve_start_time'] ?? null;
+            $event->reserve_end_time = $request['reserve_end_time']  ?? null;
             $event->event_type = $request['event_type'] ?? '';
             $event->location  = $request['location'] ?? '';
             $event->session = $request['session']  ?? '';

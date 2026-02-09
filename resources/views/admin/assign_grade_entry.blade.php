@@ -64,6 +64,18 @@
                     <input type="date" name="event_date" value="{{ request('event_date') }}"
                         class="border rounded-lg px-3 py-2 w-full">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
+                    <select name="section" id="section" class="border rounded-lg px-3 py-2 w-full mt-2">
+                        <option value="" selected disabled>Select Section</option>
+                        <option value="a" {{ request('section') == 'a' ? 'selected' : '' }}>A</option>
+                        <option value="b" {{ request('section') == 'b' ? 'selected' : '' }}>B</option>
+                        <option value="c" {{ request('section') == 'c' ? 'selected' : '' }}>C</option>
+                        <option value="d" {{ request('section') == 'd' ? 'selected' : '' }}>D</option>
+                        <option value="r" {{ request('section') == 'r' ? 'selected' : '' }}>R</option>
+                    </select>
+                </div>
+                </div>
             </div>
             <div class="text-center mt-4">
                 <button class="bg-primary text-white px-6 py-2 rounded-full shadow">
@@ -78,10 +90,10 @@
     </form>
 
     @if (request()->filled('department_id') && request()->filled('event_date'))
-        <form method="POST" action="{{ route('grade_save') }}" class="mt-8">
+        <form method="POST" action="{{ route('grade_save') }}" class="mt-8 ">
             @csrf
             <input type="hidden" name="event_id" value="{{ $event->id }}">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-5">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-5 p-5">
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y text-sm mt-5">
                         <thead>
@@ -104,7 +116,7 @@
                                     $grade = $registration->grades->first();
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition">
-                                    <input type="hidden" name="schedule_id"
+                                    <input type="hidden" name="grades[schedule][{{ $registration->student_id }}]"
                                         value="{{ $registration->event_schedule_id }}">
                                     <td class="px-2 py-3">{{ $index + 1 }}</td>
                                     <td class="px-2 py-3">{{ $registration->student->register_number ?? '' }}</td>
@@ -139,16 +151,16 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-3">
-                                        <select name="grades[{{ $registration->student_id }}]">
+                                        <select name="grades[student][{{ $registration->student_id }}]">
                                             <option value="">Select Grade</option>
-                                            <option value="a" {{ $grade?->grade === 'a' ? 'selected' : '' }}>A
-                                            </option>
-                                            <option value="b" {{ $grade?->grade === 'b' ? 'selected' : '' }}>B
-                                            </option>
-                                            <option value="c" {{ $grade?->grade === 'c' ? 'selected' : '' }}>C
-                                            </option>
-                                            <option value="d" {{ $grade?->grade === 'd' ? 'selected' : '' }}>D
-                                            </option>
+                                            <option value="a" {{ $grade?->grade === 'a' ? 'selected' : '' }}>A -
+                                                Winner</option>
+                                            <option value="b" {{ $grade?->grade === 'b' ? 'selected' : '' }}>B -
+                                                Runner Up</option>
+                                            <option value="c" {{ $grade?->grade === 'c' ? 'selected' : '' }}>C -
+                                                Completed</option>
+                                            <option value="d" {{ $grade?->grade === 'd' ? 'selected' : '' }}>D -
+                                                Disqualified</option>
                                         </select>
                                     </td>
                                 </tr>
@@ -201,8 +213,8 @@
                 });
             })
             .catch(err => {
-                 showToast("Something went wrong while downloading files.", "error", 2000);
-                 return;
+                showToast("Something went wrong while downloading files.", "error", 2000);
+                return;
             });
 
     });

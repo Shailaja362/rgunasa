@@ -159,14 +159,6 @@
         }
 
         $data['report'] = $data['report'];
-
-        $male = $data['report']->male_count ?? 0;
-        $female = $data['report']->female_count ?? 0;
-        $totalGender = max(1, $male + $female);
-
-        $maleAngle = ($male / $totalGender) * 360;
-        $femaleAngle = 360 - $maleAngle;
-
         $avg = $data['report']->avgRatings ?? [];
     @endphp
 
@@ -231,45 +223,6 @@
         <p>{{ $data['report']->feedback_summary }}</p>
 
         <!-- GENDER PARTICIPATION -->
-        <div class="section-title">Gender Participation</div>
-        <!-- PIE -->
-        <svg width="420" height="200">
-            <g transform="translate(100,100)">
-                <path
-                    d="M0 0 L0 -70 A70 70 0 {{ $maleAngle > 180 ? 1 : 0 }} 1 {{ 70 * sin(deg2rad($maleAngle)) }} {{ -70 * cos(deg2rad($maleAngle)) }} Z"
-                    fill="#7A1C73" />
-                <path
-                    d="M0 0 L{{ 70 * sin(deg2rad($maleAngle)) }} {{ -70 * cos(deg2rad($maleAngle)) }} A70 70 0 {{ $femaleAngle > 180 ? 1 : 0 }} 1 0 -70 Z"
-                    fill="#C36BCB" />
-                <circle cx="0" cy="0" r="35" fill="#fff" />
-            </g>
-            <text x="220" y="80">Male: {{ $male }}</text>
-            <text x="220" y="100">Female: {{ $female }}</text>
-        </svg>
-
-        <!-- GENDER BAR -->
-        <table style="margin-top:10px;">
-            <tr>
-                <td width="80">Male</td>
-                <td>
-                    <div class="bar-bg">
-                        <div class="bar-fill" style="width:{{ ($male / $totalGender) * 100 }}%; background:#7A1C73;">
-                        </div>
-                    </div>
-                </td>
-                <td width="40">{{ $male }}</td>
-            </tr>
-            <tr>
-                <td>Female</td>
-                <td>
-                    <div class="bar-bg">
-                        <div class="bar-fill" style="width:{{ ($female / $totalGender) * 100 }}%; background:#C36BCB;">
-                        </div>
-                    </div>
-                </td>
-                <td>{{ $female }}</td>
-            </tr>
-        </table>
         <div class="section-title">Attended Students Lists</div>
         <table class="info-table">
             <thead>
@@ -375,4 +328,5 @@
         </div>
     </div>
 </body>
+
 </html>

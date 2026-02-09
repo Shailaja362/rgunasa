@@ -173,30 +173,33 @@
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-2 text-xs mt-2">
-                                <div class="flex border border-primary items-center rounded-full px-5 py-1">
-                                    <p class="px-2 text-primary text-center cursor-pointer view-details-btn"
-                                        data-event_id="{{ $event->event->id }}"
-                                        data-title="{{ $event->event->title }}"
-                                        data-image="{{ asset('storage/' . $event->event->banner_image) }}"
-                                        data-description="{{ $event->event->description }}"
-                                        data-date=" {{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}"
-                                        data-start="{{ \Carbon\Carbon::parse($start_time)->format('h:i A') }}"
-                                        data-end="{{ \Carbon\Carbon::parse($end_time)->format('h:i A') }}"
-                                        data-location="{{ $event->event->location }}">
+
+                                <!-- View Details Button -->
+                                <div class="flex border border-primary items-center justify-center rounded-full px-5 py-1 view-details-btn cursor-pointer hover:bg-primary hover:text-white transition text-primary"
+                                    data-event_id="{{ $event->event->id }}" data-title="{{ $event->event->title }}"
+                                    data-image="{{ asset('storage/' . $event->event->banner_image) }}"
+                                    data-description="{{ $event->event->description }}"
+                                    data-date="{{ \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') }}"
+                                    data-start="{{ \Carbon\Carbon::parse($start_time)->format('h:i A') }}"
+                                    data-end="{{ \Carbon\Carbon::parse($end_time)->format('h:i A') }}"
+                                    data-location="{{ $event->event->location }}">
+                                    <p class="px-2 text-center">
                                         View Details
                                     </p>
                                 </div>
-                                <div
-                                    class="flex border items-center border-primary  text-primary rounded-full px-5 py-1">
-                                    <p id="openUploadModal" class="px-2 text-center upload"
-                                        data-event_id="{{ $event->event->id }}"
-                                        data-schedule_id="{{ $event->get_event_schedule->id }}"
-                                        data-student_id="{{ $event->student_id }}"
-                                        data-is_technical="{{ $event->event->is_technical_event }}">
+                                <!-- Upload Proof Button -->
+                                <div class="flex border border-primary text-primary items-center justify-center rounded-full px-5 py-1 upload cursor-pointer hover:bg-primary hover:text-white transition"
+                                    data-event_id="{{ $event->event->id }}"
+                                    data-schedule_id="{{ $event->get_event_schedule->id }}"
+                                    data-student_id="{{ $event->student_id }}"
+                                    data-is_technical="{{ $event->event->is_technical_event }}">
+                                    <p class="px-2 text-center">
                                         Upload Proof
                                     </p>
                                 </div>
+
                             </div>
+
                         </div>
                     </div>
                 @endforeach
@@ -270,7 +273,6 @@
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
                         placeholder="Any memorable moment or suggestion?"></textarea>
                 </div>
-
                 <button id="submitUpload"
                     class="bg-gradient-to-r from-primary to-pink-600 text-white px-6 py-2 rounded-full">
                     Submit Here

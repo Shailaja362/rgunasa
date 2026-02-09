@@ -41,6 +41,17 @@
                     <input type="date" name="event_date" value="{{ request('event_date') }}"
                         class="border rounded-lg px-3 py-2 w-full mt-2">
                 </div>
+                <div>
+                    <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
+                    <select name="section" id="section" class="border rounded-lg px-3 py-2 w-full mt-2">
+                        <option value="" selected disabled>Select Section</option>
+                        <option value="a" {{ request('section') == 'a' ? 'selected' : '' }}>A</option>
+                        <option value="b" {{ request('section') == 'b' ? 'selected' : '' }}>B</option>
+                        <option value="c" {{ request('section') == 'c' ? 'selected' : '' }}>C</option>
+                        <option value="d" {{ request('section') == 'd' ? 'selected' : '' }}>D</option>
+                        <option value="r" {{ request('section') == 'r' ? 'selected' : '' }}>R</option>
+                    </select>
+                </div>
             </div>
             <div class="text-center mt-4">
                 <button class="bg-primary text-white px-6 py-2 rounded-full shadow">
@@ -60,6 +71,7 @@
             <input type="hidden" name="event_id" value="{{ $event->id }}">
             <input type="hidden" name="department_id" value="{{ request()->department_id }}">
             <input type="hidden" name="event_date" value="{{ request()->event_date }}">
+            <input type="hidden" name="section" value="{{ request()->section }}">
             @php
                 $anyEntryExists = $attendance_entry->whereNotNull('entry_time')->count() > 0;
                 $anyExitExists = $attendance_entry->whereNotNull('exit_time')->count() > 0;
@@ -109,16 +121,20 @@
                                     {{-- <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"
                                         class="entry-checkbox" {{ $studentEntryExists ? 'checked disabled' : '' }}
                                         {{ $anyEntryExists ? 'disabled' : '' }}> --}}
+                                    <input type="hidden" name="attendance[{{ $attendance->student_id }}][entry]"
+                                        value="0">
                                     <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"
                                         class="entry-checkbox" {{ $studentEntryExists ? 'checked' : '' }}
-                                        {{ $anyEntryExists }}>
+                                        value="1" {{ $anyEntryExists }}>
                                 </td>
                                 <td class="px-4 py-3 text-center">
                                     {{-- <input type="checkbox" name="attendance[{{ $attendance->student_id }}][exit]"
                                         class="exit-checkbox" {{ $studentExitExists ? 'checked disabled' : '' }}
                                         {{ $anyExitExists ? 'disabled' : '' }}> --}}
+                                    <input type="hidden" name="attendance[{{ $attendance->student_id }}][exit]"
+                                        value="0">
                                     <input type="checkbox" name="attendance[{{ $attendance->student_id }}][exit]"
-                                        class="exit-checkbox" {{ $studentExitExists ? 'checked' : '' }}
+                                        class="exit-checkbox" {{ $studentExitExists ? 'checked' : '' }} value="1"
                                         {{ $anyExitExists }}>
                                 </td>
                             </tr>

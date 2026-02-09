@@ -42,25 +42,25 @@ class StudentAttendanceController extends Controller
         $this->data['registeredStudents'] = collect();
         $this->data['attendance_entry'] = collect();
         $this->data['get_schedule_event'] = EventSchedule::with('department')
-                ->where('event_id', $eventId)
-                ->distinct('department_id')
-                ->get(['department_id', 'event_id']);
+            ->where('event_id', $eventId)
+            ->distinct('department_id')
+            ->get(['department_id', 'event_id']);
         if ($request->filled('department_id') && $request->filled('event_date')) {
-            $schedule = $this->resolveSchedule(
+            $schedules = $this->resolveSchedule(
                 $eventId,
                 $request->department_id,
-                $request->event_date
+                $request->event_date,
+                $request->section
             );
 
-            if ($schedule) {
-                $this->data['attendance_entry'] = StudentAttendance::where([
-                    'event_id' => $eventId,
-                    'event_schedule_id' => $schedule->id
-                ])->get();
-
-                $this->data['registeredStudents'] = StudentEventRegistration::with('student.get_department')
+            if (!empty($schedules)) {
+                $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
+                    ->where('event_schedule_id', $schedules->id)
+                    ->get();
+                $this->data['registeredStudents'] =
+                    StudentEventRegistration::with('student.get_department')
                     ->where('event_id', $eventId)
-                    ->where('event_schedule_id', $schedule->id)
+                    ->where('event_schedule_id', $schedules->id)
                     ->get();
             }
         }
@@ -79,66 +79,69 @@ class StudentAttendanceController extends Controller
     public function markAttendance(Request $request)
     {
         $request->validate([
-            'event_id'     => 'required|exists:events,id',
+            'event_id'      => 'required|exists:events,id',
             'department_id' => 'required',
-            'event_date'   => 'required|date',
-            'attendance'   => 'required|array'
+            'event_date'    => 'required|date',
+            'attendance'    => 'required|array'
         ]);
         DB::beginTransaction();
         try {
             $schedule = $this->resolveSchedule(
                 $request->event_id,
                 $request->department_id,
-                $request->event_date
+                $request->event_date,
+                $request->section
             );
 
-            if (!$schedule) {
-                throw new \Exception('Schedule not found');
+            if (empty($schedule)) {
+                throw new Exception('Schedule not found');
             }
-            foreach ($request->attendance as $studentId => $data) {
-                $existingAttendance = StudentAttendance::where('event_id', $request->event_id)
-                                ->where('student_id', $studentId)
-                                ->where('event_schedule_id' ,  $schedule->id)
-                                ->first();
+                foreach ($request->attendance as $studentId => $data) {
+                    $attendance = StudentAttendance::firstOrNew([
+                        'event_id' => $request->event_id,
+                        'student_id' => $studentId,
+                        'event_schedule_id' => $schedule->id
+                    ]);
 
-                            if ($existingAttendance) {
-                                $attendance = $existingAttendance;
-                            } else {
-                                $attendance = new StudentAttendance();
-                                $attendance->event_id = $request->event_id;
-                                $attendance->event_schedule_id = $schedule->id;
-                                $attendance->student_id = $studentId;
-                            }
+                    if ($data['entry'] == 1) {
+                        if (!$attendance->entry_time) {
+                            $attendance->entry_time = now();
+                        }
+                    } else {
+                        $attendance->entry_time = null;
+                    }
 
-                            if (!empty($data['entry']) && !$attendance->entry_time) {
-                                $attendance->entry_time = now();
-                            }
-                            if (!empty($data['exit']) && !$attendance->exit_time) {
-                                $attendance->exit_time = now();
-                            }
-                            $attendance->save();
+                    if ($data['exit'] == 1) {
+                        if (!$attendance->exit_time) {
+                            $attendance->exit_time = now();
+                        }
+                    } else {
+                        $attendance->exit_time = null;
+                    }
 
-                if ($attendance->entry_time && $attendance->exit_time) {
+                    $attendance->save();
+
                     StudentEventRegistration::where([
                         'event_id' => $request->event_id,
                         'student_id' => $studentId,
                         'event_schedule_id' => $schedule->id
-                    ])->update(['status' => 3]);
+                    ])->update([
+                        'status' => ($attendance->entry_time && $attendance->exit_time) ? 3 : 2
+                    ]);
                 }
-            }
             DB::commit();
             return back()->with('success', 'Attendance saved successfully');
         } catch (\Throwable $e) {
             DB::rollBack();
-            Log::error('Attendance Save Failed', ['error' => $e->getMessage()]);
             return back()->with('error', $e->getMessage());
         }
     }
 
-    private function resolveSchedule($eventId, $departmentId, $date)
+    private function resolveSchedule($eventId, $departmentId, $date,$section)
     {
         return EventSchedule::where('event_id', $eventId)
             ->where('department_id', $departmentId)
+            ->where('section', $section)
             ->where(function ($q) use ($date) {
                 $q->whereDate('event_date', $date);
             })

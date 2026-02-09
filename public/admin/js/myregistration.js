@@ -278,11 +278,45 @@ $(function () {
                 }
             });
     });
+    $(document).on("click", ".view-details-btn", function () {
+        // Get data from clicked button
+        let title = $(this).data("title");
+        let image = $(this).data("image");
+        let description = $(this).data("description");
+        let date = $(this).data("date");
+        let start = $(this).data("start");
+        let end = $(this).data("end");
+        let location = $(this).data("location");
 
-    /* ================= CLOSE MODAL ================= */
-    $(".closeModal").on("click", function () {
+        // Set modal data
+        $("#modalTitle").text(title);
+        $("#modalImage").attr("src", image);
+        $("#modalDescription").text(description);
+        $("#modalDate").text(date);
+        $("#modalTime").text(start + " - " + end);
+        $("#modalLocation").text(location);
+
+        // Show modal
+        $("#viewDetailsModal").removeClass("hidden");
+    });
+
+    // Close modal
+    $(document).on("click", ".closeModal", function () {
+        $("#viewDetailsModal").addClass("hidden");
         $("#uploadModal").addClass("hidden").removeClass("flex");
     });
+
+    // Close when clicking outside modal
+    $(document).on("click", "#viewDetailsModal", function (e) {
+        if (e.target.id === "viewDetailsModal") {
+            $("#viewDetailsModal").addClass("hidden");
+        }
+    });
+
+    /* ================= CLOSE MODAL ================= */
+    // $(".closeModal").on("click", function () {
+    //     $("#uploadModal").addClass("hidden").removeClass("flex");
+    // });
 });
 
 function renderFeedback(questions, existingRatings = {}) {

@@ -47,7 +47,8 @@ class AssignGradeController extends Controller
             $schedule = $this->resolveSchedule(
                 $eventId,
                 $request->department_id,
-                $request->event_date
+                $request->event_date,
+                $request->section
             );
             if ($schedule) {
                 $this->data['registrations'] = StudentAttendance::with('student.get_department')
@@ -65,20 +66,26 @@ class AssignGradeController extends Controller
     {
         $request->validate([
             'event_id'    => 'required|exists:events,id',
-            'schedule_id' => 'required|exists:event_schedules,id',
-            'grades'      => 'required|array'
+            'grades.student' => 'required|array',
+            'grades.schedule' => 'required|array'
         ]);
-
         DB::beginTransaction();
-
         try {
+            $grades = $request->grades['student'];
+            $schedules = $request->grades['schedule'];
 
-            foreach ($request->grades as $studentId => $grade) {
-
+            foreach ($grades as $studentId => $grade){
+                if (empty($grade)) {
+                    continue;
+                }
+                $scheduleId = $schedules[$studentId] ?? null;
+                if (!$scheduleId) {
+                    throw new \Exception("Schedule ID missing for student ID: {$studentId}");
+                }
                 $updated = StudentEventRegistration::where([
                     'event_id' => $request->event_id,
                     'student_id' => $studentId,
-                    'event_schedule_id' => $request->schedule_id
+                    'event_schedule_id' => $scheduleId
                 ])->update([
                     'grade'  => $grade,
                     'status' => 2
