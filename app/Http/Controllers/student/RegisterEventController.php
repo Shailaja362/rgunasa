@@ -29,10 +29,12 @@ class RegisterEventController extends Controller
             ->get();
         $this->data['ongoingEvents'] = Event::with('registrations.student')->whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->get();
@@ -40,10 +42,12 @@ class RegisterEventController extends Controller
         $this->data['upcomingEvents'] = Event::with('registrations.student')
             ->whereHas('get_dep_events', function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
                     ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
             })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
