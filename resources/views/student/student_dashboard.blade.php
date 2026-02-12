@@ -424,7 +424,7 @@
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
                             <img src="{{ asset('storage/' . $register_event->event->banner_image) }}" alt="Event"
-                                class="rounded-t-2xl w-full">
+                                class="rounded-t-2xl w-full h-48 object-cover">
                             @if ($register_event->event->event_type == 'paid')
                                 <span
                                     class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
