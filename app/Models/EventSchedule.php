@@ -20,9 +20,9 @@ class EventSchedule extends Model
         return $this->hasMany(StudentEventRegistration::class, 'event_id', 'event_id');
     }
 
-    public function department()
+    public function programme()
     {
-        return $this->belongsTo(Department::class, 'department_id');
+        return $this->belongsTo(Programme::class, 'programme_id');
     }
 
     public function get_report()
@@ -33,5 +33,10 @@ class EventSchedule extends Model
     public function event()
     {
         return $this->belongsTo(Event::class, 'event_id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
     }
 }

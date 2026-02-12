@@ -57,7 +57,7 @@
 
         <!-- Submit -->
         <div class="flex justify-center mt-10">
-            <button type="submit"
+            <button type="submit" id="club"
                 class="px-3 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 w-35 rounded-full hover:opacity-90 transition">
                <i class="fas fa-save"></i> Create Club
             </button>

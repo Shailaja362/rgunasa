@@ -1,6 +1,7 @@
 $(document).on("submit", "#clubForm", function (e) {
     e.preventDefault();
     // Fields to validate
+    let $saveBtn = $("#club");
     let fields = [
         {
             id: "#club_name",
@@ -15,10 +16,14 @@ $(document).on("submit", "#clubForm", function (e) {
     ];
     let isValid = true;
     for (const field of fields) {
-        const result = validateField(field); // synchronous, so no async/await needed
+        const result = validateField(field);
         if (!result) isValid = false;
     }
     if (!isValid) return;
+       $saveBtn
+           .prop("disabled", true)
+           .removeClass("opacity-50 cursor-not-allowed")
+           .text("Saving...");
     let formData = new FormData(this);
     sendRequest(
         "/admin/save-club",
@@ -33,6 +38,10 @@ $(document).on("submit", "#clubForm", function (e) {
             } else {
                 showToast("Something went wrong!", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -44,6 +53,10 @@ $(document).on("submit", "#clubForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         }
     );
 });

@@ -73,22 +73,36 @@
                 </textarea>
             </div>
 
-            <div>
-                <label class="block text-sm font-medium"> Is Technical Event <span class="text-red-500">*</span></label>
-                <div class="flex items-center gap-6 mt-2">
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="is_technical_event" value="y"
-                            class="text-primary focus:ring-primary is_technical_event">
-                        <span class="ml-2 text-sm">Yes</span>
-                    </label>
+         <div>
+    <label class="block text-sm font-medium">
+        Is Technical Event <span class="text-red-500">*</span>
+    </label>
 
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="is_technical_event" value="n"
-                            class="text-primary focus:ring-primary is_technical_event">
-                        <span class="ml-2 text-sm">No</span>
-                    </label>
-                </div>
-            </div>
+    <div class="flex items-center gap-6 mt-2">
+
+        {{-- YES --}}
+        <label class="inline-flex items-center">
+            <input type="radio"
+                   name="is_technical_event"
+                   value="y"
+                   class="text-primary focus:ring-primary is_technical_event"
+                   {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'y' ? 'checked' : '' }}>
+            <span class="ml-2 text-sm">Yes</span>
+        </label>
+
+        {{-- NO --}}
+        <label class="inline-flex items-center">
+            <input type="radio"
+                   name="is_technical_event"
+                   value="n"
+                   class="text-primary focus:ring-primary is_technical_event"
+                   {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'n' ? 'checked' : '' }}>
+            <span class="ml-2 text-sm">No</span>
+        </label>
+
+    </div>
+</div>
+
 
             <div>
                 <label class="block text-sm font-medium">Event Type <span class="text-red-600">*</span></label>
@@ -134,14 +148,14 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                         <div>
                             <label class="block text-sm font-medium">
-                                Department <span class="text-red-500">*</span>
+                                Programme <span class="text-red-500">*</span>
                             </label>
-                            <select name="departments[{{ $index }}][department_id]"
+                            <select name="departments[{{ $index }}][programme_id]"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
-                                <option value="">Select Department</option>
-                                @foreach ($departments as $d)
+                                <option value="">Select Programme</option>
+                                @foreach ($programmes as $d)
                                     <option value="{{ $d->id }}"
-                                        @if (!empty($dept) && $dept->department_id == $d->id) selected @endif>
+                                        @if (!empty($dept) && $dept->programme_id == $d->id) selected @endif>
                                         {{ $d->name }}
                                     </option>
                                 @endforeach
@@ -325,7 +339,7 @@
 
 <script>
     const deptOptions = @json(
-        $departments->map(function ($d) {
+        $programmes->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];
         }));
     flatpickr(".date_field", {

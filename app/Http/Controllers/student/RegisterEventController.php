@@ -28,22 +28,22 @@ class RegisterEventController extends Controller
             ->groupBy('student_id', 'event_id')
             ->get();
         $this->data['ongoingEvents'] = Event::with('registrations.student')->whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('department_id', $student->department_id)
+            $q->where('programme_id', $student->programme_id)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] = Event::with('registrations.student')
             ->whereHas('get_dep_events', function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
             })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])

@@ -53,7 +53,7 @@
                             'event_schedule_id' => $event->get_event_schedule->id,
                         ])
                             ->whereHas('student', function ($query) use ($event) {
-                                $query->where('department_id', $event->student->department_id);
+                                $query->where('programme_id', $event->student->programme_id);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {
@@ -126,7 +126,7 @@
                             'event_schedule_id' => $event->get_event_schedule->id,
                         ])
                             ->whereHas('student', function ($query) use ($event) {
-                                $query->where('department_id', $event->student->department_id);
+                                $query->where('programme_id', $event->student->programme_id);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {

@@ -1,5 +1,7 @@
 $(document).on("submit", "#facultyForm", function (e) {
     e.preventDefault();
+     let $saveBtn = $("#faculty");
+
     // Fields to validate
     let fields = [
         {
@@ -39,6 +41,10 @@ $(document).on("submit", "#facultyForm", function (e) {
         if (!result) isValid = false;
     }
     if (!isValid) return;
+      $saveBtn
+          .prop("disabled", true)
+          .removeClass("opacity-50 cursor-not-allowed")
+          .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
         "/admin/save-faculty",
@@ -53,6 +59,10 @@ $(document).on("submit", "#facultyForm", function (e) {
             } else {
                 showToast(res.message, "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -64,6 +74,10 @@ $(document).on("submit", "#facultyForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+             $saveBtn
+                 .prop("disabled", false)
+                 .removeClass("opacity-50 cursor-not-allowed")
+                 .text("Save");
         }
     );
 });

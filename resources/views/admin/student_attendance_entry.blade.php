@@ -25,13 +25,13 @@
         <div class="bg-white p-4 rounded-2xl shadow">
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-sm font-medium">Department</label>
-                    <select name="department_id" class="border rounded-lg px-3 py-3 w-full mt-2">
-                        <option value="">-- Select Department --</option>
+                    <label class="block text-sm font-medium">Programme</label>
+                    <select name="programme_id" class="border rounded-lg px-3 py-3 w-full mt-2">
+                        <option value="">-- Select Programme --</option>
                         @foreach ($get_schedule_event as $id => $value)
-                            <option value="{{ $value->department->id }}"
-                                {{ request('department_id') == $value->department->id ? 'selected' : '' }}>
-                                {{ $value->department->name ?? '' }}
+                            <option value="{{ $value->programme->id }}"
+                                {{ request('programme_id') == $value->programme->id ? 'selected' : '' }}>
+                                {{ $value->programme->name ?? '' }}
                             </option>
                         @endforeach
                     </select>
@@ -65,11 +65,11 @@
         </div>
     </form>
 
-    @if (request()->filled('department_id') && request()->filled('event_date'))
+    @if (request()->filled('programme_id') && request()->filled('event_date'))
         <form method="POST" action="{{ route('attendance.mark') }}">
             @csrf
             <input type="hidden" name="event_id" value="{{ $event->id }}">
-            <input type="hidden" name="department_id" value="{{ request()->department_id }}">
+            <input type="hidden" name="programme_id" value="{{ request()->programme_id }}">
             <input type="hidden" name="event_date" value="{{ request()->event_date }}">
             <input type="hidden" name="section" value="{{ request()->section }}">
             @php
@@ -83,7 +83,7 @@
                             <th class="px-4 py-3">S.No</th>
                             <th class="px-4 py-3">Register No</th>
                             <th class="px-4 py-3">Name</th>
-                            <th class="px-4 py-3">Department</th>
+                            <th class="px-4 py-3">Programme</th>
                             <th class="px-4 py-3">Section</th>
                             <th class="px-4 py-3 text-center">
                                 Entry <br>
@@ -115,7 +115,7 @@
                                 <td class="px-4 py-3">{{ $loop->iteration }}</td>
                                 <td class="px-4 py-3">{{ $attendance->student?->register_number }}</td>
                                 <td class="px-4 py-3">{{ $attendance->student?->name }}</td>
-                                <td class="px-4 py-3">{{ $attendance->student?->get_department?->name }}</td>
+                                <td class="px-4 py-3">{{ $attendance->student?->get_programme?->name }}</td>
                                 <td class="px-4 py-3">{{ $attendance->student?->section }}</td>
                                 <td class="px-4 py-3 text-center">
                                     {{-- <input type="checkbox" name="attendance[{{ $attendance->student_id }}][entry]"

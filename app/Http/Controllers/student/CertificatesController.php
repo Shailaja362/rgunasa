@@ -16,14 +16,22 @@ class CertificatesController extends Controller
     public function index()
     {
         $student = Auth::guard('student')->user();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'student', 'get_event_attendance')
-            ->whereHas('get_event_attendance', function ($query) {
-                $query->whereNotNull('entry_time')
-                      ->whereNotNull('exit_time');
-            })
-            ->where(['student_id' => $student->id])
+        $this->data['completedEvents'] = StudentEventRegistration::with([
+            'event',
+            'student',
+            'get_event_attendance'
+        ])
+            ->whereStudentId($student->id)
             ->whereNotNull('grade')
+            ->where('grade', '!=', 'd')
+            ->whereHas(
+                'get_event_attendance',
+                fn($query) =>
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time')
+            )
             ->get();
+
 
         return view('student.certificates.index')->with($this->data);
     }

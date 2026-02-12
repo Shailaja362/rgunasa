@@ -124,5 +124,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/student-event-report', [AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
         Route::get('/download-otherfiles/{event}/{student}/{schedule_id}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
+        Route::post('/events/{id}', [EventsController::class, 'destroy'])
+            ->name('events.destroy');
     });
 });

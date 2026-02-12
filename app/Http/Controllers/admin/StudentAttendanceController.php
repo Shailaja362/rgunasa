@@ -41,14 +41,14 @@ class StudentAttendanceController extends Controller
         $this->data['event'] = Event::findOrFail($eventId);
         $this->data['registeredStudents'] = collect();
         $this->data['attendance_entry'] = collect();
-        $this->data['get_schedule_event'] = EventSchedule::with('department')
+        $this->data['get_schedule_event'] = EventSchedule::with('programme')
             ->where('event_id', $eventId)
-            ->distinct('department_id')
-            ->get(['department_id', 'event_id']);
-        if ($request->filled('department_id') && $request->filled('event_date')) {
+            ->distinct('programme_id')
+            ->get(['programme_id', 'event_id']);
+        if ($request->filled('programme_id') && $request->filled('event_date')) {
             $schedules = $this->resolveSchedule(
                 $eventId,
-                $request->department_id,
+                $request->programme_id,
                 $request->event_date,
                 $request->section
             );
@@ -58,7 +58,7 @@ class StudentAttendanceController extends Controller
                     ->where('event_schedule_id', $schedules->id)
                     ->get();
                 $this->data['registeredStudents'] =
-                    StudentEventRegistration::with('student.get_department')
+                    StudentEventRegistration::with('student.get_department', 'student.get_programme')
                     ->where('event_id', $eventId)
                     ->where('event_schedule_id', $schedules->id)
                     ->get();
@@ -80,7 +80,7 @@ class StudentAttendanceController extends Controller
     {
         $request->validate([
             'event_id'      => 'required|exists:events,id',
-            'department_id' => 'required',
+            'programme_id' => 'required',
             'event_date'    => 'required|date',
             'attendance'    => 'required|array'
         ]);
@@ -88,7 +88,7 @@ class StudentAttendanceController extends Controller
         try {
             $schedule = $this->resolveSchedule(
                 $request->event_id,
-                $request->department_id,
+                $request->programme_id,
                 $request->event_date,
                 $request->section
             );
@@ -137,10 +137,10 @@ class StudentAttendanceController extends Controller
         }
     }
 
-    private function resolveSchedule($eventId, $departmentId, $date,$section)
+    private function resolveSchedule($eventId, $programmeId, $date,$section)
     {
         return EventSchedule::where('event_id', $eventId)
-            ->where('department_id', $departmentId)
+            ->where('programme_id', $programmeId)
             ->where('section', $section)
             ->where(function ($q) use ($date) {
                 $q->whereDate('event_date', $date);

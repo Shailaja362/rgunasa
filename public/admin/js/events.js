@@ -264,6 +264,47 @@ $(document).on("submit", "#eventForm", function (e) {
     );
 });
 
+let deleteEventId = null;
+let deleteButton = null;
+
+// Open modal
+$(document).on("click", ".deleteEvent", function () {
+    deleteEventId = $(this).data("id");
+    deleteButton = $(this);
+
+    $("#deleteModal").removeClass("hidden").addClass("flex");
+});
+
+// Cancel button
+$("#cancelDelete").on("click", function () {
+    $("#deleteModal").addClass("hidden").removeClass("flex");
+});
+
+// Confirm delete
+$("#confirmDelete").on("click", function () {
+    $.ajax({
+        url: "/admin/events/" + deleteEventId,
+        type: "POST",
+        headers: {
+            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
+        },
+        success: function (response) {
+            if (response.success) {
+                deleteButton.closest("tr").remove();
+              showToast(response.message, "success", 2000);
+            } else {
+              showToast(response.message, "error", 2000);
+            }
+
+            $("#deleteModal").addClass("hidden").removeClass("flex");
+        },
+        error: function () {
+            showToast("Delete failed", "error", 2000);
+            $("#deleteModal").addClass("hidden").removeClass("flex");
+        },
+    });
+});
+
 $(document).on("change", "#club_id", function () {
     var clubId = $(this).val();
     if (clubId) {
@@ -303,29 +344,6 @@ $(document).on("change", "#club_id", function () {
     }
 });
 
-document
-    .getElementById("fileInput")
-    .addEventListener("change", function (event) {
-        const file = event.target.files[0];
-        const previewArea = document.getElementById("previewArea");
-        const uploadText = document.getElementById("uploadText");
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                previewArea.innerHTML = `
-                    <img src="${e.target.result}"
-                         class="mx-auto rounded-2xl w-40 h-40 object-cover" />
-                `;
-            };
-            reader.readAsDataURL(file);
-            uploadText.style.display = "none";
-        }
-    });
-
-document.getElementById("dropArea").addEventListener("click", function () {
-    document.getElementById("fileInput").click();
-});
-
 document.getElementById("event_type").addEventListener("change", function () {
     let type = this.value;
     let container = document.getElementById("priceFieldContainer");
@@ -356,7 +374,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const deptOptionsHtml = deptOptions
             .map(
                 (d) =>
-                    `<option value="${d.id}" ${data.department_id == d.id ? "selected" : ""}>
+                    `<option value="${d.id}" ${data.programme_id == d.id ? "selected" : ""}>
                 ${d.name}
             </option>`,
             )
@@ -369,10 +387,10 @@ document.addEventListener("DOMContentLoaded", function () {
             <button type="button" class="rounded-2xl py-1 px-2 absolute top-2 right-5 text-red-500 font-bold removeDept bg-white">Remove</button>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                 <div>
-                    <label class="block text-sm font-medium">Department <span class="text-red-600">*</span></label>
-                    <select name="departments[${deptIndex}][department_id]"
+                    <label class="block text-sm font-medium">Programme <span class="text-red-600">*</span></label>
+                    <select name="departments[${deptIndex}][programme_id]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department">
-                        <option value="">Select Department</option>
+                        <option value="">Select Programme</option>
                         ${deptOptionsHtml}
                     </select>
                 </div>
@@ -427,4 +445,27 @@ document.addEventListener("DOMContentLoaded", function () {
             e.target.closest(".dept-card")?.remove();
         }
     });
+});
+
+document
+    .getElementById("fileInput")
+    .addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        const previewArea = document.getElementById("previewArea");
+        const uploadText = document.getElementById("uploadText");
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewArea.innerHTML = `
+                    <img src="${e.target.result}"
+                         class="mx-auto rounded-2xl w-40 h-40 object-cover" />
+                `;
+            };
+            reader.readAsDataURL(file);
+            uploadText.style.display = "none";
+        }
+    });
+
+document.getElementById("dropArea").addEventListener("click", function () {
+    document.getElementById("fileInput").click();
 });

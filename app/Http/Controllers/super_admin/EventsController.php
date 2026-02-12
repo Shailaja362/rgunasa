@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\Faculty;
+use App\Models\Programme;
 use App\Models\StudentEventRegistration;
 use App\Models\Tasks;
 use Carbon\Carbon;
@@ -71,7 +72,7 @@ class EventsController extends Controller
     {
         $this->data['faculty'] = Faculty::get();
         $this->data['club'] = Club::get();
-        $this->data['departments'] = Department::get();
+        $this->data['programmes'] = Programme::get();
         if ($request->event_id) {
             $eventId = decrypt($request->event_id);
             $this->data['edit_event'] = Event::where('id', $eventId)->first();
@@ -95,9 +96,9 @@ class EventsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['events'] = Event::with('get_faculty', 'schedules')->paginate(10);
+            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')->paginate(10);
         } else {
-            $this->data['events'] = Event::with('get_faculty', 'schedules')
+            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
                 ->where('created_by', $adminId)->paginate(10);
         }
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
@@ -191,10 +192,9 @@ class EventsController extends Controller
                 ->whereNotIn('id', $submittedScheduleIds)
                 ->delete();
             foreach ($request->departments as $schedule) {
-
                 $data = [
                     'event_id'      => $event->id,
-                    'department_id' => $schedule['department_id'],
+                    'programme_id' => $schedule['programme_id'],
                     'section'       => $schedule['section'],
                     'event_date'    => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
                     'is_reserve_date'  => $schedule['is_reserve_date'] ?? 'n',
@@ -238,5 +238,24 @@ class EventsController extends Controller
                 'error' => 'Failed to save event',
             ], 500);
         }
+    }
+
+    public function destroy($id)
+    {
+        $event = Event::with('schedules.registrations')->findOrFail($id);
+        foreach ($event->schedules as $schedule) {
+            if ($schedule->registrations->isNotEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot delete. Students already registered.'
+                ]);
+            }
+        }
+        $delete_schedule = EventSchedule::where('event_id', $id)->delete();
+        $event->delete();
+        return response()->json([
+            'success' => true,
+            'message' => 'Event deleted successfully'
+        ]);
     }
 }

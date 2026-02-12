@@ -1,5 +1,6 @@
 $(document).on("submit", "#departmentForm", function (e) {
     e.preventDefault();
+    let $saveBtn = $("#department");
     // Fields to validate
     let fields = [
         {
@@ -19,6 +20,10 @@ $(document).on("submit", "#departmentForm", function (e) {
         if (!result) isValid = false;
     }
     if (!isValid) return;
+      $saveBtn
+          .prop("disabled", true)
+          .removeClass("opacity-50 cursor-not-allowed")
+          .text("Saving...");
     let formData = new FormData(this);
     sendRequest(
         "/admin/save-department",
@@ -33,6 +38,10 @@ $(document).on("submit", "#departmentForm", function (e) {
             } else {
                 showToast("Something went wrong!", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -44,13 +53,17 @@ $(document).on("submit", "#departmentForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         }
     );
 });
 
 $(document).on("submit", "#programmeForm", function (e) {
     e.preventDefault();
-    // Fields to validate
+    let $saveBtn = $("#programme");
     let fields = [
         {
             id: "#programme_name",
@@ -79,6 +92,10 @@ $(document).on("submit", "#programmeForm", function (e) {
         if (!result) isValid = false;
     }
     if (!isValid) return;
+        $saveBtn
+            .prop("disabled", true)
+            .removeClass("opacity-50 cursor-not-allowed")
+            .text("Saving...");
     let formData = new FormData(this);
     sendRequest(
         "/admin/save-programme",
@@ -93,6 +110,10 @@ $(document).on("submit", "#programmeForm", function (e) {
             } else {
                 showToast("Something went wrong!", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -104,6 +125,10 @@ $(document).on("submit", "#programmeForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         }
     );
 });

@@ -44,16 +44,16 @@
         <div class="bg-white p-4 rounded-2xl shadow">
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Department</label>
-                    <select name="department_id" class="border rounded-lg px-3 py-2 w-full">
-                        <option value="">-- Select Department --</option>
+                    <label class="block text-sm font-medium mb-1">Programme</label>
+                    <select name="programme_id" class="border rounded-lg px-3 py-2 w-full">
+                        <option value="">-- Select Programme --</option>
                         @foreach ($schedule_department as $departmentId => $schedules)
                             @php
                                 $schedule = $schedules->first(); // get one EventSchedule model
                             @endphp
-                            <option value="{{ $schedule->department->id }}"
-                                {{ request('department_id') == $schedule->department->id ? 'selected' : '' }}>
-                                {{ $schedule->department->name }}
+                            <option value="{{ $schedule->programme->id }}"
+                                {{ request('programme_id') == $schedule->programme->id ? 'selected' : '' }}>
+                                {{ $schedule->programme->name }}
                             </option>
                         @endforeach
                     </select>
@@ -89,7 +89,7 @@
         </div>
     </form>
 
-    @if (request()->filled('department_id') && request()->filled('event_date'))
+    @if (request()->filled('programme_id') && request()->filled('event_date'))
         <form method="POST" action="{{ route('grade_save') }}" class="mt-8 ">
             @csrf
             <input type="hidden" name="event_id" value="{{ $event->id }}">
@@ -101,7 +101,7 @@
                                 <th class="px-2 py-3 text-left font-semibold">S.No</th>
                                 <th class="px-2 py-3 text-left font-semibold">Register Number</th>
                                 <th class="px-2 py-3 text-left font-semibold">Student Name</th>
-                                <th class="px-2 py-3 text-left font-semibold">Department Name</th>
+                                <th class="px-2 py-3 text-left font-semibold">Programme</th>
                                 <th class="px-2 py-3 text-left font-semibold">Section</th>
                                 <th class="px-2 py-3 text-left font-semibold">Student Report</th>
                                 <th class="px-2 py-3 text-left font-semibold">Download Files</th>
@@ -121,7 +121,7 @@
                                     <td class="px-2 py-3">{{ $index + 1 }}</td>
                                     <td class="px-2 py-3">{{ $registration->student->register_number ?? '' }}</td>
                                     <td class="px-2 py-3">{{ $registration->student->name ?? '' }}</td>
-                                    <td class="px-2 py-3">{{ $registration->student->get_department->name ?? '' }}</td>
+                                    <td class="px-2 py-3">{{ $registration->student->get_programme?->name ?? '' }}</td>
                                     <td class="px-2 py-3">{{ $registration->student->section ?? '' }}</td>
                                     <td class="px-2 py-3">
                                         @if ($feedback && $proofs->count() > 0)

@@ -117,9 +117,10 @@
                                 <td class="px-3 py-2">
                                     <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                                         @foreach ($event->schedules as $schedule)
-                                            <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
+                                            <div
+                                                class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
                                                 <div class="text-xs font-bold text-gray-800 mb-1">
-                                                    {{ $schedule->department->name }}
+                                                    {{ $schedule->programme->name }}
                                                 </div>
                                                 <div class="text-xs text-gray-600 mb-1">
                                                     <span class="font-medium">Event Date:</span>
@@ -149,6 +150,18 @@
                                         class="text-blue-600 hover:text-blue-800">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @php
+                                        $canDelete = $event->schedules->every(function ($schedule) {
+                                            return $schedule->registrations->isEmpty();
+                                        });
+                                    @endphp
+
+                                    @if ($canDelete)
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteEvent" id="deleteEvent" data-id="{{ $event->id }}">
+                                            <i class="fa-solid fa-delete-left"></i>
+                                        </button>
+                                    @endif
+
                                 </td>
                             </tr>
                         @endforeach
@@ -160,6 +173,29 @@
             </div>
         </div>
     </section>
+
+ <div id="deleteModal"
+     class="fixed inset-0 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-96 p-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">
+            Confirm Delete
+        </h2>
+        <p class="text-gray-600 mb-5">
+            Are you sure you want to delete this event?
+        </p>
+        <div class="flex justify-end gap-3">
+            <button id="cancelDelete"
+                class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
+                Cancel
+            </button>
+            <button id="confirmDelete"
+                class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                Delete
+            </button>
+        </div>
+    </div>
+ </div>
+
 </x-layouts.app>
 
 <script src="{{ asset('admin/js/events.js') }}?v={{ time() }}"></script>

@@ -37,11 +37,11 @@ class StudentDashboardController extends Controller
 
         // Upcoming and ongoing department-wise events
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('department_id', $student->department_id)
+            $q->where('programme_id', $student->programme_id)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->get();
@@ -50,22 +50,22 @@ class StudentDashboardController extends Controller
             ->where('student_id', $student->id)
             ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('department_id', $student->department_id)
+            $q->where('programme_id', $student->programme_id)
                 ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
             ->get();
 
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
-            $q->where('department_id', $student->department_id)
+            $q->where('programme_id', $student->programme_id)
                 ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['schedule' => function ($q) use ($student) {
-                $q->where('department_id', $student->department_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('event_date', '>', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
                 // ->orderBy('start_time', 'asc');

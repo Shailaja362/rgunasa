@@ -1,4 +1,35 @@
 <x-layouts.app>
+     <style>
+        .choices__inner {
+            background-color: #D9D9D9 !important;
+            border-radius: 9999px !important;
+            border: none !important;
+            min-height: 48px !important;
+            padding: 8px 16px !important;
+        }
+
+        .choices.is-focused .choices__inner {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 12px !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .choices__item {
+            font-size: 14px;
+        }
+
+        .choices__inner:focus {
+            outline: none !important;
+        }
+
+        .choices[data-type*="select-one"] .choices__inner {
+            padding-bottom: 8px !important;
+        }
+    </style>
     <!-- Header -->
      <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
         <!-- Title & Subtitle -->
@@ -61,7 +92,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
                 <label class="block text-sm font-medium">Department<span class="text-red-500">*</span></label>
-                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 choice-select">
                     <option value="">Select Department</option>
                     @foreach ($department as $depart)
                         <option value="{{ $depart->id }}"
@@ -75,7 +106,7 @@
             <div>
                 <label class="block text-sm font-medium">Designation<span class="text-red-500">*</span></label>
                 <select name="designation_id" id="designation_id"
-                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 choice-select">
                     <option value="">Select Designation</option>
                     @foreach ($designation as $desig)
                         <option value="{{ $desig->id }}"
@@ -117,7 +148,7 @@
 
         <!-- Submit -->
         <div class="flex justify-center mt-10">
-            <button type="submit"
+            <button type="submit" id="faculty"
                 class="px-10 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-3 rounded-full hover:opacity-90 transition">
                 Create Faculty
             </button>
@@ -126,3 +157,4 @@
     </form>
 </x-layouts.app>
 <script src="{{ asset('admin/js/faculty.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>

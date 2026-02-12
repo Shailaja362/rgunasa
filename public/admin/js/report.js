@@ -28,6 +28,8 @@ $(document).on("submit", "#eventReportForm", function (e) {
            "#previewArea .img-wrapper"
        ).length;
     e.preventDefault();
+     let $saveBtn = $("#report");
+
     // Fields to validate
     let fields = [
         {
@@ -65,6 +67,10 @@ $(document).on("submit", "#eventReportForm", function (e) {
     }
 
     if (!isValid) return;
+         $saveBtn
+             .prop("disabled", true)
+             .removeClass("opacity-50 cursor-not-allowed")
+             .text("Saving....");
     let formData = new FormData(this);
 
     sendRequest(
@@ -80,6 +86,10 @@ $(document).on("submit", "#eventReportForm", function (e) {
             } else {
                 showToast(res.message, "error", 2000);
             }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -91,6 +101,10 @@ $(document).on("submit", "#eventReportForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+                 $saveBtn
+                     .prop("disabled", false)
+                     .removeClass("opacity-50 cursor-not-allowed")
+                     .text("Save");
         }
     );
 });
