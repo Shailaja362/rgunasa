@@ -23,7 +23,7 @@
             <div class="bg-white rounded-2xl shadow hover:shadow-lg transition p-5">
                 <!-- Header -->
                 <p class="font-semibold text-lg">{{ $report->get_event->title ?? '' }} -
-                    {{ $report->get_department->name ?? '' }} - {{ $report->event_date ?? '' }}</p>
+                    {{ $report->get_programme->name ?? '' }} - {{ $report->event_date ?? '' }}</p>
                 <p class="text-xs mt-2">
                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                     Event -

@@ -396,9 +396,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
-                    <input type="text"
-                        name="departments[${deptIndex}][section]"
-                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 section">
+                    <select  name="departments[${deptIndex}][section]" id="section" class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                                <option value="" selected disabled>Select Section</option>
+                                <option value="a">A</option>
+                                <option value="b">B</option>
+                                <option value="c">C</option>
+                                <option value="d">D</option>
+                                <option value="r">R</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>

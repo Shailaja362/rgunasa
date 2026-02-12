@@ -14,6 +14,7 @@ use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\EventSchedule;
+use App\Models\Programme;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StudentEventRegistration;
@@ -29,9 +30,9 @@ class AdminReportsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')->paginate(10);
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme')->paginate(10);
         } else {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_department')
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme')
                 ->where('created_by', $adminId)->paginate(10);
         }
         return view('admin.admin_reports_index')->with($this->data);
@@ -50,7 +51,7 @@ class AdminReportsController extends Controller
         }
         $adminId = Auth::guard('admin')->id();
         $this->data['event'] = Event::where('created_by', $adminId)->get();
-        $this->data['departments'] = Department::get();
+        $this->data['programmes'] = Programme::get();
         return view('admin.create_admin_report')->with($this->data);
     }
 
@@ -58,7 +59,8 @@ class AdminReportsController extends Controller
     {
         $request->validate([
             'event_id'        => 'required|exists:events,id',
-            'department_id'   => 'required',
+            'programme_id'   => 'required',
+            'section'   => 'required',
             'event_date'      => 'required|date',
             'outcome_results' => 'required',
             'feedback_summary' => 'required'
@@ -68,8 +70,9 @@ class AdminReportsController extends Controller
         try {
             $schedule = $this->resolveSchedule(
                 $request->event_id,
-                $request->department_id,
-                $request->event_date
+                $request->programme_id,
+                $request->event_date,
+                $request->section
             );
             if (!$schedule) {
                 throw new \Exception('Schedule not found');
@@ -80,9 +83,10 @@ class AdminReportsController extends Controller
                     'event_schedule_id' => $schedule->id
                 ],
                 [
-                    'department_id' => $request->department_id,
+                    'programme_id' => $request->programme_id,
                     'event_date' => $request->event_date,
                     'outcomes' => $request->outcome_results,
+                    'section' => $request->section,
                     'feedback_summary' => $request->feedback_summary,
                     'created_by' => auth('admin')->id()
                 ]
@@ -142,13 +146,13 @@ class AdminReportsController extends Controller
             'get_event_image',
             'creator',
             'student_uploads',
-            'schedule.department'
+            'schedule.programme'
         ])->findOrFail($id);
 
         $scheduleId = $report->event_schedule_id;
         $eventId    = $report->event_id;
         $attendedStudents = StudentAttendance::with([
-            'student.get_department',
+            'student.get_programme',
             'grades' => function ($q) use ($eventId) {
                 $q->where('event_id', $eventId);
             }
@@ -203,7 +207,7 @@ class AdminReportsController extends Controller
 
         $attendedCount = $attendedStudents->count();
         $male_count = StudentAttendance::with([
-            'student.get_department',
+            'student.get_programme',
             'grades' => function ($q) use ($eventId) {
                 $q->where('event_id', $eventId);
             }
@@ -216,7 +220,7 @@ class AdminReportsController extends Controller
             ->whereNotNull('exit_time')
             ->get();
         $female_count = StudentAttendance::with([
-            'student.get_department',
+            'student.get_programme',
             'grades' => function ($q) use ($eventId) {
                 $q->where('event_id', $eventId);
             }
@@ -340,6 +344,7 @@ class AdminReportsController extends Controller
         $attendedCount = $attendedStudents->count();
         $male_count = StudentAttendance::with([
             'student.get_department',
+            'student.get_programme',
             'grades' => function ($q) use ($eventId) {
                 $q->where('event_id', $eventId);
             }
@@ -353,6 +358,7 @@ class AdminReportsController extends Controller
             ->get();
         $female_count = StudentAttendance::with([
             'student.get_department',
+            'student.get_programme',
             'grades' => function ($q) use ($eventId) {
                 $q->where('event_id', $eventId);
             }

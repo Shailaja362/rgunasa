@@ -120,7 +120,7 @@
                                             <div
                                                 class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
                                                 <div class="text-xs font-bold text-gray-800 mb-1">
-                                                    {{ $schedule->programme->name }}
+                                                    {{ $schedule?->programme?->name }}
                                                 </div>
                                                 <div class="text-xs text-gray-600 mb-1">
                                                     <span class="font-medium">Event Date:</span>

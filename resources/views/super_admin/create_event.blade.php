@@ -73,35 +73,31 @@
                 </textarea>
             </div>
 
-         <div>
-    <label class="block text-sm font-medium">
-        Is Technical Event <span class="text-red-500">*</span>
-    </label>
+            <div>
+                <label class="block text-sm font-medium">
+                    Is Technical Event <span class="text-red-500">*</span>
+                </label>
 
-    <div class="flex items-center gap-6 mt-2">
+                <div class="flex items-center gap-6 mt-2">
 
-        {{-- YES --}}
-        <label class="inline-flex items-center">
-            <input type="radio"
-                   name="is_technical_event"
-                   value="y"
-                   class="text-primary focus:ring-primary is_technical_event"
-                   {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'y' ? 'checked' : '' }}>
-            <span class="ml-2 text-sm">Yes</span>
-        </label>
+                    {{-- YES --}}
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_technical_event" value="y"
+                            class="text-primary focus:ring-primary is_technical_event"
+                            {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'y' ? 'checked' : '' }}>
+                        <span class="ml-2 text-sm">Yes</span>
+                    </label>
 
-        {{-- NO --}}
-        <label class="inline-flex items-center">
-            <input type="radio"
-                   name="is_technical_event"
-                   value="n"
-                   class="text-primary focus:ring-primary is_technical_event"
-                   {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'n' ? 'checked' : '' }}>
-            <span class="ml-2 text-sm">No</span>
-        </label>
+                    {{-- NO --}}
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_technical_event" value="n"
+                            class="text-primary focus:ring-primary is_technical_event"
+                            {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'n' ? 'checked' : '' }}>
+                        <span class="ml-2 text-sm">No</span>
+                    </label>
 
-    </div>
-</div>
+                </div>
+            </div>
 
 
             <div>
@@ -163,11 +159,17 @@
                         </div>
                         {{-- Section --}}
                         <div>
-                            <label class="block text-sm font-medium">Section <span
-                                    class="text-red-600">*</span></label>
-                            <input type="text" name="departments[{{ $index }}][section]"
-                                value="{{ $dept->section ?? '' }}"
+                            <label class="block text-sm font-medium"> Section <span
+                                    class="text-red-500">*</span></label>
+                            <select name="departments[{{ $index }}][section]" id="section"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                                <option value="" selected disabled>Select Section</option>
+                                <option value="a" {{ $dept?->section == 'a' ? 'selected' : '' }}>A</option>
+                                <option value="b" {{ $dept?->section == 'b' ? 'selected' : '' }}>B</option>
+                                <option value="c" {{ $dept?->section == 'c' ? 'selected' : '' }}>C</option>
+                                <option value="d" {{ $dept?->section == 'd' ? 'selected' : '' }}>D</option>
+                                <option value="r" {{ $dept?->section == 'r' ? 'selected' : '' }}>R</option>
+                            </select>
                         </div>
                         {{-- Event Date --}}
                         <div>
