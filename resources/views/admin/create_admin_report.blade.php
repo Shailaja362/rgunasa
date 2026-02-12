@@ -21,18 +21,31 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">
-                    Department <span class="text-red-500">*</span>
+                    Programme <span class="text-red-500">*</span>
                 </label>
                 <select name="department_id"
                     class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
-                    <option value="">Select Department</option>
-                    @foreach ($departments as $d)
+                    <option value="">Select Programme</option>
+                    @foreach ($programmes as $d)
                         <option value="{{ $d->id }}" @if (!empty($eve) && $eve->id == $d->id) selected @endif>
                             {{ $d->name }}
                         </option>
                     @endforeach
                 </select>
             </div>
+             <div>
+                            <label class="block text-sm font-medium"> Section <span
+                                    class="text-red-500">*</span></label>
+                            <select name="section" id="section"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                                <option value="" selected disabled>Select Section</option>
+                                <option value="a">A</option>
+                                <option value="b">B</option>
+                                <option value="c">C</option>
+                                <option value="d">D</option>
+                                <option value="r">R</option>
+                            </select>
+                        </div>
             <div>
                 <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
                 <input type="date" name="event_date" id="event_date"
@@ -86,7 +99,7 @@
         </div>
         <!-- SUBMIT BUTTON -->
         <div class="flex justify-center mt-12 mb-10">
-            <button type="submit" class="px-8 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-2 rounded-full hover:opacity-90 transition">
+            <button type="submit" id="report" class="px-8 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-2 rounded-full hover:opacity-90 transition">
                 Submit Reports
             </button>
         </div>
