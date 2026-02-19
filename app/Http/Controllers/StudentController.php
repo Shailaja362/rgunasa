@@ -24,7 +24,9 @@ class StudentController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
-                    ->orWhere('mobile_number', 'LIKE', "%{$search}%");
+                    ->orWhere('mobile_number', 'LIKE', "%{$search}%")
+                    ->orWhere('register_number', 'LIKE', "%{$search}%")
+                    ->orWhere('batch', 'LIKE', "%{$search}%");
             });
         }
         // Department filter
@@ -46,7 +48,7 @@ class StudentController extends Controller
         if ($request->student_id) {
             $studentId = decrypt($request->student_id);
             $this->data['edit_student'] = Student::where('id', $studentId)->first();
-        }else{
+        } else {
             $this->data['edit_student'] = null;
         }
         return view('admin/create_student')->with($this->data);
@@ -64,7 +66,21 @@ class StudentController extends Controller
                 'programme_id'  => 'required',
                 'gender' => 'required',
                 'section' => 'required',
-                'register_number' => 'required'
+                'register_number' => 'required',
+                'batch' => [
+                    'required',
+                    'regex:/^\d{4}-\d{4}$/',
+                    function ($attribute, $value, $fail) {
+                        [$start, $end] = explode('-', $value);
+                        if ($end <= $start) {
+                            $fail('Batch end year must be greater than start year.');
+                        }
+                        if (($end - $start) > 10) {
+                            $fail('Batch range is invalid.');
+                        }
+                    },
+                ],
+                'semester' => 'required'
             ];
 
             if (!empty($request['student_id'])) {
@@ -137,6 +153,8 @@ class StudentController extends Controller
             $student->gender = $request['gender'] ?? '';
             $student->section = $request['section'] ?? '';
             $student->register_number = $request['register_number'] ?? '';
+            $student->semester = $request['semester'] ?? '';
+            $student->batch = $request['batch'] ?? '';
             $student->save();
 
             if (!empty($request['student_id'])) {
@@ -180,7 +198,24 @@ class StudentController extends Controller
                 'department_id' => 'required',
                 'programme_id'  => 'required',
                 'gender' => 'required',
-                'section' => 'required'
+                'section' => 'required',
+                'batch' => [
+                    'required',
+                    'regex:/^\d{4}-\d{4}$/',
+                    function ($attribute, $value, $fail) {
+
+                        [$start, $end] = explode('-', $value);
+
+                        if ($end <= $start) {
+                            $fail('Batch end year must be greater than start year.');
+                        }
+
+                        if (($end - $start) > 10) {
+                            $fail('Batch range is invalid.');
+                        }
+                    },
+                ],
+                'semester' => 'required'
             ];
 
             $exists = Student::where('email', $request['email'])->exists();
@@ -228,6 +263,8 @@ class StudentController extends Controller
             $student->gender = $request['gender'] ?? '';
             $student->section = $request['section'] ?? '';
             $student->register_number = $request['register_number'] ?? '';
+            $student->semester = $request['semester'] ?? '';
+            $student->batch = $request['batch'] ?? '';
             $student->save();
 
             session()->put('register_student', $student);

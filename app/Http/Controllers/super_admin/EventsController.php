@@ -20,11 +20,68 @@ use Illuminate\Support\Facades\Auth;
 class EventsController extends Controller
 {
 
-    public function index()
+    // public function index()
+    // {
+    //     $now = Carbon::now();
+    //     /** Upcoming Events */
+    //     $this->data['upcomingEvents'] =  EventSchedule::with(['event', 'programme'])
+    //         ->where(function ($q) use ($now) {
+    //             $q->whereDate('event_date', '>', $now->toDateString())
+    //                 ->orWhere(function ($q2) use ($now) {
+    //                     $q2->whereDate('event_date', $now->toDateString())
+    //                         ->whereHas('event', function ($e) use ($now) {
+    //                             $e->whereTime('start_time', '>', $now->toTimeString());
+    //                         });
+    //                 });
+    //         })
+    //         ->get();
+
+    //     /** Ongoing Events */
+    //     $this->data['ongoingEvents'] = EventSchedule::with(['event', 'programme'])
+    //         ->whereDate('event_date', $now->toDateString())
+    //         ->whereHas('event', function ($q) use ($now) {
+    //             $q->whereTime('start_time', '<=', $now->toTimeString())
+    //                 ->whereTime('end_time', '>=', $now->toTimeString());
+    //         })
+    //         ->get();
+
+    //     /** Completed Events */
+    //     $this->data['completedEvents']  = EventSchedule::with(['event', 'programme'])
+    //         ->where(function ($q) use ($now) {
+    //             $q->whereDate('event_date', '<', $now->toDateString())
+    //                 ->orWhere(function ($q2) use ($now) {
+    //                     $q2->whereDate('event_date', $now->toDateString())
+    //                         ->whereHas('event', function ($e) use ($now) {
+    //                             $e->whereTime('end_time', '<', $now->toTimeString());
+    //                         });
+    //                 });
+    //         })
+    //         ->get();
+
+    //     /** Registered Events */
+    //     $this->data['registeredEvents'] = StudentEventRegistration::with([
+    //         'get_event_schedule.event',
+    //         'get_event_schedule.department'
+    //     ])->get();
+
+
+    //     return view('super_admin.event_index')->with($this->data);
+    // }
+
+    public function index(Request $request)
     {
         $now = Carbon::now();
-        /** Upcoming Events */
-        $this->data['upcomingEvents'] =  EventSchedule::with(['event', 'department'])
+        $from = $request->from_date;
+        $to   = $request->to_date;
+
+        $baseQuery = EventSchedule::with(['event', 'programme']);
+
+        if ($from && $to) {
+            $baseQuery->whereBetween('event_date', [$from, $to]);
+        }
+
+        /** Upcoming */
+        $upcomingEvents = (clone $baseQuery)
             ->where(function ($q) use ($now) {
                 $q->whereDate('event_date', '>', $now->toDateString())
                     ->orWhere(function ($q2) use ($now) {
@@ -36,8 +93,8 @@ class EventsController extends Controller
             })
             ->get();
 
-        /** Ongoing Events */
-        $this->data['ongoingEvents'] = EventSchedule::with(['event', 'department'])
+        /** Ongoing */
+        $ongoingEvents = (clone $baseQuery)
             ->whereDate('event_date', $now->toDateString())
             ->whereHas('event', function ($q) use ($now) {
                 $q->whereTime('start_time', '<=', $now->toTimeString())
@@ -45,8 +102,8 @@ class EventsController extends Controller
             })
             ->get();
 
-        /** Completed Events */
-        $this->data['completedEvents']  = EventSchedule::with(['event', 'department'])
+        /** Completed */
+        $completedEvents = (clone $baseQuery)
             ->where(function ($q) use ($now) {
                 $q->whereDate('event_date', '<', $now->toDateString())
                     ->orWhere(function ($q2) use ($now) {
@@ -58,15 +115,36 @@ class EventsController extends Controller
             })
             ->get();
 
-        /** Registered Events */
-        $this->data['registeredEvents'] = StudentEventRegistration::with([
+        /** Registered */
+        $registeredEvents = StudentEventRegistration::with([
             'get_event_schedule.event',
-            'get_event_schedule.department'
-        ])->get();
+            'get_event_schedule.programme'
+        ])
+            ->when($from && $to, function ($query) use ($from, $to) {
+                $query->whereHas('get_event_schedule', function ($q) use ($from, $to) {
+                    $q->whereBetween('event_date', [$from, $to]);
+                });
+            })
+            ->get();
 
+        // If AJAX request
+        if ($request->ajax()) {
+            return response()->json([
+                'upcoming' => $upcomingEvents,
+                'ongoing' => $ongoingEvents,
+                'completed' => $completedEvents,
+                'registered' => $registeredEvents,
+            ]);
+        }
 
-        return view('super_admin.event_index')->with($this->data);
+        return view('super_admin.event_index', compact(
+            'upcomingEvents',
+            'ongoingEvents',
+            'completedEvents',
+            'registeredEvents'
+        ));
     }
+
 
     public function createEvent(Request $request)
     {
@@ -108,6 +186,7 @@ class EventsController extends Controller
     public function saveEvent(Request $request)
     {
         try {
+
             $rules = [
                 'event_title'   => 'required',
                 'club_id'   => 'required',
@@ -124,6 +203,8 @@ class EventsController extends Controller
                 'event_type'   => 'required',
                 'duration_months' => 'required',
             ];
+
+
 
             if ($request['event_type'] == 'paid') {
                 $rules['price'] = 'required';
@@ -199,6 +280,9 @@ class EventsController extends Controller
                     'event_date'    => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
                     'is_reserve_date'  => $schedule['is_reserve_date'] ?? 'n',
                     'seat_count'    => $schedule['seat_count'],
+                    'batch'    => $schedule['batch'],
+                    'semester'    => $schedule['semester'],
+                    'credit_points'    => $schedule['credit_points'],
                 ];
 
                 if (!empty($schedule['schedule_id'])) {
@@ -232,6 +316,10 @@ class EventsController extends Controller
                 'event' => $event,
             ]);
         } catch (Exception $e) {
+            echo '<pre>';
+            print_r($e->getMessage());
+            echo '</pre>';
+            exit;
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save event',

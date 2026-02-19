@@ -80,12 +80,14 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $event
+                            $registeredCount = $dept
                                 ->registrations()
-                                ->where('event_schedule_id', $dept->id)
-                                ->whereHas('student', function ($query) use ($dept) {
-                                    $query->where('programme_id', $dept->programme_id);
-                                    $query->where('section', $dept->section);
+                                ->whereHas('student', function ($query) use ($student) {
+                                    $query
+                                        ->where('programme_id', $student->programme_id)
+                                        ->where('section', $student->section)
+                                        ->where('batch', $student->batch)
+                                        ->where('semester', $student->semester);
                                 })
                                 ->count();
                             if ($dept->is_reserve_date == 'y') {
@@ -242,12 +244,14 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = $ongoing_event
+                            $registeredCount = $department
                                 ->registrations()
-                                ->where('event_schedule_id', $department->id)
-                                ->whereHas('student', function ($query) use ($department) {
-                                    $query->where('programme_id', $department->programme_id);
-                                    $query->where('section', $department->section);
+                                ->whereHas('student', function ($query) use ($student) {
+                                    $query
+                                        ->where('programme_id', $student->programme_id)
+                                        ->where('section', $student->section)
+                                        ->where('batch', $student->batch)
+                                        ->where('semester', $student->semester);
                                 })
                                 ->count();
                             if ($department->is_reserve_date == 'y') {
@@ -404,11 +408,13 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $register_event->event_id,
-                            'event_schedule_id' => $register_event->event_schedule_id,
                         ])
-                            ->whereHas('student', function ($query) use ($register_event) {
-                                $query->where('programme_id', $register_event->student->programme_id);
-                                $query->where('section', $register_event->student->section);
+                            ->whereHas('student', function ($query) use ($student) {
+                                $query
+                                    ->where('programme_id', $student->programme_id)
+                                    ->where('section', $student->section)
+                                    ->where('batch', $student->batch)
+                                    ->where('semester', $student->semester);
                             })
                             ->count();
                         if ($register_event->get_event_schedule->is_reserve_date == 'y') {
@@ -423,7 +429,6 @@
                             : 0;
 
                     @endphp
-
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
                             <img src="{{ asset('storage/' . $register_event->event->banner_image) }}" alt="Event"

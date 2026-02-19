@@ -58,12 +58,14 @@ class AdminReportsController extends Controller
     public function saveReport(Request $request)
     {
         $request->validate([
-            'event_id'        => 'required|exists:events,id',
-            'programme_id'   => 'required',
+            'event_id'      => 'required|exists:events,id',
+            'programme_id' => 'required',
             'section'   => 'required',
-            'event_date'      => 'required|date',
+            'event_date'  => 'required|date',
             'outcome_results' => 'required',
-            'feedback_summary' => 'required'
+            'feedback_summary' => 'required',
+            'batch'      => 'required',
+            'semester' => 'required',
         ]);
 
         DB::beginTransaction();
@@ -72,7 +74,9 @@ class AdminReportsController extends Controller
                 $request->event_id,
                 $request->programme_id,
                 $request->event_date,
-                $request->section
+                $request->section,
+                $request->batch,
+                $request->semester
             );
             if (!$schedule) {
                 throw new \Exception('Schedule not found');
@@ -86,7 +90,6 @@ class AdminReportsController extends Controller
                     'programme_id' => $request->programme_id,
                     'event_date' => $request->event_date,
                     'outcomes' => $request->outcome_results,
-                    'section' => $request->section,
                     'feedback_summary' => $request->feedback_summary,
                     'created_by' => auth('admin')->id()
                 ]

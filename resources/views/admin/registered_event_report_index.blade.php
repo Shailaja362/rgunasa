@@ -1,4 +1,32 @@
 <x-layouts.app>
+        <style>
+        .choices__inner {
+            border-radius: 9999px !important;
+            min-height: 48px !important;
+            padding: 8px 16px !important;
+        }
+
+        .choices.is-focused .choices__inner {
+            box-shadow: none !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 12px !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .choices__item {
+            font-size: 14px;
+        }
+
+        .choices__inner:focus {
+            outline: none !important;
+        }
+
+        .choices[data-type*="select-one"] .choices__inner {
+            padding-bottom: 8px !important;
+        }
+    </style>
     <div class="bg-[#F5E8F5] w-full h-[50px] rounded-full shadow-sm px-8 py-3 flex flex-col justify-center">
         <h3 class="font-semibold text-primary">Event Registered Students Report</h3>
     </div>
@@ -14,30 +42,25 @@
                     class="export-btn px-4 py-2 text-sm bg-[#ff7f50] text-white rounded">
                     Export Excel
                 </a>
-
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'csv'] + request()->query()) }}"
                     class="export-btn px-4 py-2 text-sm bg-[#E27258] text-white rounded">
                     Export CSV
                 </a>
-
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'pdf'] + request()->query()) }}"
                     class="export-btn px-4 py-2 text-sm bg-[#C04000] text-white rounded">
                     Export PDF
                 </a>
-
                 <a href="{{ route('admin.event-registrations.export', ['type' => 'word'] + request()->query()) }}"
                     class="export-btn px-4 py-2 text-sm bg-[#E34234] text-white rounded">
                     Export Word
                 </a>
-
             </div>
-
         </div>
         <form method="GET" action="" class="bg-white rounded-lg shadow p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Event</label>
-                    <select name="event_id" class="w-full border rounded px-3 py-2">
+                    <select name="event_id" class="w-full border rounded px-3 py-2 choice-select">
                         <option value="">All Events</option>
                         @foreach ($events as $event)
                             <option value="{{ $event->id }}"
@@ -49,7 +72,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">Status</label>
-                    <select name="status" class="w-full border rounded px-3 py-2">
+                    <select name="status" class="w-full border rounded px-3 py-2 choice-select">
                         <option value="">All</option>
                         @foreach ($statusLabels as $key => $label)
                             <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
@@ -57,7 +80,6 @@
                             </option>
                         @endforeach
                     </select>
-
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-1">From Date</label>
@@ -73,6 +95,27 @@
                     <label class="block text-sm font-medium mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Student name / Email" class="w-full border rounded px-3 py-2">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
+                    <input type="text" name="batch" id="batch" value="{{ request('batch') }}"
+                        placeholder="e.g, 2025-2029"
+                        class="w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
+                    <select name="semester" id="semester"
+                        class="semester w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                        <option value="" selected disabled>Select Semester</option>
+                        <option value="1" {{ request('semester') == '1' ? 'selected' : '' }}>1</option>
+                        <option value="2" {{ request('semester') == '2' ? 'selected' : '' }}>2</option>
+                        <option value="3" {{ request('semester') == '3' ? 'selected' : '' }}>3</option>
+                        <option value="4" {{ request('semester') == '4' ? 'selected' : '' }}>4</option>
+                        <option value="5" {{ request('semester') == '5' ? 'selected' : '' }}>5</option>
+                        <option value="6" {{ request('semester') == '6' ? 'selected' : '' }}>6</option>
+                        <option value="7" {{ request('semester') == '7' ? 'selected' : '' }}>7</option>
+                        <option value="8" {{ request('semester') == '8' ? 'selected' : '' }}>8</option>
+                    </select>
                 </div>
             </div>
             <div class="mt-6 flex justify-center gap-4">
@@ -142,7 +185,7 @@
         </div>
     </div>
 </x-layouts.app>
-
+<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>
 <script>
     $(document).on('click', '.export-btn', function(e) {
 

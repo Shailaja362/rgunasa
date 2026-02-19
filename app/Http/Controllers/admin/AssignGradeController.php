@@ -48,7 +48,9 @@ class AssignGradeController extends Controller
                 $eventId,
                 $request->programme_id,
                 $request->event_date,
-                $request->section
+                $request->section,
+                $request->batch,
+                $request->semester
             );
             if ($schedule) {
                 $this->data['registrations'] = StudentAttendance::with('student.get_department','student.get_programme')
@@ -95,9 +97,7 @@ class AssignGradeController extends Controller
                     throw new \Exception("Registration not found for student ID: {$studentId}");
                 }
             }
-
             DB::commit();
-
             return back()->with('success', 'Grades saved successfully');
         } catch (\Throwable $e) {
             DB::rollBack();

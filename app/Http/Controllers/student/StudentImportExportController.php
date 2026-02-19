@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use Maatwebsite\Excel\Exceptions\SheetNotFoundException;
 
 class StudentImportExportController extends Controller
 {
@@ -26,11 +27,16 @@ class StudentImportExportController extends Controller
             $import = new StudentsImport();
             try {
                 Excel::import($import, $request->file('file'));
-            } catch (ValidationException $e) {
-                $failures = $e->failures();
-                return back()->with('failures', $failures);
+            } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                return back()->with('failures', $e->failures());
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                return back()->with('failures', $e->errors());
+            } catch (SheetNotFoundException $e) {
+                return back()->with(
+                    'sheet_error',
+                    'Invalid Excel format. Please upload the correct sheet named "Student Upload Sheet".'
+                );
             }
-
             if ($import->failures()->isNotEmpty()) {
                 $failures = $import->failures();
                 return back()->with('failures', $failures);
@@ -40,5 +46,4 @@ class StudentImportExportController extends Controller
 
         }
     }
-
 }

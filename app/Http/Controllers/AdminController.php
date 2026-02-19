@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ActivityLog;
 use App\Models\Admin;
+use App\Models\Department;
+use App\Models\Designation;
 use App\Models\Role;
 use Exception;
 use Illuminate\Http\Request;
@@ -13,7 +15,7 @@ class AdminController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Admin::with('get_role');
+        $query = Admin::with('get_role', 'get_department', 'get_designation');
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -32,12 +34,14 @@ class AdminController extends Controller
 
     public function createAdmin(Request $request)
     {
-        $id = [1,2];
-        $this->data['roles'] = Role::whereIn('id',$id)->get();
+        $id = [1, 2];
+        $this->data['roles'] = Role::whereIn('id', $id)->get();
         if ($request->admin_id) {
             $adminId = decrypt($request->admin_id);
             $this->data['edit_admin'] = Admin::where('id', $adminId)->first();
         }
+        $this->data['department'] = Department::get();
+        $this->data['designation'] = Designation::get();
         return view('super_admin/create_admin')->with($this->data);
     }
 
@@ -50,6 +54,8 @@ class AdminController extends Controller
                 'emp_code' => 'nullable',
                 'mobile_number' => 'required|digits:10',
                 'role_id' => 'required',
+                'department_id' => 'required',
+                'designation_id' => 'required'
             ];
 
             if ($request['role_id'] == 1) {
@@ -99,6 +105,7 @@ class AdminController extends Controller
             }
 
             $request->validate($rules);
+
             if (!empty($request['admin_id'])) {
                 $message = 'Admin Updated successfully';
                 $admin = Admin::find($request['admin_id']);
@@ -124,6 +131,8 @@ class AdminController extends Controller
             $admin->role_id = $request['role_id'] ?? '';
             $admin->security_code = $request['security_code'] ?? '';
             $admin->emp_code = $request['emp_code'] ?? '';
+            $admin->department_id = $request['department_id'] ?? '';
+            $admin->designation_id = $request['designation_id'] ?? '';
             $admin->save();
 
             if (!empty($request['admin_id'])) {

@@ -163,7 +163,7 @@ $(document).on("submit", "#eventForm", function (e) {
         {
             id: ".department",
             condition: (val) => val === "",
-            message: "Please Select Department",
+            message: "Please Select Programme",
         },
         {
             id: ".section",
@@ -174,6 +174,29 @@ $(document).on("submit", "#eventForm", function (e) {
             id: ".event_date",
             condition: (val) => val === "",
             message: "Please Select Event Date",
+        },
+        {
+            id: ".batch",
+            condition: (val) => {
+                const regex = /^\d{4}-\d{4}$/;
+                if (val === "" || !regex.test(val)) {
+                    return true;
+                }
+                const [start, end] = val.split("-").map(Number);
+                return end <= start;
+            },
+            message:
+                "Batch must be in YYYY-YYYY format and end year must be greater than start year",
+        },
+        {
+            id: ".semester",
+            condition: (val) => val === "",
+            message: "Semester is required",
+        },
+        {
+            id: ".credit_points",
+            condition: (val) => val === "",
+            message: "Credit Point is required",
         },
     ];
 
@@ -199,6 +222,7 @@ $(document).on("submit", "#eventForm", function (e) {
         $("#price").removeClass("border-red-500 ring-1 ring-red-500");
         if (errorEl.length) errorEl.remove();
     }
+    
     let fileInput = $("#fileInput")[0];
     let oldBanner = $('input[name="old_banner"]').val();
 
@@ -291,9 +315,9 @@ $("#confirmDelete").on("click", function () {
         success: function (response) {
             if (response.success) {
                 deleteButton.closest("tr").remove();
-              showToast(response.message, "success", 2000);
+                showToast(response.message, "success", 2000);
             } else {
-              showToast(response.message, "error", 2000);
+                showToast(response.message, "error", 2000);
             }
 
             $("#deleteModal").addClass("hidden").removeClass("flex");
@@ -434,6 +458,34 @@ document.addEventListener("DOMContentLoaded", function () {
                         name="departments[${deptIndex}][seat_count]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 seat_count">
                 </div>
+                     <div>
+                            <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
+                            <input type="text" name="departments[${deptIndex}][batch]" id="batch"
+                                placeholder="e.g, 2025-2029"
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium"> Semester <span
+                                    class="text-red-500">*</span></label>
+                            <select name="departments[${deptIndex}][semester]" id="semester"
+                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                                <option selected disabled>Select Semester</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                                <option value="7">7</option>
+                                <option value="8">8</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Credit Points <span class="text-red-500">*</span></label>
+                            <input type="number" name="departments[${deptIndex}][credit_points]" id="credit_points"
+                             placeholder="Enter Event Credit Points"
+                                class="credit_points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
             </div>
         `;
 

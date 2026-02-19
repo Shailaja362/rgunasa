@@ -26,27 +26,37 @@ $(document).on("submit", "#adminForm", function (e) {
             condition: (val) => val === "",
             message: "Employee Code is Required!",
         },
+        {
+            id: "#department_id",
+            condition: (val) => val === "",
+            message: "Please Select Department",
+        },
+        {
+            id: "#designation_id",
+            condition: (val) => val === "",
+            message: "Please Select Designation",
+        },
     ];
     let isValid = true;
     for (const field of fields) {
         const result = validateField(field); // synchronous, so no async/await needed
         if (!result) isValid = false;
     }
-     let role_id = $("#role_id").val();
-     let security_code = $("#security_code").val();
-     const errorEl = $("#security_code").siblings(".error-message");
-     if (role_id == 1 && security_code === "") {
+    let role_id = $("#role_id").val();
+    let security_code = $("#security_code").val();
+    const errorEl = $("#security_code").siblings(".error-message");
+    if (role_id == 1 && security_code === "") {
         $("#security_code").addClass("border-red-500 ring-1 ring-red-500");
-         if (errorEl.length === 0) {
+        if (errorEl.length === 0) {
             $("#security_code").after(
-                `<div class="error-message text-red-500 text-sm mt-1">Please enter valid security code</div>`
+                `<div class="error-message text-red-500 text-sm mt-1">Please enter valid security code</div>`,
             );
         }
-         isValid = false;
-     }else{
-         $("#security_code").removeClass("border-red-500 ring-1 ring-red-500");
-         if (errorEl.length) errorEl.remove();
-     }
+        isValid = false;
+    } else {
+        $("#security_code").removeClass("border-red-500 ring-1 ring-red-500");
+        if (errorEl.length) errorEl.remove();
+    }
 
     if (!isValid) return;
     let formData = new FormData(this);
@@ -74,7 +84,7 @@ $(document).on("submit", "#adminForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
-        }
+        },
     );
 });
 
@@ -103,7 +113,6 @@ document
 document.getElementById("dropArea").addEventListener("click", function () {
     document.getElementById("fileInput").click();
 });
-
 
 document.getElementById("role_id").addEventListener("change", function () {
     let type = this.value;

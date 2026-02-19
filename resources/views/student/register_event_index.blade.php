@@ -60,12 +60,13 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = $event
+                            $registeredCount = $department
                                 ->registrations()
-                                ->where('event_schedule_id', $department->id)
-                                ->whereHas('student', function ($query) use ($department) {
-                                    $query->where('programme_id', $department->programme_id);
-                                    $query->where('section', $department->section);
+                                ->whereHas('student', function ($query) use ($student) {
+                                     $query->where('programme_id', $student->programme_id)
+                                           ->where('section', $student->section)
+                                           ->where('semester', $student->semester)
+                                           ->where('batch', $student->batch);
                                 })
                                 ->count();
                             if ($department->is_reserve_date == 'y') {
@@ -225,12 +226,13 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $ongoing_event
+                            $registeredCount = $dept
                                 ->registrations()
-                                ->where('event_schedule_id', $dept->id)
-                                ->whereHas('student', function ($query) use ($dept) {
-                                    $query->where('programme_id', $dept->programme_id);
-                                    $query->where('section', $dept->section);
+                                ->whereHas('student', function ($query) use ($student) {
+                                     $query->where('programme_id', $student->programme_id)
+                                           ->where('section', $student->section)
+                                           ->where('semester', $student->semester)
+                                           ->where('batch', $student->batch);
                                 })
                                 ->count();
                             if ($dept->is_reserve_date == 'y') {

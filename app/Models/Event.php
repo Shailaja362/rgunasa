@@ -50,4 +50,9 @@ class Event extends Model
     {
         return $this->hasMany(EventSchedule::class);
     }
+
+    public function get_admin()
+    {
+        return $this->belongsTo(Admin::class, 'created_by');
+    }
 }

@@ -9,7 +9,7 @@ class EventReport extends Model
     protected $fillable = [
         'event_id',
         'event_schedule_id',
-        'department_id',
+        'programme_id',
         'event_date',
         'male_count',
         'female_count',

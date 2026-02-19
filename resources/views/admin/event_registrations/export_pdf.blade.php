@@ -18,6 +18,8 @@
         <tr>
             <th>#</th>
             <th>Student</th>
+            <th>Batch</th>
+            <th>Semester</th>
             <th>Email</th>
             <th>Event</th>
             <th>Status</th>
@@ -29,6 +31,8 @@
             <tr>
                 <td>{{ $i + 1 }}</td>
                 <td>{{ $row->student->name ?? '' }}</td>
+                <td>{{ $row->student->batch ?? '-' }}</td>
+                <td>{{ $row->student->semester ?? '-' }}</td>
                 <td>{{ $row->student->email ?? '' }}</td>
                 <td>{{ $row->event->title ?? '' }}</td>
                 <td>{{ $statusLabels[$row->status] ?? 'Unknown' }}</td>

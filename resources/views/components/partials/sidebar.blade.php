@@ -16,12 +16,22 @@
                 $dept_name = $get_department->name ?? '';
                 $route = route('student.logout');
             } elseif (!empty(session()->get('admin'))) {
-                $name = session()->get('admin')->name;
-                $id = session()->get('admin')->emp_code;
+                $admin = session()->get('admin');
+                $name = $admin->name;
+                $id = $admin->emp_code;
+                $get_department = \App\Models\Department::where('id', $admin->department_id)->first();
+                $get_designation = \App\Models\Designation::where('id', $admin->designation_id)->first();
+                $dept_name = $get_department->name ?? '';
+                $desig_name = $get_designation->name ?? '';
                 $route = route('admin.logout');
             } elseif (!empty(session()->get('super_admin'))) {
-                $name = session()->get('super_admin')->name;
-                $id = session()->get('super_admin')->emp_code;
+                $admin = session()->get('super_admin');
+                $name = $admin->name;
+                $id = $admin->emp_code;
+                $get_department = \App\Models\Department::where('id', $admin->department_id)->first();
+                $get_designation = \App\Models\Designation::where('id', $admin->designation_id)->first();
+                $dept_name = $get_department->name ?? '';
+                $desig_name = $get_designation->name ?? '';
                 $route = route('admin.logout');
             }
         @endphp
@@ -39,19 +49,18 @@
         <div class="text-center font-medium text-md text-primary">
             {{ $name }}
         </div>
-        @if (!empty(session()->get('student')))
         <div class="text-center font-sm text-sm text-primary">
              {{  $dept_name }}
+        </div>
+        @if (!empty(session()->get('admin')) || !empty(session()->get('super_admin')))
+        <div class="text-center font-sm text-sm">
+             {{  $desig_name }}
         </div>
         @endif
         <div class="text-center font-medium text-md text-primary">
             ID - {{ $id }}
         </div>
     </div>
-
-    {{-- PROFILE SEGMENT IN SIDEBAR - ENDS --}}
-
-    {{-- MENU SEGMENT IN SIDEBAR --}}
     <ul class="mt-8 mx-3 space-y-2">
         <x-menu.list>
             @if (!empty(session()->get('student')))

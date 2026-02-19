@@ -11,13 +11,14 @@ class AdminSheet implements WithHeadings, WithTitle
     public function headings(): array
     {
         return [
-            'S.No',
             'Name',
             'Email',
             'Role',
             'Mobile Number',
             'Employee Code',
             'Security Code',
+            'Department Name',
+            'Designation Name'
         ];
     }
 

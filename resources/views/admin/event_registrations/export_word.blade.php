@@ -35,6 +35,8 @@
         <tr>
             <th>#</th>
             <th>Student Name</th>
+            <th>Batch</th>
+            <th>Semester</th>
             <th>Email</th>
             <th>Event</th>
             <th>Status</th>
@@ -46,6 +48,8 @@
             <tr>
                 <td>{{ $index + 1 }}</td>
                 <td>{{ $row->student->name ?? '-' }}</td>
+                <td>{{ $row->student->batch ?? '-' }}</td>
+                <td>{{ $row->student->semester ?? '-' }}</td>
                 <td>{{ $row->student->email ?? '-' }}</td>
                 <td>{{ $row->event->title ?? '-' }}</td>
                 <td>{{ $statusLabels[$row->status] ?? 'Unknown' }}</td>

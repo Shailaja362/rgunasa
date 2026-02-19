@@ -8,11 +8,14 @@ class EventSchedule extends Model
 {
     protected $fillable = [
         'event_id',
-        'department_id',
+        'programme_id',
         'section',
         'event_date',
         'is_reserve_date',
         'seat_count',
+        'batch',
+        'semester',
+        'credit_points'
     ];
 
     public function registrations()

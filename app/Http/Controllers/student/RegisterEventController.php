@@ -22,6 +22,7 @@ class RegisterEventController extends Controller
         $now = Carbon::now();
         $this->data['events'] = Event::get();
         $student = session()->get('student');
+        $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
         $myuploads = StudentUploadProof::select('student_id', 'event_id')
             ->where('student_id', $student->id)
@@ -30,24 +31,32 @@ class RegisterEventController extends Controller
         $this->data['ongoingEvents'] = Event::with('registrations.student')->whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
+                ->where('semester', $student->semester)
+                ->where('batch', $student->batch)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
+                  $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('semester', $student->semester)
+                    ->where('batch', $student->batch)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] = Event::with('registrations.student')
             ->whereHas('get_dep_events', function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
+                  $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('semester', $student->semester)
+                    ->where('batch', $student->batch)
                     ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
             })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
+                  $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('semester', $student->semester)
+                    ->where('batch', $student->batch)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
@@ -82,6 +91,7 @@ class RegisterEventController extends Controller
         try {
             $event = Event::findOrFail($request->event_id);
             $schedule = EventSchedule::findOrFail($request->schedule_id);
+            $student = Student::where('id',$request->stu_id)->first();
             $lastRegistration = StudentEventRegistration::where([
                 'student_id' => $request->stu_id,
                 'event_id'   => $event->id,
@@ -110,6 +120,13 @@ class RegisterEventController extends Controller
             }
 
             $registeredCount = StudentEventRegistration::where('event_schedule_id', $schedule->id)
+                ->whereHas('student', function ($query) use ($student) {
+                    $query
+                        ->where('programme_id', $student->programme_id)
+                        ->where('section', $student->section)
+                        ->where('batch', $student->batch)
+                        ->where('semester', $student->semester);
+                })
                 ->count();
             if ($registeredCount >= $schedule->seat_count) {
                 DB::rollBack();
@@ -135,9 +152,7 @@ class RegisterEventController extends Controller
                 'message' => 'Registration successful.',
             ]);
         } catch (\Exception $e) {
-
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed.',

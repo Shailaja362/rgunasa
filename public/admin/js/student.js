@@ -1,5 +1,7 @@
 $(document).on("submit", "#studentForm", function (e) {
     e.preventDefault();
+     let $saveBtn = $("#student");
+
     let fields = [
         {
             id: "#student_name",
@@ -46,6 +48,16 @@ $(document).on("submit", "#studentForm", function (e) {
             condition: (val) => val === "",
             message: "Date of Birth is Required",
         },
+        {
+            id: "#semester",
+            condition: (val) => val === "",
+            message: "Semester is Required",
+        },
+        {
+            id: "#batch",
+            condition: (val) => val === "",
+            message: "Batch is Required",
+        },
     ];
     let isValid = true;
     for (const field of fields) {
@@ -53,6 +65,10 @@ $(document).on("submit", "#studentForm", function (e) {
         if (!result) isValid = false;
     }
     if (!isValid) return;
+         $saveBtn
+             .prop("disabled", true)
+             .removeClass("opacity-50 cursor-not-allowed")
+             .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
         "/admin/save-student",
@@ -67,6 +83,10 @@ $(document).on("submit", "#studentForm", function (e) {
             } else {
                 showToast(res.message, "error", 2000);
             }
+              $saveBtn
+                  .prop("disabled", false)
+                  .removeClass("opacity-50 cursor-not-allowed")
+                  .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -78,6 +98,10 @@ $(document).on("submit", "#studentForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+             $saveBtn
+                 .prop("disabled", false)
+                 .removeClass("opacity-50 cursor-not-allowed")
+                 .text("Save");
         }
     );
 });
@@ -110,6 +134,7 @@ document.getElementById("dropArea").addEventListener("click", function () {
 
 $(document).on("submit", "#studentregisterForm", function (e) {
     e.preventDefault();
+    let $saveBtn = $("#register");
     let fields = [
         {
             id: "#student_name",
@@ -156,6 +181,16 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             condition: (val) => val === "",
             message: "Date of Birth is Required",
         },
+        {
+            id: "#semester",
+            condition: (val) => val === "",
+            message: "Semester is Required",
+        },
+        {
+            id: "#batch",
+            condition: (val) => val === "",
+            message: "Batch is Required",
+        },
     ];
     let isValid = true;
     for (const field of fields) {
@@ -163,6 +198,10 @@ $(document).on("submit", "#studentregisterForm", function (e) {
         if (!result) isValid = false;
     }
     if (!isValid) return;
+      $saveBtn
+          .prop("disabled", true)
+          .removeClass("opacity-50 cursor-not-allowed")
+          .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
         "/student/register-save",
@@ -177,6 +216,10 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             } else {
                 showToast(res.message, "error", 2000);
             }
+             $saveBtn
+                 .prop("disabled", false)
+                 .removeClass("opacity-50 cursor-not-allowed")
+                 .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -188,6 +231,10 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
+             $saveBtn
+                 .prop("disabled", false)
+                 .removeClass("opacity-50 cursor-not-allowed")
+                 .text("Save");
         }
     );
 });

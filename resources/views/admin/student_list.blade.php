@@ -3,6 +3,13 @@
         <h3 class="font-semibold text-primary">Student</h3>
     </div>
 
+    @if (session()->has('sheet_error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 rounded mt-2">
+            <strong>Sheet Errors:</strong>
+            <p>{{ session('sheet_error') }}</p>
+        </div>
+    @endif
+
     @if (session()->has('failures'))
         <div class="text-red-700 alert alert-danger border border-danger shadow-sm mt-2">
             <h5 class="mb-3 fw-bold">
@@ -10,25 +17,36 @@
             </h5>
             <ul class="list-unstyled mb-0 mt-2">
                 @foreach (session('failures') as $failure)
-                    <li class="mb-3 p-3 bg-light border-start border-4 border-danger rounded">
-                        <div class="mb-1">
-                            <strong class="text-danger">
-                                Row #{{ $failure->row() }}
-                            </strong>
+                    @if (!is_array($failure))
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 rounded">
+                            <li class="mt-2 bg-light border-start border-4 border-danger rounded">
+                                <div class="mb-1">
+                                    <strong class="text-danger">
+                                        Row #{{ $failure->row() }}
+                                    </strong>
+                                </div>
+                                <div>
+                                    <span class="badge bg-dark me-2">
+                                        {{ $failure->attribute() }}
+                                    </span>
+                                    @foreach ($failure->errors() as $error)
+                                        <span class="badge bg-danger me-1">
+                                            {{ $error }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </li>
                         </div>
-
-                        <div>
-                            <span class="badge bg-dark me-2">
-                                {{ $failure->attribute() }}
-                            </span>
-
-                            @foreach ($failure->errors() as $error)
-                                <span class="badge bg-danger me-1">
-                                    {{ $error }}
-                                </span>
-                            @endforeach
+                    @else
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 rounded mt-2">
+                            <strong>Import Errors:</strong>
+                            <ul class="mt-2 list-disc list-inside">
+                                <li>
+                                    {{ implode(', ', $failure) }}
+                                </li>
+                            </ul>
                         </div>
-                    </li>
+                    @endif
                 @endforeach
             </ul>
         </div>
@@ -63,7 +81,7 @@
         </form>
     </div>
 
-  <h4 class="font-semibold text-gray-800 mb-4">Student Filter</h4>
+    <h4 class="font-semibold text-gray-800 mb-4">Student Filter</h4>
     <section class="p-2 bg-white rounded-xl shadow-md mt-3">
         <div class="mt-6">
             <form method="GET" action="{{ route('student_list') }}" class="flex gap-3 mb-4">
@@ -105,9 +123,9 @@
                             <th class="px-2 py-2">Student Name</th>
                             <th class="px-2 py-2">Register Number</th>
                             <th class="px-2 py-2">Section</th>
+                            <th class="px-2 py-2">Semester</th>
                             <th class="px-2 py-2">Email</th>
                             <th class="px-2 py-2">Mobile Number</th>
-                            <th class="px-2 py-2">Department</th>
                             <th class="px-2 py-2">Programme</th>
                             <th class="px-2 py-2">Action</th>
                         </tr>
@@ -119,9 +137,9 @@
                                 <td class="px-2 py-3">{{ $stud->name ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $stud->register_number ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $stud->section ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $stud->semester ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $stud->email ?? '' }}</td>
                                 <td class="px-2 py-3">{{ $stud->mobile_number ?? '' }}</td>
-                                <td class="px-2 py-3">{{ $stud->get_department?->name }}</td>
                                 <td class="px-2 py-3">{{ $stud->get_programme?->name }}</td>
                                 <td class="px-2 py-3 flex justify-center gap-4">
                                     <a href="{{ route('create_student', ['student_id' => encrypt($stud->id)]) }}">

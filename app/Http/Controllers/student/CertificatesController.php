@@ -38,7 +38,7 @@ class CertificatesController extends Controller
 
     public function downloadCertificate(Request $request)
     {
-        $event = Event::where('id', $request->event_id)->first();
+        $event = Event::with('get_admin')->where('id', $request->event_id)->first();
         $registration = StudentEventRegistration::where('event_id', $event->id)
             ->where('student_id', $request->student_id)
             ->first();

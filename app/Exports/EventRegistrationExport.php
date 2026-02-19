@@ -27,7 +27,13 @@ class EventRegistrationExport implements FromCollection, WithHeadings, WithTitle
             4 => 'Cancelled',
         ];
 
-        return StudentEventRegistration::with(['event', 'student','student.get_department'])
+        return StudentEventRegistration::with(
+            [
+            'event',
+            'student',
+            'student.get_department',
+            'get_event_schedule'
+            ])
             ->when(
                 $this->filters['event_id'] ?? null,
                 fn($q, $v) => $q->where('event_id', $v)
@@ -36,6 +42,32 @@ class EventRegistrationExport implements FromCollection, WithHeadings, WithTitle
                 $this->filters['status'] ?? null,
                 fn($q, $v) => $q->where('status', $v)
             )
+            ->when($this->filters['from_date'], function ($q) {
+                $q->whereHas('get_event_schedule', function ($schedule) {
+                    $schedule->whereDate('event_date', 'like', '%' . $this->filters['from_date'] . '%');
+                });
+            })
+            ->when($this->filters['to_date'], function ($q) {
+                $q->whereHas('get_event_schedule', function ($schedule) {
+                    $schedule->whereDate('event_date', 'like', '%' . $this->filters['to_date'] . '%');
+                });
+            })
+            ->when($this->filters['search'], function ($q) {
+                $q->whereHas('student', function ($student) {
+                    $student->where('name', 'like', '%' . $this->filters['search'] . '%')
+                        ->orWhere('email', 'like', '%' . $this->filters['search'] . '%');
+                });
+            })
+            ->when($this->filters['batch'], function ($q)  {
+                $q->whereHas('get_event_schedule', function ($schedule) {
+                    $schedule->where('batch', 'like', '%' . $this->filters['batch'] . '%');
+                });
+            })
+            ->when($this->filters['semester'], function ($q) {
+                $q->whereHas('get_event_schedule', function ($schedule) {
+                    $schedule->where('semester', 'like', '%' . $this->filters['semester'] . '%');
+                });
+            })
             ->latest()
             ->get()
             ->map(function ($row, $index) use ($statusLabels) {
@@ -43,6 +75,8 @@ class EventRegistrationExport implements FromCollection, WithHeadings, WithTitle
                     'S.No'         => $index + 1,
                     'Register Number' => $row->student->register_number ?? '',
                     'Student Name' => $row->student->name ?? '',
+                    'Batch' => $row->student->batch ?? '',
+                    'Semester' => $row->student->semester ?? '',
                     'Department' => $row->student->get_department->name ?? '',
                     'Section' => $row->student->section ?? '',
                     'Email' => $row->student->email ?? '',
@@ -59,6 +93,8 @@ class EventRegistrationExport implements FromCollection, WithHeadings, WithTitle
             'S.No',
             'Register Number',
             'Student Name',
+            'Batch',
+            'Semester',
             'Department',
             'Section',
             'Email',

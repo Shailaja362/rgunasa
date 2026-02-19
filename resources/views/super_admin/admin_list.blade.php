@@ -2,6 +2,12 @@
     <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-8 py-3">
         <h3 class="font-semibold text-primary">Admin</h3>
     </div>
+    @if (session()->has('sheet_error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 rounded mt-2">
+            <strong>Sheet Errors:</strong>
+            <p>{{ session('sheet_error') }}</p>
+        </div>
+    @endif
 
     @if (session()->has('failures'))
         <div class="text-red-700 alert alert-danger border border-danger shadow-sm mt-2">
@@ -10,25 +16,36 @@
             </h5>
             <ul class="list-unstyled mb-0 mt-2">
                 @foreach (session('failures') as $failure)
-                    <li class="mb-3 p-3 bg-light border-start border-4 border-danger rounded">
-                        <div class="mb-1">
-                            <strong class="text-danger">
-                                Row #{{ $failure->row() }}
-                            </strong>
-                        </div>
+                    @if (!is_array($failure))
+                        <li class="mb-3 p-3 bg-light border-start border-4 border-danger rounded">
+                            <div class="mb-1">
+                                <strong class="text-danger">
+                                    Row #{{ $failure->row() }}
+                                </strong>
+                            </div>
 
-                        <div>
-                            <span class="badge bg-dark me-2">
-                                {{ $failure->attribute() }}
-                            </span>
-
-                            @foreach ($failure->errors() as $error)
-                                <span class="badge bg-danger me-1">
-                                    {{ $error }}
+                            <div>
+                                <span class="badge bg-dark me-2">
+                                    {{ $failure->attribute() }}
                                 </span>
-                            @endforeach
+
+                                @foreach ($failure->errors() as $error)
+                                    <span class="badge bg-danger me-1">
+                                        {{ $error }}
+                                    </span>
+                                @endforeach
+                            </div>
+                        </li>
+                    @else
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 rounded mt-2">
+                            <strong>Import Errors:</strong>
+                            <ul class="mt-2 list-disc list-inside">
+                                <li>
+                                    {{ implode(', ', $failure) }}
+                                </li>
+                            </ul>
                         </div>
-                    </li>
+                    @endif
                 @endforeach
             </ul>
         </div>
@@ -91,25 +108,27 @@
                 <table class="w-full text-sm text-left text-gray-700 border-collapse">
                     <thead>
                         <tr class="bg-primary text-white text-sm uppercase tracking-wider">
-                            <th class="px-3 py-2">ID</th>
-                            <th class="px-3 py-2">Admin Name</th>
-                            <th class="px-3 py-2">Role</th>
-                            <th class="px-3 py-2">Email</th>
-                            <th class="px-3 py-2">Mobile Number</th>
-                            <th class="px-3 py-2">Emp Code</th>
-                            <th class="px-3 py-2">Action</th>
+                            <th class="px-2 py-2">ID</th>
+                            <th class="px-2 py-2">Employee Code</th>
+                            <th class="px-2 py-2">Admin Name</th>
+                            <th class="px-2 py-2">Role</th>
+                            <th class="px-2 py-2">Mobile Number</th>
+                            <th class="px-2 py-2">Department</th>
+                            <th class="px-2 py-2">Designation</th>
+                            <th class="px-2 py-2">Action</th>
                         </tr>
                     </thead>
                     <tbody id="adminTableBody" class="divide-y divide-gray-200">
                         @foreach ($admins as $admin)
                             <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-4 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
-                                <td class="px-4 py-3">{{ $admin->name ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $admin->email ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $admin->get_role->name ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $admin->mobile_number ?? '' }}</td>
-                                <td class="px-4 py-3">{{ $admin->emp_code }}</td>
-                                <td class="px-4 py-3 flex justify-center gap-4">
+                                <td class="px-2 py-3 font-medium text-gray-900">{{ $loop->iteration }}</td>
+                                <td class="px-2 py-3">{{ $admin->emp_code }}</td>
+                                <td class="px-2 py-3">{{ $admin->name ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $admin->get_role->name ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $admin->mobile_number ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $admin->get_department?->name ?? '' }}</td>
+                                <td class="px-2 py-3">{{ $admin->get_designation?->name ?? '' }}</td>
+                                <td class="px-2 py-3 flex justify-center gap-4">
                                     <a href="{{ route('create_admin', ['admin_id' => encrypt($admin->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>

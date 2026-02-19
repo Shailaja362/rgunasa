@@ -1,10 +1,42 @@
 <x-layouts.app>
+    <style>
+        .choices__inner {
+            background-color: #D9D9D9 !important;
+            border-radius: 9999px !important;
+            border: none !important;
+            min-height: 48px !important;
+            padding: 8px 16px !important;
+        }
+
+        .choices.is-focused .choices__inner {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 12px !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .choices__item {
+            font-size: 14px;
+        }
+
+        .choices__inner:focus {
+            outline: none !important;
+        }
+
+        .choices[data-type*="select-one"] .choices__inner {
+            padding-bottom: 8px !important;
+        }
+    </style>
     <!-- Header -->
     <div class="bg-[#F5E8F5] w-full h-[70px] rounded-full shadow-sm px-8 py-3">
         <h3 class="font-semibold text-primary">Event Report Submission</h3>
         <p>Submit comprehensive reports for completed events</p>
     </div>
-    <form id="eventReportForm" action="{{ route('student_register_event') }}" method="POST" enctype="multipart/form-data" class="mt-8 px-4">
+    <form id="eventReportForm" action="{{ route('student_register_event') }}" method="POST" enctype="multipart/form-data"
+        class="mt-8 px-4">
         @csrf
         <h2 class="text-primary font-semibold mt-10 px-4">Event Information</h2>
         <p class="px-4 text-gray-600 text-sm">Select the completed events and confirm details</p>
@@ -12,7 +44,7 @@
             <div>
                 <label class="block text-sm font-medium">Event<span class="text-red-600">*</span></label>
                 <select name="event_id" id="event_id"
-                    class="bg-[#D9D9D9] w-full rounded-full px-4 mt-1 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:outline-none">
+                    class="choice-select bg-[#D9D9D9] w-full rounded-full px-4 mt-1 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:outline-none">
                     <option value="">Search Event</option>
                     @foreach ($event as $eve)
                         <option value="{{ $eve->id }}">{{ $eve->title }}</option>
@@ -23,8 +55,8 @@
                 <label class="block text-sm font-medium">
                     Programme <span class="text-red-500">*</span>
                 </label>
-                <select name="department_id"
-                    class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
+                <select name="programme_id" id="programme_id"
+                    class="choice-select bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
                     <option value="">Select Programme</option>
                     @foreach ($programmes as $d)
                         <option value="{{ $d->id }}" @if (!empty($eve) && $eve->id == $d->id) selected @endif>
@@ -33,19 +65,38 @@
                     @endforeach
                 </select>
             </div>
-             <div>
-                            <label class="block text-sm font-medium"> Section <span
-                                    class="text-red-500">*</span></label>
-                            <select name="section" id="section"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" selected disabled>Select Section</option>
-                                <option value="a">A</option>
-                                <option value="b">B</option>
-                                <option value="c">C</option>
-                                <option value="d">D</option>
-                                <option value="r">R</option>
-                            </select>
-                        </div>
+            <div>
+                <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
+                <select name="section" id="section"
+                    class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
+                    <option value="" selected disabled>Select Section</option>
+                    <option value="a">A</option>
+                    <option value="b">B</option>
+                    <option value="c">C</option>
+                    <option value="d">D</option>
+                    <option value="r">R</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
+                <input type="text" name="batch" id="batch" placeholder="e.g, 2025-2029"
+                    class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+            </div>
+            <div>
+                <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
+                <select name="semester" id="semester"
+                    class="choice-select bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                    <option value="" selected disabled>Select Semester</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
             <div>
                 <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
                 <input type="date" name="event_date" id="event_date"
@@ -74,7 +125,6 @@
         </div>
         <!-- Preview area -->
         <div id="previewArea" class="grid grid-cols-2 gap-4 mt-4">
-            {{-- SHOW EXISTING IMAGES --}}
             @if (!empty($edit_task) && !empty($edit_task->get_task_images))
                 @foreach ($edit_task->get_task_images as $img)
                     <div class="img-wrapper relative inline-block" data-existing="{{ $img['id'] }}">
@@ -99,7 +149,8 @@
         </div>
         <!-- SUBMIT BUTTON -->
         <div class="flex justify-center mt-12 mb-10">
-            <button type="submit" id="report" class="px-8 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-2 rounded-full hover:opacity-90 transition">
+            <button type="submit" id="report"
+                class="px-8 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-2 rounded-full hover:opacity-90 transition">
                 Submit Reports
             </button>
         </div>
@@ -107,3 +158,4 @@
 </x-layouts.app>
 
 <script src="{{ asset('admin/js/report.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>

@@ -50,11 +50,12 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
-                            'event_schedule_id' => $event->get_event_schedule->id,
                         ])
-                            ->whereHas('student', function ($query) use ($event) {
-                                $query->where('programme_id', $event->student->programme_id);
-                                $query->where('section', $event->get_event_schedule->section);
+                            ->whereHas('student', function ($query) use ($student) {
+                                $query->where('programme_id', $student->programme_id)
+                                      ->where('semester', $student->semester)
+                                      ->where('batch', $student->batch)
+                                      ->where('section', $student->section);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {
@@ -124,11 +125,12 @@
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
                             'event_id' => $event->event->id,
-                            'event_schedule_id' => $event->get_event_schedule->id,
                         ])
-                            ->whereHas('student', function ($query) use ($event) {
-                                $query->where('programme_id', $event->student->programme_id);
-                                $query->where('section', $event->get_event_schedule->section);
+                            ->whereHas('student', function ($query) use ($student) {
+                                $query->where('programme_id', $student->programme_id)
+                                      ->where('section', $student->section)
+                                      ->where('semester', $student->semester)
+                                      ->where('batch', $student->batch);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {

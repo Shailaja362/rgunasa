@@ -1,6 +1,38 @@
 <x-layouts.app>
+    <style>
+        .choices__inner {
+            background-color: #D9D9D9 !important;
+            border-radius: 9999px !important;
+            border: none !important;
+            min-height: 48px !important;
+            padding: 8px 16px !important;
+        }
+
+        .choices.is-focused .choices__inner {
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .choices__list--dropdown {
+            border-radius: 12px !important;
+            border: 1px solid #ddd !important;
+        }
+
+        .choices__item {
+            font-size: 14px;
+        }
+
+        .choices__inner:focus {
+            outline: none !important;
+        }
+
+        .choices[data-type*="select-one"] .choices__inner {
+            padding-bottom: 8px !important;
+        }
+    </style>
+
     <!-- Header -->
-     <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
         <!-- Title & Subtitle -->
         <div class="flex flex-col">
             <h3 class="font-semibold text-primary text-lg">
@@ -8,8 +40,7 @@
             </h3>
         </div>
         <!-- Back Button -->
-        <a href="{{ route('admin_list') }}"
-            class="flex items-center text-gray-700 hover:text-primary transition-colors">
+        <a href="{{ route('admin_list') }}" class="flex items-center text-gray-700 hover:text-primary transition-colors">
             <i class="fa-solid fa-arrow-left mr-2"></i> Back
         </a>
     </div>
@@ -30,8 +61,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Employee Code<span class="text-red-500">*</span></label>
-                <input type="text" name="emp_code" id="emp_code"
-                    value="{{ $edit_admin->emp_code ?? '' }}"
+                <input type="text" name="emp_code" id="emp_code" value="{{ $edit_admin->emp_code ?? '' }}"
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
             </div>
         </div>
@@ -49,6 +79,35 @@
                     class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1">
             </div>
         </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-sm font-medium">Department<span class="text-red-500">*</span></label>
+                <select name="department_id" id="department_id"
+                    class="choice-select bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                    <option value="">Select Department</option>
+                    @foreach ($department as $depart)
+                        <option value="{{ $depart->id }}"
+                            {{ !empty($edit_admin) && $edit_admin->department_id == $depart->id ? 'selected' : '' }}>
+                            {{ $depart->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium">Designation<span class="text-red-500">*</span></label>
+                <select name="designation_id" id="designation_id"
+                    class="choice-select bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1"">
+                    <option value="">Select Designation</option>
+                    @foreach ($designation as $desig)
+                        <option value="{{ $desig->id }}"
+                            {{ !empty($edit_admin) && $edit_admin->designation_id == $desig->id ? 'selected' : '' }}>
+                            {{ $desig->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
         <!-- Role -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
@@ -64,11 +123,14 @@
                 </select>
             </div>
             <div id="securitycodeFieldContainer">
-                   @if (!empty($edit_admin) && $edit_admin->role_id == 1)
-                       <label class="block mt-3 font-medium">Security Code</label>
-                       <input type="text" name="security_code" id="security_code" value="{{ $edit_admin->security_code }}" placeholder="Please Enter your Security Code" class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40" required>
-                   @endif
-           </div>
+                @if (!empty($edit_admin) && $edit_admin->role_id == 1)
+                    <label class="block mt-3 font-medium">Security Code</label>
+                    <input type="text" name="security_code" id="security_code"
+                        value="{{ $edit_admin->security_code }}" placeholder="Please Enter your Security Code"
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40"
+                        required>
+                @endif
+            </div>
         </div>
         <!-- IMAGE UPLOAD START -->
         <div class="grid grid-cols-1">
@@ -96,14 +158,14 @@
                 </div>
             </div>
         </div>
-        <!-- IMAGE UPLOAD END -->
         <!-- Submit -->
         <div class="flex justify-center mt-10">
             <button type="submit"
                 class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
-              <i class="fas fa-save"></i>  Create Admin
+                <i class="fas fa-save"></i> Create Admin
             </button>
         </div>
     </form>
 </x-layouts.app>
 <script src="{{ asset('admin/js/admin.js') }}?v={{ time() }}"></script>
+<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>

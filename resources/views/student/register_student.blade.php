@@ -115,6 +115,26 @@
                         </select>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
+                        <input type="text" name="batch" id="batch" value="{{ $edit_student->batch ?? '' }}"
+                            class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
+                        <select name="semester" id="semester"
+                            class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                            <option value="" selected disabled>Select Semester</option>
+                            <option value="1" {{ $edit_student?->semester == '1' ? 'selected' : '' }}>1</option>
+                            <option value="2" {{ $edit_student?->semester == '2' ? 'selected' : '' }}>2</option>
+                            <option value="3" {{ $edit_student?->semester == '3' ? 'selected' : '' }}>3</option>
+                            <option value="4" {{ $edit_student?->semester == '4' ? 'selected' : '' }}>4</option>
+                            <option value="5" {{ $edit_student?->semester == '5' ? 'selected' : '' }}>5</option>
+                            <option value="6" {{ $edit_student?->semester == '6' ? 'selected' : '' }}>6</option>
+                            <option value="7" {{ $edit_student?->semester == '7' ? 'selected' : '' }}>7</option>
+                            <option value="8" {{ $edit_student?->semester == '8' ? 'selected' : '' }}>8</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium mb-1">Profile Image</label>
                         <div class="bg-[#F0F0F0] rounded-3xl p-10 text-center">
                             <div id="dropArea"
@@ -147,7 +167,7 @@
                 <!-- Submit -->
                 <div class="flex flex-col sm:flex-row justify-center gap-4 p-6">
                     <!-- Register Button -->
-                    <button type="submit"
+                    <button type="submit" id="register"
                         class="w-full sm:w-auto px-10 md:px-14 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-3 rounded-full hover:opacity-90 transition flex items-center justify-center gap-2">
                         <i class="fas fa-save"></i>
                         Register Student

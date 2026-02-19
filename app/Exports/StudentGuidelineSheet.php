@@ -34,6 +34,8 @@ class StudentGuidelineSheet implements FromArray, WithHeadings, WithTitle
             ['Department', 'Refer Department Sheet'],
             ['Programme', 'Refer Programme Sheet'],
             ['Section', 'Allowed values: a, b, c, d, r'],
+            ['Batch', 'Format: YYYY-YYYY ,  2025-2029'],
+            ['Semester', 'Allowed values: 1,2,3,4,5,6,7,8'],
         ];
     }
 }

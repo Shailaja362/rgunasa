@@ -19,7 +19,9 @@ class StudentsSheet implements WithHeadings, WithTitle
             'Date of Birth',
             'Department',
             'Programme',
-            'Section'
+            'Section',
+            'Batch',
+            'Semester'
         ];
     }
 

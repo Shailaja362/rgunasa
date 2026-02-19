@@ -15,6 +15,7 @@ class StudentDashboardController extends Controller
     {
         $now = Carbon::now();
         $student = session()->get('student');
+        $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
         $this->data['events'] = Event::get();
         // Student's registrations
@@ -22,7 +23,6 @@ class StudentDashboardController extends Controller
             ->where('student_id', $student->id)
             ->get();
         $this->data['studentRegistrations'] = $studentRegistrations;
-
         $this->data['completed_events'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
@@ -30,20 +30,22 @@ class StudentDashboardController extends Controller
             })
             ->where('status', 3)
             ->get();
-
         $this->data['certificate_earned'] = $studentRegistrations
             ->where('status', 2)
             ->whereNotNull('grade');
-
         // Upcoming and ongoing department-wise events
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
-               ->where('section', $student->section)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->get();
@@ -54,11 +56,15 @@ class StudentDashboardController extends Controller
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
                 ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
@@ -67,11 +73,15 @@ class StudentDashboardController extends Controller
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
                 ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['schedule' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
                     ->where('event_date', '>', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
                 // ->orderBy('start_time', 'asc');

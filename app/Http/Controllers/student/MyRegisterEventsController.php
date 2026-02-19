@@ -20,6 +20,7 @@ class MyRegisterEventsController extends Controller
     public function index(Request $request)
     {
         $student = session()->get('student');
+        $this->data['student'] =  $student;
         $now = Carbon::now();
         $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')->where('student_id', $student->id)
             ->get();
@@ -30,11 +31,9 @@ class MyRegisterEventsController extends Controller
             })
             ->where('student_id', $student->id)
             ->get();
-
         $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 1)
             ->count();
-
         $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
@@ -116,15 +115,12 @@ class MyRegisterEventsController extends Controller
                 'message' => 'Proof & feedback saved successfully',
             ]);
         } catch (\Throwable $e) {
-
             DB::rollBack();
-
             Log::error('Upload proof failed', [
                 'error' => $e->getMessage(),
                 'line'  => $e->getLine(),
                 'file'  => $e->getFile(),
             ]);
-
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again.',

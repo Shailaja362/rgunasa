@@ -59,7 +59,7 @@ body {
 }
 
 .recipient {
-  font-size: 32px;
+  font-size: 20px;
   font-weight: bold;
   border-bottom: 2px solid #000;
   display: inline-block;
@@ -78,7 +78,7 @@ body {
 /* Badge */
 .badge {
   position: absolute;
-  top: 250px; /* Adjust for your layout */
+  top: 200px; /* Adjust for your layout */
   right: 50px;
   width: 100px;
   height: 100px;
@@ -185,7 +185,7 @@ body {
             on
             <strong>
                 {{ \Carbon\Carbon::parse($event->event_date)->format('F d, Y') }}
-            </strong>.
+            </strong>,under the supervision of the Conduct Officer,  <strong>Mr./Ms. {{ $event->get_admin?->name ?? '' }} </strong>.
         </p>
   </div>
 

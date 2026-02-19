@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
-
+use Maatwebsite\Excel\Exceptions\SheetNotFoundException;
 
 class AdminImportExportController extends Controller
 {
@@ -23,26 +23,25 @@ class AdminImportExportController extends Controller
             $request->validate([
                 'file' => 'required|mimes:xlsx'
             ]);
-
             $import = new AdminImport();
-
             try {
                 Excel::import($import, $request->file('file'));
-            } catch (ExcelValidationException $e) {
-                $failures = $e->failures(); // This contains all row-level errors
-                return back()->with('failures', $failures);
+            } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+                return back()->with('failures', $e->failures());
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                return back()->with('failures', $e->errors());
+            } catch (SheetNotFoundException $e) {
+                return back()->with(
+                    'sheet_error',
+                    'Invalid Excel format. Please upload the correct sheet named "Admin Upload Sheet".'
+                );
             }
-
-            // If you use SkipsOnFailure in your import
             if ($import->failures()->isNotEmpty()) {
                 $failures = $import->failures();
                 return back()->with('failures', $failures);
             }
-
-            return back()->with('success', 'Students Uploaded Successfully');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // This will catch file upload errors
-            return back()->withErrors($e->errors());
+            return back()->with('success', 'Admin Uploaded Successfully');
+        } catch (ValidationException $e) {
         }
     }
 }

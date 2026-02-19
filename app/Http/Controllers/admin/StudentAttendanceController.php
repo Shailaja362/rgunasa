@@ -23,7 +23,6 @@ class StudentAttendanceController extends Controller
 
     public function index()
     {
-
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
             $this->data['events'] = Event::with('get_club')->paginate(10);
@@ -50,9 +49,10 @@ class StudentAttendanceController extends Controller
                 $eventId,
                 $request->programme_id,
                 $request->event_date,
-                $request->section
+                $request->section,
+                $request->batch,
+                $request->semester
             );
-
             if (!empty($schedules)) {
                 $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
                     ->where('event_schedule_id', $schedules->id)
@@ -64,13 +64,11 @@ class StudentAttendanceController extends Controller
                     ->get();
             }
         }
-
         return view('admin.student_attendance_entry')->with($this->data);
     }
 
     public function download(Request $request)
     {
-
         $event_id = Event::where('id', $request->event_id)->first();
         $fileName = $event_id->title . '_' . 'student_attendance_' . date('Y-m-d') . '.xlsx';
         return Excel::download(new AttendanceExport($event_id->id), $fileName);
@@ -90,7 +88,9 @@ class StudentAttendanceController extends Controller
                 $request->event_id,
                 $request->programme_id,
                 $request->event_date,
-                $request->section
+                $request->section,
+                $request->batch,
+                $request->semester
             );
 
             if (empty($schedule)) {
@@ -137,11 +137,13 @@ class StudentAttendanceController extends Controller
         }
     }
 
-    private function resolveSchedule($eventId, $programmeId, $date,$section)
+    private function resolveSchedule($eventId, $programmeId, $date,$section,$batch,$semester)
     {
         return EventSchedule::where('event_id', $eventId)
             ->where('programme_id', $programmeId)
             ->where('section', $section)
+            ->where('batch', $batch)
+            ->where('semester', $semester)
             ->where(function ($q) use ($date) {
                 $q->whereDate('event_date', $date);
             })

@@ -24,11 +24,11 @@
 // });
 
 $(document).on("submit", "#eventReportForm", function (e) {
-       const totalImages = document.querySelectorAll(
-           "#previewArea .img-wrapper"
-       ).length;
+    const totalImages = document.querySelectorAll(
+        "#previewArea .img-wrapper",
+    ).length;
     e.preventDefault();
-     let $saveBtn = $("#report");
+    let $saveBtn = $("#report");
 
     // Fields to validate
     let fields = [
@@ -36,16 +36,6 @@ $(document).on("submit", "#eventReportForm", function (e) {
             id: "#event_id",
             condition: (val) => val === "",
             message: "please select event",
-        },
-        {
-            id: "#male_count",
-            condition: (val) => val === "",
-            message: "Please Enter Male Count",
-        },
-        {
-            id: "#female_count",
-            condition: (val) => val === "",
-            message: "Please Enter FeMale Count",
         },
         {
             id: "#outcome_results",
@@ -57,6 +47,31 @@ $(document).on("submit", "#eventReportForm", function (e) {
             condition: (val) => val === "",
             message: "Please Enter Feedback Summary",
         },
+        {
+            id: "#programme_id",
+            condition: (val) => val === "",
+            message: "please select programme",
+        },
+        {
+            id: "#section",
+            condition: (val) => val === "",
+            message: "Section field is required",
+        },
+        {
+            id: "#batch",
+            condition: (val) => val === "",
+            message: "Section field is required",
+        },
+        {
+            id: "#semester",
+            condition: (val) => val === "",
+            message: "Section field is required",
+        },
+        {
+            id: "#event_date",
+            condition: (val) => val === "",
+            message: "Section field is required",
+        },
     ];
 
     let isValid = true;
@@ -67,10 +82,10 @@ $(document).on("submit", "#eventReportForm", function (e) {
     }
 
     if (!isValid) return;
-         $saveBtn
-             .prop("disabled", true)
-             .removeClass("opacity-50 cursor-not-allowed")
-             .text("Saving....");
+    $saveBtn
+        .prop("disabled", true)
+        .removeClass("opacity-50 cursor-not-allowed")
+        .text("Saving....");
     let formData = new FormData(this);
 
     sendRequest(
@@ -86,10 +101,10 @@ $(document).on("submit", "#eventReportForm", function (e) {
             } else {
                 showToast(res.message, "error", 2000);
             }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -101,11 +116,11 @@ $(document).on("submit", "#eventReportForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
-                 $saveBtn
-                     .prop("disabled", false)
-                     .removeClass("opacity-50 cursor-not-allowed")
-                     .text("Save");
-        }
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
+        },
     );
 });
 
@@ -141,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function handleFiles(files) {
         let currentCount = document.querySelectorAll(
-            "#previewArea .img-wrapper:not([data-existing])"
+            "#previewArea .img-wrapper:not([data-existing])",
         ).length;
         [...files].forEach((file) => {
             if (currentCount >= 4) {
@@ -254,7 +269,6 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-
 let removedImageIds = [];
 
 $(document).on("click", ".remove-img", function (e) {
@@ -267,7 +281,3 @@ $(document).on("click", ".remove-img", function (e) {
     }
     wrapper.remove();
 });
-
-
-
-

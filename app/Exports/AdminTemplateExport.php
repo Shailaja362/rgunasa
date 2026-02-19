@@ -10,8 +10,10 @@ class AdminTemplateExport implements WithMultipleSheets
     public function sheets(): array
     {
         return [
-            'Admin Upload Sheet'    => new AdminSheet(),      // MAIN
-            'Roles' => new RolesSheet(),   // REFERENCE
+            'Admin Upload Sheet'    => new AdminSheet(),
+            'Roles' => new RolesSheet(),
+            'Departments' => new DepartmentsSheet(),
+            'Designation' => new DesignationSheet(),
         ];
     }
 }
