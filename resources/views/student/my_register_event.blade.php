@@ -52,10 +52,11 @@
                             'event_id' => $event->event->id,
                         ])
                             ->whereHas('student', function ($query) use ($student) {
-                                $query->where('programme_id', $student->programme_id)
-                                      ->where('semester', $student->semester)
-                                      ->where('batch', $student->batch)
-                                      ->where('section', $student->section);
+                                $query
+                                    ->where('programme_id', $student->programme_id)
+                                    ->where('semester', $student->semester)
+                                    ->where('batch', $student->batch)
+                                    ->where('section', $student->section);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {
@@ -127,10 +128,11 @@
                             'event_id' => $event->event->id,
                         ])
                             ->whereHas('student', function ($query) use ($student) {
-                                $query->where('programme_id', $student->programme_id)
-                                      ->where('section', $student->section)
-                                      ->where('semester', $student->semester)
-                                      ->where('batch', $student->batch);
+                                $query
+                                    ->where('programme_id', $student->programme_id)
+                                    ->where('section', $student->section)
+                                    ->where('semester', $student->semester)
+                                    ->where('batch', $student->batch);
                             })
                             ->count();
                         if ($event->get_event_schedule->is_reserve_date == 'y') {
@@ -272,7 +274,7 @@
                     <h4 class="text-white font-semibold mb-4">Event Feedback</h4>
                     <div id="feedbackContainer"></div>
                     <label class="text-white text-sm block mt-4 mb-2">
-                        Additional Comments(Optional)
+                        Key Take Away <span class="text-red-600">*</span>
                     </label>
                     <textarea name="comments" id="comments" rows="3" class="w-full rounded-xl p-3 text-sm"
                         placeholder="Any memorable moment or suggestion?"></textarea>

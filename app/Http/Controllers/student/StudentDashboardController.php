@@ -57,15 +57,15 @@ class StudentDashboardController extends Controller
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
                 ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
-                ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
+                ->where('semester', $student->semester);
+                // ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
                     ->where('batch', $student->batch)
                     ->where('semester', $student->semester)
-                    ->where('event_date', '>=', Carbon::now()->toDateString())
+                    // ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
             ->get();

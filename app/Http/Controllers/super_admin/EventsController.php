@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class EventsController extends Controller
 {
@@ -70,81 +71,85 @@ class EventsController extends Controller
 
     public function index(Request $request)
     {
-        $now = Carbon::now();
-        $from = $request->from_date;
-        $to   = $request->to_date;
-
-        $baseQuery = EventSchedule::with(['event', 'programme']);
-
+        $from  = $request->from_date;
+        $to    = $request->to_date;
+        $today = now()->toDateString();
+        $baseQuery = EventSchedule::query()->with([
+            'event',
+            'registrations.student.get_department'
+        ]);
         if ($from && $to) {
             $baseQuery->whereBetween('event_date', [$from, $to]);
+        } elseif ($from) {
+            $baseQuery->whereDate('event_date', '>=', $from);
+        } elseif ($to) {
+            $baseQuery->whereDate('event_date', '<=', $to);
         }
-
-        /** Upcoming */
         $upcomingEvents = (clone $baseQuery)
-            ->where(function ($q) use ($now) {
-                $q->whereDate('event_date', '>', $now->toDateString())
-                    ->orWhere(function ($q2) use ($now) {
-                        $q2->whereDate('event_date', $now->toDateString())
-                            ->whereHas('event', function ($e) use ($now) {
-                                $e->whereTime('start_time', '>', $now->toTimeString());
-                            });
-                    });
-            })
+            ->whereDate('event_date', '>', $today)
+            ->orderBy('event_date')
             ->get();
-
-        /** Ongoing */
         $ongoingEvents = (clone $baseQuery)
-            ->whereDate('event_date', $now->toDateString())
-            ->whereHas('event', function ($q) use ($now) {
-                $q->whereTime('start_time', '<=', $now->toTimeString())
-                    ->whereTime('end_time', '>=', $now->toTimeString());
-            })
+            ->whereDate('event_date', '=', $today)
             ->get();
-
-        /** Completed */
         $completedEvents = (clone $baseQuery)
-            ->where(function ($q) use ($now) {
-                $q->whereDate('event_date', '<', $now->toDateString())
-                    ->orWhere(function ($q2) use ($now) {
-                        $q2->whereDate('event_date', $now->toDateString())
-                            ->whereHas('event', function ($e) use ($now) {
-                                $e->whereTime('end_time', '<', $now->toTimeString());
-                            });
-                    });
-            })
-            ->get();
+            ->whereDate('event_date', '<', $today)
+            ->orderByDesc('event_date')
+            ->paginate(10)
+            ->appends($request->query());
+        $completedEvents->getCollection()->transform(function ($schedule) {
+            $departments = $schedule->registrations
+                ->pluck('student.get_department.name')
+                ->filter()
+                ->unique()
+                ->values();
+            $schedule->departments = $departments;
+            return $schedule;
+        });
 
-        /** Registered */
-        $registeredEvents = StudentEventRegistration::with([
-            'get_event_schedule.event',
-            'get_event_schedule.programme'
-        ])
-            ->when($from && $to, function ($query) use ($from, $to) {
-                $query->whereHas('get_event_schedule', function ($q) use ($from, $to) {
-                    $q->whereBetween('event_date', [$from, $to]);
-                });
-            })
-            ->get();
 
-        // If AJAX request
-        if ($request->ajax()) {
-            return response()->json([
-                'upcoming' => $upcomingEvents,
-                'ongoing' => $ongoingEvents,
-                'completed' => $completedEvents,
-                'registered' => $registeredEvents,
-            ]);
-        }
+        $registeredEvents = EventSchedule::select(
+            'event_schedules.id',
+            'event_schedules.event_id',
+            'event_schedules.event_date',
+            DB::raw('COUNT(DISTINCT student_event_registrations.student_id) as total_students')
+        )
+            ->join(
+                'student_event_registrations',
+                'event_schedules.id',
+                '=',
+                'student_event_registrations.event_schedule_id'
+            )
+            ->when($from || $to, function ($query) use ($from, $to) {
+                if ($from && $to) {
+                    $query->whereBetween('event_schedules.event_date', [$from, $to]);
+                } elseif ($from) {
+                    $query->whereDate('event_schedules.event_date', '>=', $from);
+                } elseif ($to) {
+                    $query->whereDate('event_schedules.event_date', '<=', $to);
+                }
+            })
+            ->groupBy(
+                'event_schedules.id',
+                'event_schedules.event_id',
+                'event_schedules.event_date'
+            )
+            ->with('event')
+            ->orderByDesc('event_schedules.event_date')
+            ->paginate(10);
+
+        $groupedRegistered = $registeredEvents
+            ->getCollection()
+            ->groupBy('event_schedule_id');
 
         return view('super_admin.event_index', compact(
             'upcomingEvents',
             'ongoingEvents',
             'completedEvents',
-            'registeredEvents'
+            'registeredEvents',
+            'groupedRegistered'
         ));
     }
-
 
     public function createEvent(Request $request)
     {

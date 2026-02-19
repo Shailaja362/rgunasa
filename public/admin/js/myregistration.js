@@ -40,7 +40,6 @@ const technicalQuestions = {
         "How would you rate the instructor's explanation of the topics?",
     pace: "How would you describe the pace of the session?",
     satisfaction: "How satisfied are you with the session overall?",
-    takeaway: "What are the key takeaways from the session?",
     rating: "How would you rate this event?",
 };
 
@@ -246,6 +245,12 @@ $(function () {
 
         if (!filesArr.length && !existingImages.length) {
             showToast("Please upload at least one file", "error", 2000);
+            return;
+        }
+
+        const comments = $("#comments").val();
+        if (comments == "") {
+            showToast("Please provide your key takeaways", "error", 2000);
             return;
         }
 

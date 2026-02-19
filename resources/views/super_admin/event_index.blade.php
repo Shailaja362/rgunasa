@@ -1,349 +1,329 @@
 <x-layouts.app>
 
-{{-- ================= HEADER ================= --}}
-<div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-8 py-3">
-    <h3 class="font-semibold text-primary">Events</h3>
-</div>
+    {{-- ================= HEADER ================= --}}
+    <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-8 py-3">
+        <h3 class="font-semibold text-primary">Events</h3>
+    </div>
 
-
-{{-- ================= DATE FILTER ================= --}}
-<div class="bg-white p-4 rounded-xl shadow mt-4 mx-5">
-    <div class="flex flex-wrap gap-4">
-
+    {{-- ================= DATE FILTER ================= --}}
+   <form method="GET" action="{{ route('events') }}"
+    class="bg-white p-4 rounded-xl shadow mt-4 mx-5">
+    <div class="flex flex-wrap gap-4 items-end">
         <div>
             <label class="text-sm font-medium">From Date</label>
-            <input type="date" id="from_date"
+            <input type="date"
+                name="from_date"
+                value="{{ request('from_date') }}"
                 class="border rounded-lg px-3 py-2">
         </div>
-
         <div>
             <label class="text-sm font-medium">To Date</label>
-            <input type="date" id="to_date"
+            <input type="date"
+                name="to_date"
+                value="{{ request('to_date') }}"
                 class="border rounded-lg px-3 py-2">
         </div>
-
+        <input type="hidden" name="tab" value="{{ request('tab') }}">
+        <div>
+            <button type="submit"
+                class="bg-primary text-white px-4 py-2 rounded-lg">
+                Filter
+            </button>
+        </div>
+        <div>
+            <a href="{{ route('events') }}"
+               class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">
+                Reset
+            </a>
+        </div>
     </div>
-</div>
+  </form>
 
 
-{{-- ================= TABS ================= --}}
-<div class="px-5 py-3 mt-4">
-    <div class="flex space-x-4 text-gray-700 font-medium">
+    {{-- ================= TABS ================= --}}
+    <div class="px-5 py-3 mt-4">
+        <div class="flex space-x-4 text-gray-700 font-medium">
+            <span id="upcoming-tab" class="cursor-pointer bg-primary px-4 py-1 text-white rounded-full"
+                onclick="showSection('upcoming')">Upcoming</span>
 
-        <span id="upcoming-tab"
-            class="cursor-pointer bg-primary px-4 py-1 text-white rounded-full"
-            onclick="showSection('upcoming')">
-            Upcoming
-        </span>
+            <span id="ongoing-tab" class="cursor-pointer px-4 py-1 rounded-full"
+                onclick="showSection('ongoing')">Ongoing</span>
 
-        <span id="ongoing-tab"
-            class="cursor-pointer px-4 py-1 rounded-full"
-            onclick="showSection('ongoing')">
-            Ongoing
-        </span>
+            <span id="registered-tab" class="cursor-pointer px-4 py-1 rounded-full"
+                onclick="showSection('registered')">Registered</span>
 
-        <span id="registered-tab"
-            class="cursor-pointer px-4 py-1 rounded-full"
-            onclick="showSection('registered')">
-            Registered
-        </span>
-
-        <span id="completed-tab"
-            class="cursor-pointer px-4 py-1 rounded-full"
-            onclick="showSection('completed')">
-            Completed
-        </span>
-
+            <span id="completed-tab" class="cursor-pointer px-4 py-1 rounded-full"
+                onclick="showSection('completed')">Completed</span>
+        </div>
     </div>
-</div>
 
-
-<section class="p-5 mt-2">
-
-{{-- ================= UPCOMING ================= --}}
-<div id="upcoming-section">
-
-    <h4 class="font-semibold mb-4">Upcoming Events</h4>
-
-    <div id="upcoming-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        @forelse ($upcomingEvents as $schedule)
-
-            @php $event = $schedule->event; @endphp
-
-            <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
-
-                <img src="{{ asset('storage/'.$event->banner_image) }}"
-                    class="rounded-t-2xl w-full h-48 object-cover">
-
-                <div class="p-3 text-sm">
-
-                    <div class="font-semibold">
-                        {{ $event->title }}
+    <section class="p-5 mt-2">
+        <div id="upcoming-section">
+            <h4 class="font-semibold mb-4">Upcoming Events</h4>
+            <div id="upcoming-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse ($upcomingEvents as $schedule)
+                    @php $event = $schedule->event; @endphp
+                    <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
+                        <img src="{{ asset('storage/' . $event->banner_image) }}"
+                            class="rounded-t-2xl w-full h-48 object-cover">
+                        <div class="p-3 text-sm">
+                            <div class="font-semibold">{{ $event->title }}</div>
+                            <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
+                            <div>📍 {{ $event->location }}</div>
+                        </div>
                     </div>
-
-                    <div>
-                        📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
-                    </div>
-
-                    <div>
-                        📍 {{ $event->location }}
-                    </div>
-
-                </div>
-
+                @empty
+                    <p class="text-gray-500">No upcoming events</p>
+                @endforelse
             </div>
+        </div>
 
-        @empty
-
-            <p class="text-gray-500">No upcoming events</p>
-
-        @endforelse
-
-    </div>
-
-</div>
-
-
-{{-- ================= ONGOING ================= --}}
-<div id="ongoing-section" class="hidden">
-
-    <h4 class="font-semibold mb-4">Ongoing Events</h4>
-
-    <div id="ongoing-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        @forelse ($ongoingEvents as $schedule)
-
-            @php $event = $schedule->event; @endphp
-
-            <div class="bg-white rounded-2xl shadow">
-
-                <img src="{{ asset('storage/'.$event->banner_image) }}"
-                    class="rounded-t-2xl w-full h-48 object-cover">
-
-                <div class="p-3 text-sm">
-
-                    <div class="font-semibold">
-                        {{ $event->title }}
+        {{-- ================= ONGOING ================= --}}
+        <div id="ongoing-section" class="hidden">
+            <h4 class="font-semibold mb-4">Ongoing Events</h4>
+            <div id="ongoing-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                @forelse ($ongoingEvents as $schedule)
+                    @php $event = $schedule->event; @endphp
+                    <div class="bg-white rounded-2xl shadow">
+                        <img src="{{ asset('storage/' . $event->banner_image) }}"
+                            class="rounded-t-2xl w-full h-48 object-cover">
+                        <div class="p-3 text-sm">
+                            <div class="font-semibold">{{ $event->title }}</div>
+                            <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
+                            <div>📍 {{ $event->location }}</div>
+                        </div>
                     </div>
-
-                    <div>
-                        📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
-                    </div>
-
-                    <div>
-                        📍 {{ $event->location }}
-                    </div>
-
-                </div>
-
+                @empty
+                    <p>No ongoing events</p>
+                @endforelse
             </div>
+        </div>
 
-        @empty
+        {{-- ================= REGISTERED ================= --}}
+        <div id="registered-section" class="hidden">
+            <h4 class="font-semibold mb-4">Registered Events</h4>
+            <div id="registered-container">
+                <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
+                    <thead class="bg-primary text-white text-sm">
+                        <tr>
+                            <th class="px-4 py-2 text-left">Event</th>
+                            <th class="px-4 py-2 text-left">Date</th>
+                            <th class="px-4 py-2 text-left">Total Students</th>
+                        </tr>
+                    </thead>
+                   <tbody class="text-sm">
+    @forelse($registeredEvents as $schedule)
+        <tr class="border-b">
+            {{-- Event Name --}}
+            <td class="px-4 py-2">
+                {{ $schedule->event->title ?? '-' }}
+            </td>
+            {{-- Event Date --}}
+            <td class="px-4 py-2">
+                {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
+            </td>
 
-            <p>No ongoing events</p>
+            {{-- Student Count --}}
+            <td class="px-4 py-2 font-semibold">
+               {{ $schedule->total_students }}
+            </td>
+        </tr>
 
-        @endforelse
+    @empty
+        <tr>
+            <td colspan="3" class="text-center py-4">
+                No registered events
+            </td>
+        </tr>
+    @endforelse
+</tbody>
 
-    </div>
-
-</div>
-
-
-{{-- ================= REGISTERED ================= --}}
-<div id="registered-section" class="hidden">
-
-    <h4 class="font-semibold mb-4">Registered Events</h4>
-
-    <div id="registered-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        @forelse ($registeredEvents as $reg)
-
-            @php
-                $schedule = $reg->get_event_schedule;
-                if(!$schedule) continue;
-                $event = $schedule->event;
-            @endphp
-
-            <div class="bg-white rounded-2xl shadow">
-
-                <img src="{{ asset('storage/'.$event->banner_image) }}"
-                    class="rounded-t-2xl w-full h-48 object-cover">
-
-                <div class="p-3 text-sm">
-
-                    <div class="font-semibold">
-                        {{ $event->title }}
-                    </div>
-
-                    <div>
-                        📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
-                    </div>
-
-                    <div>
-                        📍 {{ $event->location }}
-                    </div>
-
-                </div>
-
+                </table>
             </div>
-
-        @empty
-
-            <p>No registered events</p>
-
-        @endforelse
-
-    </div>
-
-</div>
-
-
-{{-- ================= COMPLETED ================= --}}
-<div id="completed-section" class="hidden">
-
-    <h4 class="font-semibold mb-4">Completed Events</h4>
-
-    <div id="completed-container"
-        class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-
-        @forelse ($completedEvents as $schedule)
-
-            @php $event = $schedule->event; @endphp
-
-            <div class="bg-white rounded-2xl shadow opacity-75">
-
-                <img src="{{ asset('storage/'.$event->banner_image) }}"
-                    class="rounded-t-2xl w-full h-48 object-cover">
-
-                <div class="p-3 text-sm">
-
-                    <div class="font-semibold">
-                        {{ $event->title }}
-                    </div>
-
-                    <div>
-                        📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
-                    </div>
-
-                    <div>
-                        📍 {{ $event->location }}
-                    </div>
-
-                </div>
-
+            <div class="mt-6">
+                 {{ $registeredEvents->appends(['tab' => 'registered'])->links() }}
             </div>
+        </div>
 
-        @empty
+        {{-- ================= COMPLETED ================= --}}
+        <div id="completed-section" class="hidden">
+            <h4 class="font-semibold mb-4">Completed Events (Department Wise)</h4>
+            <div class="bg-white rounded-xl shadow overflow-hidden">
+                <table class="min-w-full text-sm">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-left">Event</th>
+                            <th class="px-4 py-3 text-left">Date</th>
+                            <th class="px-4 py-3 text-left">Departments Attended</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse ($completedEvents as $schedule)
+                            <tr class="border-b hover:bg-gray-50">
+                                <td class="px-4 py-3 font-medium">
+                                    {{ $schedule->event->title }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
+                                </td>
+                                <td class="px-4 py-3">
+                                    @if ($schedule->departments->count())
+                                        @php
+                                            $colors = [
+                                                ['bg-blue-100', 'text-blue-700'],
+                                                ['bg-green-100', 'text-green-700'],
+                                                ['bg-red-100', 'text-red-700'],
+                                                ['bg-yellow-100', 'text-yellow-700'],
+                                                ['bg-purple-100', 'text-purple-700'],
+                                                ['bg-pink-100', 'text-pink-700'],
+                                                ['bg-indigo-100', 'text-indigo-700'],
+                                                ['bg-teal-100', 'text-teal-700'],
+                                            ];
+                                        @endphp
 
-            <p>No completed events</p>
+                                        @foreach ($schedule->departments as $index => $dept)
+                                            @php
+                                                $color = $colors[$index % count($colors)];
+                                            @endphp
 
-        @endforelse
+                                            <span
+                                                class="{{ $color[0] }} {{ $color[1] }} px-2 py-1 rounded-full text-xs mr-1">
+                                                {{ $dept }}
+                                            </span>
+                                        @endforeach
+                                    @else
+                                        <span class="text-gray-400 text-xs">No Departments</span>
+                                    @endif
+                                </td>
 
-    </div>
-
-</div>
-
-</section>
-
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-6 text-gray-500">
+                                    No completed events
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6">
+                {{ $completedEvents->appends(['tab' => 'completed'])->links() }}
+            </div>
+        </div>
+    </section>
+</x-layouts.app>
 
 {{-- ================= TAB SCRIPT ================= --}}
 <script>
-
-function showSection(type)
-{
-    ['upcoming','ongoing','registered','completed'].forEach(tab =>
-    {
-        document.getElementById(tab+'-section').classList.add('hidden');
-
-        document.getElementById(tab+'-tab')
-            .classList.remove('bg-primary','text-white');
-    });
-
-    document.getElementById(type+'-section')
-        .classList.remove('hidden');
-
-    document.getElementById(type+'-tab')
-        .classList.add('bg-primary','text-white');
-}
-
-</script>
-
-
-{{-- ================= AJAX FILTER SCRIPT ================= --}}
-<script>
-
-document.getElementById('from_date').addEventListener('change', fetchEvents);
-document.getElementById('to_date').addEventListener('change', fetchEvents);
-
-function fetchEvents()
-{
-    let from = document.getElementById('from_date').value;
-    let to   = document.getElementById('to_date').value;
-
-    if(!from || !to) return;
-
-    fetch(`{{ route('superadmin.events.index') }}?from_date=${from}&to_date=${to}`, {
-        headers:
-        {
-            'X-Requested-With': 'XMLHttpRequest'
+    document.addEventListener("DOMContentLoaded", function() {
+        let params = new URLSearchParams(window.location.search);
+        let activeTab = params.get('tab');
+        if (activeTab) {
+            showSection(activeTab);
         }
-    })
-    .then(res => res.json())
-    .then(data =>
-    {
-        renderEvents('upcoming-container', data.upcoming);
-        renderEvents('ongoing-container', data.ongoing);
-        renderEvents('completed-container', data.completed);
     });
-}
 
 
-function renderEvents(containerId, events)
-{
-    let container = document.getElementById(containerId);
+    function showSection(type) {
+        ['upcoming', 'ongoing', 'registered', 'completed'].forEach(tab => {
+            document.getElementById(tab + '-section').classList.add('hidden');
+            document.getElementById(tab + '-tab')
+                .classList.remove('bg-primary', 'text-white');
+        });
 
-    container.innerHTML = '';
+        document.getElementById(type + '-section')
+            .classList.remove('hidden');
 
-    if(events.length === 0)
-    {
-        container.innerHTML = '<p>No events found</p>';
-        return;
+        document.getElementById(type + '-tab')
+            .classList.add('bg-primary', 'text-white');
     }
 
-    events.forEach(schedule =>
-    {
-        let event = schedule.event;
+    document.getElementById('from_date').addEventListener('change', fetchEvents);
+    document.getElementById('to_date').addEventListener('change', fetchEvents);
 
-        container.innerHTML += `
-            <div class="bg-white rounded-2xl shadow">
+    function fetchEvents() {
+        let from = document.getElementById('from_date').value;
+        let to = document.getElementById('to_date').value;
 
-                <img src="/storage/${event.banner_image}"
-                     class="rounded-t-2xl w-full h-48 object-cover">
+        if (!from && !to) return;
 
-                <div class="p-3 text-sm">
+        let url = `{{ route('events') }}?`;
+        if (from) url += `from_date=${from}&`;
+        if (to) url += `to_date=${to}`;
 
-                    <div class="font-semibold">
-                        ${event.title}
-                    </div>
+        fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                renderCards('upcoming-container', data.upcoming);
+                renderCards('ongoing-container', data.ongoing);
+                renderCompleted('completed-container', data.completed);
+                renderRegistered(data.registered);
+            });
+    }
 
-                    <div>
-                        📅 ${schedule.event_date}
-                    </div>
+    function renderCards(containerId, events) {
+        let container = document.getElementById(containerId);
+        container.innerHTML = '';
 
-                    <div>
-                        📍 ${event.location}
-                    </div>
+        if (!events || events.length === 0) {
+            container.innerHTML = '<p class="text-gray-500">No events found</p>';
+            return;
+        }
 
-                </div>
+        events.forEach(schedule => {
+            let event = schedule.event;
 
+            container.innerHTML += `
+        <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
+            <img src="/storage/${event.banner_image}"
+                 class="rounded-t-2xl w-full h-48 object-cover">
+            <div class="p-3 text-sm">
+                <div class="font-semibold">${event.title}</div>
+                <div>📅 ${schedule.event_date}</div>
+                <div>📍 ${event.location}</div>
             </div>
-        `;
-    });
-}
-</script>
+        </div>`;
+        });
+    }
 
-</x-layouts.app>
+    function renderCompleted(containerId, events) {
+        document.getElementById('completed-count').innerText = events.length;
+        renderCards(containerId, events);
+    }
+
+    function renderRegistered(groupedData) {
+        let container = document.getElementById('registered-container');
+        container.innerHTML = '';
+
+        let table = `
+    <table class="min-w-full bg-white rounded-xl shadow overflow-hidden">
+        <thead class="bg-primary text-white text-sm">
+            <tr>
+                <th class="px-4 py-2 text-left">Event</th>
+                <th class="px-4 py-2 text-left">Date</th>
+                <th class="px-4 py-2 text-left">Total Students</th>
+            </tr>
+        </thead>
+        <tbody class="text-sm">`;
+
+        for (let key in groupedData) {
+            let registrations = groupedData[key];
+            let schedule = registrations[0].get_event_schedule;
+            let event = schedule.event;
+
+            table += `
+        <tr class="border-b">
+            <td class="px-4 py-2">${event.title}</td>
+            <td class="px-4 py-2">${schedule.event_date}</td>
+            <td class="px-4 py-2 font-semibold">${registrations.length}</td>
+        </tr>`;
+        }
+        table += `</tbody></table>`;
+        container.innerHTML = table;
+    }
+</script>

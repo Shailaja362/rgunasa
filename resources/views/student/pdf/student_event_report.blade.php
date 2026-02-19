@@ -104,15 +104,15 @@
             </tr>
         </table>
     </div>
-@php
-    if($event_schedule->is_reserve_date == 'y'){
-         $start_time = $event->reserve_start_time;
-         $end_time = $event->reserve_end_time;
-    }else{
-         $start_time = $event->start_time;
-         $end_time = $event->end_time;
-    }
-@endphp
+    @php
+        if ($event_schedule->is_reserve_date == 'y') {
+            $start_time = $event->reserve_start_time;
+            $end_time = $event->reserve_end_time;
+        } else {
+            $start_time = $event->start_time;
+            $end_time = $event->end_time;
+        }
+    @endphp
     <!-- ================= EVENT INFO ================= -->
     <div class="section">
         <div class="section-title">Event Details</div>
@@ -185,11 +185,12 @@
         </table>
     </div>
     <div class="section">
-        <div class="section-title">Additional Comments</div>
-        <p>{{ $feedback->comments ?? '— No comments provided —' }}</p>
+        <div class="section-title">Key Take Away</div>
+        <p>{{ $feedback->comments ?? '— No key take away provided —' }}</p>
     </div>
     <div class="footer">
         Generated on {{ now()->format('d M Y, h:i A') }}
     </div>
 </body>
+
 </html>

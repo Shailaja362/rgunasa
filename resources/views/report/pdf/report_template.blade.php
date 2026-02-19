@@ -309,7 +309,7 @@
                 </tr>
             @endforeach
             <tr>
-                <td class="label">Comments</td>
+                <td class="label">Key Take Away</td>
                 <td>{{ $f->comments ?? '-' }}</td>
             </tr>
         </table>
