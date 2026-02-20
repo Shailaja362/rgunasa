@@ -280,39 +280,52 @@
         </table>
 
         <!-- STUDENT FEEDBACK -->
-        <div class="section-title">Student Feedback</div>
-        @php
-            $f = $data['report']->feedback;
-            $ratings = json_decode($f->ratings, true) ?? [];
-        @endphp
+     <div class="section-title">Student Feedback</div>
 
-        <table class="info-table">
+@php
+    $ratings = [];
+    if (!empty($data['report']->feedback->ratings)) {
+        $ratings = json_decode($data['report']->feedback->ratings, true);
+        if (is_string($ratings)) {
+            $ratings = json_decode($ratings, true);
+        }
+        $ratings = $ratings ?? [];
+    }
+@endphp
+
+@if ($data['report']->feedback)
+    <table class="info-table">
+        <tr>
+            <td class="label">Student Name</td>
+            <td>{{ optional($data['report']->feedback->student)->name ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td class="label">Register Number</td>
+            <td>{{ optional($data['report']->feedback->student)->register_number ?? '-' }}</td>
+        </tr>
+        @if ($ratings)
+        @foreach ($ratings as $key => $value)
+            @php
+                $label = ucwords(str_replace('_', ' ', $key));
+                $rating = (int) $value;
+            @endphp
             <tr>
-                <td class="label">Student Name</td>
-                <td>{{ $f->student->name }}</td>
+                <td class="label">{{ $label }}</td>
+                <td>
+                    <span class="stars">{{ stars($rating) }}</span>
+                    <b>{{ $rating }}/5</b>
+                </td>
             </tr>
-            <tr>
-                <td class="label">Register Number</td>
-                <td>{{ $f->student->register_number }}</td>
-            </tr>
-            @foreach ($ratings as $key => $value)
-                @php
-                    $label = ucwords(str_replace('_', ' ', $key));
-                    $rating = (int) $value;
-                @endphp
-                <tr>
-                    <td class="label">{{ $label }}</td>
-                    <td>
-                        <span class="stars">{{ stars($rating) }}</span>
-                        <b>{{ $rating }}/5</b>
-                    </td>
-                </tr>
-            @endforeach
-            <tr>
-                <td class="label">Key Take Away</td>
-                <td>{{ $f->comments ?? '-' }}</td>
-            </tr>
-        </table>
+        @endforeach
+        @endif
+        <tr>
+            <td class="label">Key Take Away</td>
+            <td>{{ optional($data['report']->feedback)->comments ?? '-' }}</td>
+        </tr>
+    </table>
+@else
+    <p>No feedback submitted yet.</p>
+@endif
 
         <!-- GEO IMAGES -->
         @if ($data['report']->geo_images->count())

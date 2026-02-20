@@ -71,7 +71,7 @@
                     <x-menu.item name="Dashboard" icon="fa-home" route="student_dashboard" />
                     <x-menu.item name="Register for Events" icon="fa-calendar" route="register_events" />
                     <x-menu.item name="My Registration" icon="fa-check-circle" route="my_register_events" />
-                    <x-menu.item name="Certificates" icon="fa-trophy" route="certificates" />
+                    {{-- <x-menu.item name="Certificates" icon="fa-trophy" route="certificates" /> --}}
                 </x-slot:menus>
             @endif
             @if (!empty(session()->get('admin')))
@@ -105,6 +105,7 @@
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Admin" icon="fas fa-chalkboard-teacher" route="admin_list" />
+                    <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
                     <x-menu.item name="Assign Tasks" icon="fa-check-circle" route="assign_tasks" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />

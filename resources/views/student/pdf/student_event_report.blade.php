@@ -171,7 +171,16 @@
     <!-- ================= FEEDBACK ================= -->
     <div class="section">
         <div class="section-title">Event Feedback</div>
-        @php $ratings = json_decode($feedback->ratings, true); @endphp
+        @php
+            $ratings = [];
+            if (!empty($feedback->ratings)) {
+                $ratings = json_decode($feedback->ratings, true);
+                if (is_string($ratings)) {
+                    $ratings = json_decode($ratings, true);
+                }
+                $ratings = $ratings ?? [];
+            }
+        @endphp
         <table>
             @foreach ($ratings as $key => $value)
                 <tr>
