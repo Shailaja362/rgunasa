@@ -6,38 +6,43 @@
     </div>
 
     {{-- ================= DATE FILTER ================= --}}
-   <form method="GET" action="{{ route('events') }}"
-    class="bg-white p-4 rounded-xl shadow mt-4 mx-5">
-    <div class="flex flex-wrap gap-4 items-end">
-        <div>
-            <label class="text-sm font-medium">From Date</label>
-            <input type="date"
-                name="from_date"
-                value="{{ request('from_date') }}"
-                class="border rounded-lg px-3 py-2">
+    <form method="GET" action="{{ route('events') }}" class="bg-white p-4 rounded-xl shadow mt-4 mx-5">
+        <div class="flex flex-wrap gap-4 items-end">
+            <div>
+                <label class="text-sm font-medium">From Date</label>
+                <input type="date" name="from_date" value="{{ request('from_date') }}"
+                    class="border rounded-lg px-3 py-2">
+            </div>
+            <div>
+                <label class="text-sm font-medium">To Date</label>
+                <input type="date" name="to_date" value="{{ request('to_date') }}"
+                    class="border rounded-lg px-3 py-2">
+            </div>
+              <div>
+                    <label class="block text-sm font-medium mb-1">Programme</label>
+                    <select name="programme_id" id="programme_id" class="choice-select border rounded-lg px-3 py-2 w-full">
+                        <option value="">-- Select Programme --</option>
+                        @foreach ($programmes as $programme)
+                            <option value="{{ $programme->id }}"
+                                {{ request('programme_id') == $programme->id ? 'selected' : '' }}>
+                                {{ $programme->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            <input type="hidden" name="tab" value="{{ request('tab') }}">
+            <div>
+                <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">
+                    Filter
+                </button>
+            </div>
+            <div>
+                <a href="{{ route('events') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">
+                    Reset
+                </a>
+            </div>
         </div>
-        <div>
-            <label class="text-sm font-medium">To Date</label>
-            <input type="date"
-                name="to_date"
-                value="{{ request('to_date') }}"
-                class="border rounded-lg px-3 py-2">
-        </div>
-        <input type="hidden" name="tab" value="{{ request('tab') }}">
-        <div>
-            <button type="submit"
-                class="bg-primary text-white px-4 py-2 rounded-lg">
-                Filter
-            </button>
-        </div>
-        <div>
-            <a href="{{ route('events') }}"
-               class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg">
-                Reset
-            </a>
-        </div>
-    </div>
-  </form>
+    </form>
 
 
     {{-- ================= TABS ================= --}}
@@ -62,12 +67,21 @@
             <h4 class="font-semibold mb-4">Upcoming Events</h4>
             <div id="upcoming-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @forelse ($upcomingEvents as $schedule)
-                    @php $event = $schedule->event; @endphp
+                    @php
+                        $event = $schedule->event;
+                    @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
-                        <img src="{{ asset('storage/' . $event->banner_image) }}"
-                            class="rounded-t-2xl w-full h-48 object-cover">
+                        <div class="relative">
+                            <img src="{{ asset('storage/' . $event->banner_image) }}"
+                                class="rounded-t-2xl w-full h-48 object-cover">
+                            <span
+                                class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
+                                {{ $schedule->programme->name ?? '' }}
+                            </span>
+                        </div>
                         <div class="p-3 text-sm">
                             <div class="font-semibold">{{ $event->title }}</div>
+                            <div>👤 {{ $event->get_faculty->name ?? '-' }}</div>
                             <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
                             <div>📍 {{ $event->location }}</div>
                         </div>
@@ -85,10 +99,17 @@
                 @forelse ($ongoingEvents as $schedule)
                     @php $event = $schedule->event; @endphp
                     <div class="bg-white rounded-2xl shadow">
-                        <img src="{{ asset('storage/' . $event->banner_image) }}"
-                            class="rounded-t-2xl w-full h-48 object-cover">
+                        <div class="relative">
+                            <img src="{{ asset('storage/' . $event->banner_image) }}"
+                                class="rounded-t-2xl w-full h-48 object-cover">
+                            <span
+                                class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
+                                {{ $schedule->programme->name ?? '' }}
+                            </span>
+                        </div>
                         <div class="p-3 text-sm">
                             <div class="font-semibold">{{ $event->title }}</div>
+                            <div>👤 {{ $event->get_faculty->name ?? '-' }}</div>
                             <div>📅 {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}</div>
                             <div>📍 {{ $event->location }}</div>
                         </div>
@@ -99,7 +120,6 @@
             </div>
         </div>
 
-        {{-- ================= REGISTERED ================= --}}
         <div id="registered-section" class="hidden">
             <h4 class="font-semibold mb-4">Registered Events</h4>
             <div id="registered-container">
@@ -107,41 +127,39 @@
                     <thead class="bg-primary text-white text-sm">
                         <tr>
                             <th class="px-4 py-2 text-left">Event</th>
+                            <th class="px-4 py-2 text-left">Programme</th>
                             <th class="px-4 py-2 text-left">Date</th>
                             <th class="px-4 py-2 text-left">Total Students</th>
                         </tr>
                     </thead>
-                   <tbody class="text-sm">
-    @forelse($registeredEvents as $schedule)
-        <tr class="border-b">
-            {{-- Event Name --}}
-            <td class="px-4 py-2">
-                {{ $schedule->event->title ?? '-' }}
-            </td>
-            {{-- Event Date --}}
-            <td class="px-4 py-2">
-                {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
-            </td>
-
-            {{-- Student Count --}}
-            <td class="px-4 py-2 font-semibold">
-               {{ $schedule->total_students }}
-            </td>
-        </tr>
-
-    @empty
-        <tr>
-            <td colspan="3" class="text-center py-4">
-                No registered events
-            </td>
-        </tr>
-    @endforelse
-</tbody>
-
+                    <tbody class="text-sm">
+                        @forelse($registeredEvents as $schedule)
+                            <tr class="border-b">
+                                <td class="px-4 py-2">
+                                    {{ $schedule->event->title ?? '-' }}
+                                </td>
+                                <td class="px-4 py-2">
+                                    {{ $schedule->programme->name ?? '-' }}
+                                </td>
+                                <td class="px-4 py-2">
+                                    {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
+                                </td>
+                                <td class="px-4 py-2 font-semibold">
+                                    {{ $schedule->total_students }}
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-4">
+                                    No registered events
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
                 </table>
             </div>
             <div class="mt-6">
-                 {{ $registeredEvents->appends(['tab' => 'registered'])->links() }}
+                {{ $registeredEvents->appends(['tab' => 'registered'])->links() }}
             </div>
         </div>
 
@@ -327,3 +345,4 @@
         container.innerHTML = table;
     }
 </script>
+<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>

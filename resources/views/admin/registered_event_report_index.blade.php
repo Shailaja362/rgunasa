@@ -1,36 +1,8 @@
 <x-layouts.app>
-        <style>
-        .choices__inner {
-            border-radius: 9999px !important;
-            min-height: 48px !important;
-            padding: 8px 16px !important;
-        }
-
-        .choices.is-focused .choices__inner {
-            box-shadow: none !important;
-        }
-
-        .choices__list--dropdown {
-            border-radius: 12px !important;
-            border: 1px solid #ddd !important;
-        }
-
-        .choices__item {
-            font-size: 14px;
-        }
-
-        .choices__inner:focus {
-            outline: none !important;
-        }
-
-        .choices[data-type*="select-one"] .choices__inner {
-            padding-bottom: 8px !important;
-        }
-    </style>
     <div class="bg-[#F5E8F5] w-full h-[50px] rounded-full shadow-sm px-8 py-3 flex flex-col justify-center">
         <h3 class="font-semibold text-primary">Event Registered Students Report</h3>
     </div>
-    <div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="max-w-8xl mx-auto px-4 py-8">
         {{-- Page Header --}}
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">
@@ -185,7 +157,6 @@
         </div>
     </div>
 </x-layouts.app>
-<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>
 <script>
     $(document).on('click', '.export-btn', function(e) {
 

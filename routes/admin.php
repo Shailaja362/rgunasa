@@ -13,6 +13,7 @@ use App\Http\Controllers\admin\AdminHomeController;
 use App\Http\Controllers\Auth\StudentAuthController;
 use App\Http\Controllers\admin\AssignGradeController;
 use App\Http\Controllers\admin\AdminReportsController;
+use App\Http\Controllers\admin\CreditPointAssignController;
 use App\Http\Controllers\super_admin\EventsController;
 use App\Http\Controllers\Auth\SuperAdminAuthController;
 use App\Http\Controllers\admin\StudentAttendanceController;
@@ -126,5 +127,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/download-otherfiles/{event}/{student}/{schedule_id}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
         Route::post('/events/{id}', [EventsController::class, 'destroy'])
             ->name('events.destroy');
+
+        //promote student
+        Route::post('/promote-student', [StudentController::class, 'promoteStudent'])->name('promote_student');
+
+        //credit point assign for programme and semester wise
+        Route::get('/credit-point-assign', [CreditPointAssignController::class, 'index'])->name('credit_point_assign');
+        Route::post('/save-credit-point', [CreditPointAssignController::class, 'saveCreditPoint'])->name('save_credit_point');
     });
 });

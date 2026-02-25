@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use Exception;
-use App\Models\Faculty;
 use App\Models\Student;
 use App\Models\Programme;
 use App\Models\Department;
-use App\Models\Designation;
 use App\Helpers\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -38,6 +36,10 @@ class StudentController extends Controller
             ->paginate(25)
             ->withQueryString();
         $this->data['departments'] = Department::orderBy('name')->get();
+        $this->data['batch'] = Student::whereNotNull('batch')
+            ->distinct()
+            ->orderBy('batch')
+            ->pluck('batch');
         return view('admin.student_list')->with($this->data);
     }
 
@@ -282,5 +284,23 @@ class StudentController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function promoteStudent(Request $request)
+    {
+        $request->validate([
+            'batch' => 'required'
+        ]);
+
+        $students = Student::where('batch', $request->batch)
+            ->where('semester', '<', 8)
+            ->get();
+        if ($students->isEmpty()) {
+            return back()->with('error', 'All students are already in final semester.');
+        }
+        Student::where('batch', $request->batch)
+            ->where('semester', '<', 8)
+            ->increment('semester');
+        return back()->with('success', 'Eligible students promoted successfully.');
     }
 }

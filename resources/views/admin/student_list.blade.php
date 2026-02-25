@@ -55,7 +55,15 @@
     @if (session('success'))
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast("{{ session('success') }}", "success");
+                showToast("{{ session('success') }}", "success",2000);
+            });
+        </script>
+    @endif
+
+    @if (session('error'))
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                showToast("{{ session('error') }}", "error",2000);
             });
         </script>
     @endif
@@ -112,6 +120,47 @@
         </div>
     </section>
 
+    <h4 class="font-semibold text-gray-800 mb-4 mt-4">Promote Student</h4>
+    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
+        <div class="mt-6">
+            <form id="promoteForm" method="POST" action="{{ route('promote_student') }}" class="flex gap-3 mb-4">
+                @csrf
+                <select id="batchSelect" name="batch" required
+                    class="w-[600px] border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary rounded-full px-4 py-2 text-sm">
+                    <option value="">Select Batch</option>
+                    @foreach ($batch as $b)
+                        <option value="{{ $b }}">{{ $b }}</option>
+                    @endforeach
+                </select>
+                <button type="button" onclick="openModal()"
+                    class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full hover:opacity-90 transition">
+                    <i class="fa fa-rocket mr-1"></i> Promote
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- Promotion Modal -->
+    <div id="promotionModal" class="fixed inset-0 bg-black/50 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 animate-fadeIn">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                Confirm Promotion
+            </h2>
+            <p class="text-gray-600 mb-6">
+                Are you sure you want to promote students of batch
+                <span id="selectedBatch" class="font-bold text-primary"></span>?
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeModal()" class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">
+                    Cancel
+                </button>
+                <button onclick="submitPromotion()" class="px-4 py-2 rounded-lg bg-primary text-white hover:opacity-90">
+                    Yes, Promote
+                </button>
+            </div>
+        </div>
+    </div>
+
     <section class="p-2">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Student List</h4>
@@ -157,3 +206,25 @@
         </div>
     </section>
 </x-layouts.app>
+<script>
+    function openModal() {
+        let batch = document.getElementById('batchSelect').value;
+  if(!batch){
+      showToast("Please select a batch when promoting students", "error",2000);
+      return;
+  }
+
+        document.getElementById('selectedBatch').innerText = batch;
+        document.getElementById('promotionModal').classList.remove('hidden');
+        document.getElementById('promotionModal').classList.add('flex');
+    }
+
+    function closeModal() {
+        document.getElementById('promotionModal').classList.add('hidden');
+        document.getElementById('promotionModal').classList.remove('flex');
+    }
+
+    function submitPromotion() {
+        document.getElementById('promoteForm').submit();
+    }
+</script>

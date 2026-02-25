@@ -222,7 +222,7 @@ $(document).on("submit", "#eventForm", function (e) {
         $("#price").removeClass("border-red-500 ring-1 ring-red-500");
         if (errorEl.length) errorEl.remove();
     }
-    
+
     let fileInput = $("#fileInput")[0];
     let oldBanner = $('input[name="old_banner"]').val();
 
@@ -484,7 +484,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <label class="block text-sm font-medium">Credit Points <span class="text-red-500">*</span></label>
                             <input type="number" name="departments[${deptIndex}][credit_points]" id="credit_points"
                              placeholder="Enter Event Credit Points"
-                                class="credit_points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                                class="credit_points points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
                         </div>
             </div>
         `;
@@ -526,3 +526,22 @@ document
 document.getElementById("dropArea").addEventListener("click", function () {
     document.getElementById("fileInput").click();
 });
+
+// $(document).ready(function () {
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".credit_points").forEach((input) => {
+        input.addEventListener("input", function () {
+            let value = parseFloat(this.value);
+            if (isNaN(value)) return;
+            if (value > 4 || value < 0) {
+                showToast(
+                    "Credit Points must be between 0 and 4",
+                    "error",
+                    2000,
+                );
+                this.value = "";
+            }
+        });
+    });
+});
+// });

@@ -283,13 +283,27 @@
      <div class="section-title">Student Feedback</div>
 
 @php
+    $f = $data['report']->feedback ?? null;
     $ratings = [];
-    if (!empty($data['report']->feedback->ratings)) {
-        $ratings = json_decode($data['report']->feedback->ratings, true);
-        if (is_string($ratings)) {
-            $ratings = json_decode($ratings, true);
+
+    if ($f && !empty($f->ratings)) {
+
+        // If already array (because of $casts)
+        if (is_array($f->ratings)) {
+            $ratings = $f->ratings;
+
+        // If string (normal JSON or double encoded)
+        } elseif (is_string($f->ratings)) {
+
+            $decoded = json_decode($f->ratings, true);
+
+            // If double encoded
+            if (is_string($decoded)) {
+                $decoded = json_decode($decoded, true);
+            }
+
+            $ratings = is_array($decoded) ? $decoded : [];
         }
-        $ratings = $ratings ?? [];
     }
 @endphp
 

@@ -1,36 +1,4 @@
 <x-layouts.app>
-    <style>
-        .choices__inner {
-            background-color: #D9D9D9 !important;
-            border-radius: 9999px !important;
-            border: none !important;
-            min-height: 48px !important;
-            padding: 8px 16px !important;
-        }
-
-        .choices.is-focused .choices__inner {
-            border: none !important;
-            box-shadow: none !important;
-        }
-
-        .choices__list--dropdown {
-            border-radius: 12px !important;
-            border: 1px solid #ddd !important;
-        }
-
-        .choices__item {
-            font-size: 14px;
-        }
-
-        .choices__inner:focus {
-            outline: none !important;
-        }
-
-        .choices[data-type*="select-one"] .choices__inner {
-            padding-bottom: 8px !important;
-        }
-    </style>
-
     <!-- Header -->
     <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-6 py-4 flex justify-between items-center">
         <!-- Title & Subtitle -->
@@ -168,4 +136,4 @@
     </form>
 </x-layouts.app>
 <script src="{{ asset('admin/js/admin.js') }}?v={{ time() }}"></script>
-<script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>
+

@@ -5,12 +5,10 @@ namespace App\Http\Controllers\super_admin;
 use App\Helpers\ActivityLog;
 use App\Http\Controllers\Controller;
 use App\Models\Club;
-use App\Models\Department;
 use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\Faculty;
 use App\Models\Programme;
-use App\Models\StudentEventRegistration;
 use App\Models\Tasks;
 use Carbon\Carbon;
 use Exception;
@@ -21,61 +19,15 @@ use Illuminate\Support\Facades\DB;
 class EventsController extends Controller
 {
 
-    // public function index()
-    // {
-    //     $now = Carbon::now();
-    //     /** Upcoming Events */
-    //     $this->data['upcomingEvents'] =  EventSchedule::with(['event', 'programme'])
-    //         ->where(function ($q) use ($now) {
-    //             $q->whereDate('event_date', '>', $now->toDateString())
-    //                 ->orWhere(function ($q2) use ($now) {
-    //                     $q2->whereDate('event_date', $now->toDateString())
-    //                         ->whereHas('event', function ($e) use ($now) {
-    //                             $e->whereTime('start_time', '>', $now->toTimeString());
-    //                         });
-    //                 });
-    //         })
-    //         ->get();
-
-    //     /** Ongoing Events */
-    //     $this->data['ongoingEvents'] = EventSchedule::with(['event', 'programme'])
-    //         ->whereDate('event_date', $now->toDateString())
-    //         ->whereHas('event', function ($q) use ($now) {
-    //             $q->whereTime('start_time', '<=', $now->toTimeString())
-    //                 ->whereTime('end_time', '>=', $now->toTimeString());
-    //         })
-    //         ->get();
-
-    //     /** Completed Events */
-    //     $this->data['completedEvents']  = EventSchedule::with(['event', 'programme'])
-    //         ->where(function ($q) use ($now) {
-    //             $q->whereDate('event_date', '<', $now->toDateString())
-    //                 ->orWhere(function ($q2) use ($now) {
-    //                     $q2->whereDate('event_date', $now->toDateString())
-    //                         ->whereHas('event', function ($e) use ($now) {
-    //                             $e->whereTime('end_time', '<', $now->toTimeString());
-    //                         });
-    //                 });
-    //         })
-    //         ->get();
-
-    //     /** Registered Events */
-    //     $this->data['registeredEvents'] = StudentEventRegistration::with([
-    //         'get_event_schedule.event',
-    //         'get_event_schedule.department'
-    //     ])->get();
-
-
-    //     return view('super_admin.event_index')->with($this->data);
-    // }
-
     public function index(Request $request)
     {
         $from  = $request->from_date;
         $to    = $request->to_date;
+        $programmeId  = $request->programme_id;
         $today = now()->toDateString();
         $baseQuery = EventSchedule::query()->with([
             'event',
+            'programme',
             'registrations.student.get_department'
         ]);
         if ($from && $to) {
@@ -85,19 +37,29 @@ class EventsController extends Controller
         } elseif ($to) {
             $baseQuery->whereDate('event_date', '<=', $to);
         }
-        $upcomingEvents = (clone $baseQuery)
+
+        /*
+    |--------------------------------------------------------------------------
+    | Programme Filter (NEW)
+    |--------------------------------------------------------------------------
+    */
+        if ($programmeId) {
+            $baseQuery->where('programme_id', $programmeId);
+        }
+
+        $this->data['upcomingEvents'] = (clone $baseQuery)
             ->whereDate('event_date', '>', $today)
             ->orderBy('event_date')
             ->get();
-        $ongoingEvents = (clone $baseQuery)
+        $this->data['ongoingEvents'] = (clone $baseQuery)
             ->whereDate('event_date', '=', $today)
             ->get();
-        $completedEvents = (clone $baseQuery)
+        $this->data['completedEvents'] = (clone $baseQuery)
             ->whereDate('event_date', '<', $today)
             ->orderByDesc('event_date')
             ->paginate(10)
             ->appends($request->query());
-        $completedEvents->getCollection()->transform(function ($schedule) {
+        $this->data['completedEvents']->getCollection()->transform(function ($schedule) {
             $departments = $schedule->registrations
                 ->pluck('student.get_department.name')
                 ->filter()
@@ -108,10 +70,11 @@ class EventsController extends Controller
         });
 
 
-        $registeredEvents = EventSchedule::select(
+        $this->data['registeredEvents'] = EventSchedule::select(
             'event_schedules.id',
             'event_schedules.event_id',
             'event_schedules.event_date',
+            'event_schedules.programme_id',
             DB::raw('COUNT(DISTINCT student_event_registrations.student_id) as total_students')
         )
             ->join(
@@ -129,26 +92,21 @@ class EventsController extends Controller
                     $query->whereDate('event_schedules.event_date', '<=', $to);
                 }
             })
+            ->when($programmeId, function ($query) use ($programmeId) {
+                $query->where('event_schedules.programme_id', $programmeId);
+            })
             ->groupBy(
                 'event_schedules.id',
                 'event_schedules.event_id',
-                'event_schedules.event_date'
+                'event_schedules.event_date',
+                'event_schedules.programme_id'
             )
-            ->with('event')
+            ->with('event', 'programme')
             ->orderByDesc('event_schedules.event_date')
-            ->paginate(10);
-
-        $groupedRegistered = $registeredEvents
-            ->getCollection()
-            ->groupBy('event_schedule_id');
-
-        return view('super_admin.event_index', compact(
-            'upcomingEvents',
-            'ongoingEvents',
-            'completedEvents',
-            'registeredEvents',
-            'groupedRegistered'
-        ));
+            ->paginate(10)
+            ->appends($request->query());
+        $this->data['programmes'] = Programme::get();
+        return view('super_admin.event_index', $this->data);
     }
 
     public function createEvent(Request $request)
@@ -208,8 +166,6 @@ class EventsController extends Controller
                 'event_type'   => 'required',
                 'duration_months' => 'required',
             ];
-
-
 
             if ($request['event_type'] == 'paid') {
                 $rules['price'] = 'required';
@@ -321,10 +277,6 @@ class EventsController extends Controller
                 'event' => $event,
             ]);
         } catch (Exception $e) {
-            echo '<pre>';
-            print_r($e->getMessage());
-            echo '</pre>';
-            exit;
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save event',

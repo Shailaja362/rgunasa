@@ -105,6 +105,7 @@
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Admin" icon="fas fa-chalkboard-teacher" route="admin_list" />
+                    <x-menu.item name="Credit Point Assign" icon="fa-trophy" route="credit_point_assign" />
                     <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
                     <x-menu.item name="Assign Tasks" icon="fa-check-circle" route="assign_tasks" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
