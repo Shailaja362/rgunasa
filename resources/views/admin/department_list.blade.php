@@ -32,17 +32,6 @@
                                         href="{{ route('create_department', ['department_id' => encrypt($department->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    @php
-                                        $canDelete = $event->schedules->every(function ($schedule) {
-                                            return $schedule->registrations->isEmpty();
-                                        });
-                                    @endphp
-
-                                    @if ($canDelete)
-                                        <button type="button" class="text-red-600 hover:text-red-800 deleteEvent" id="deleteEvent" data-id="{{ $event->id }}">
-                                            <i class="fa-solid fa-delete-left"></i>
-                                        </button>
-                                    @endif
                                 </td>
                             </tr>
                         @endforeach

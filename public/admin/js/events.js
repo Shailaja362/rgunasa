@@ -202,7 +202,7 @@ $(document).on("submit", "#eventForm", function (e) {
 
     let isValid = true;
     for (const field of fields) {
-        const result = validateField(field); // synchronous, so no async/await needed
+        const result = validateField(field);
         if (!result) isValid = false;
     }
 
@@ -542,6 +542,114 @@ document.addEventListener("DOMContentLoaded", function () {
                 this.value = "";
             }
         });
+    });
+});
+
+$("#publishBtn").on("click", function () {
+    let eventId = $(this).data("event_id");
+
+    if (!eventId) {
+        showToast("Please save event before publishing", "error", 2000);
+        return;
+    }
+
+    let isValid = true;
+
+    // Loop through each department card
+    $(".dept-card").each(function () {
+        let batch = $(this).find(".batch").val();
+        let semester = $(this).find(".semester").val();
+        let creditPoints = $(this).find(".credit_points").val();
+        const regex = /^\d{4}-\d{4}$/;
+
+        // Batch validation
+        if (!batch || !regex.test(batch)) {
+            showToast("Batch must be in YYYY-YYYY format", "error", 2000);
+            isValid = false;
+            return false; // break loop
+        }
+
+        const [start, end] = batch.split("-").map(Number);
+
+        if (end <= start) {
+            showToast(
+                "Batch end year must be greater than start year",
+                "error",
+                2000,
+            );
+            isValid = false;
+            return false;
+        }
+
+        // Semester validation
+        if (!semester) {
+            showToast("Please Select Semester", "error", 2000);
+            isValid = false;
+            return false;
+        }
+
+        // Credit points validation
+        if (!creditPoints || creditPoints < 0) {
+            showToast("Please Enter Valid Credit Points", "error", 2000);
+            isValid = false;
+            return false;
+        }
+    });
+
+    if (!isValid) return;
+
+    // Confirmation Popup
+    Swal.fire({
+        title: "Are you sure?",
+        text: "Once published, students can view this event.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Publish it!",
+        cancelButtonText: "Cancel",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "/admin/publish-event",
+                type: "POST",
+                data: {
+                    event_id: eventId,
+                    _token: $('meta[name="csrf-token"]').attr("content"),
+                },
+                beforeSend: function () {
+                    $("#publishBtn")
+                        .prop("disabled", true)
+                        .html(
+                            '<i class="fas fa-spinner fa-spin"></i> Publishing...',
+                        );
+                },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire("Published!", res.message, "success");
+
+                        $("#publishBtn")
+                            .removeClass(
+                                "bg-gradient-to-r from-primary to-pink-600 hover:opacity-90",
+                            )
+                            .addClass("bg-gray-400 cursor-not-allowed")
+                            .html('<i class="fas fa-check"></i> Published')
+                            .prop("disabled", true);
+                    } else {
+                        showToast(res.message, "error", 2000);
+
+                        $("#publishBtn")
+                            .prop("disabled", false)
+                            .html('<i class="fas fa-paper-plane"></i> Publish');
+                    }
+                },
+                error: function () {
+                    $("#publishBtn")
+                        .prop("disabled", false)
+                        .html('<i class="fas fa-paper-plane"></i> Publish');
+
+                    showToast("Something went wrong", "error", 2000);
+                },
+            });
+        }
     });
 });
 // });

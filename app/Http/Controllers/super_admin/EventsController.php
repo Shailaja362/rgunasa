@@ -75,6 +75,7 @@ class EventsController extends Controller
             'event_schedules.event_id',
             'event_schedules.event_date',
             'event_schedules.programme_id',
+            'event_schedules.section',
             DB::raw('COUNT(DISTINCT student_event_registrations.student_id) as total_students')
         )
             ->join(
@@ -301,6 +302,23 @@ class EventsController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Event deleted successfully'
+        ]);
+    }
+
+    public function publishEvent(Request $request)
+    {
+        $request->validate([
+            'event_id' => 'required|exists:events,id'
+        ]);
+
+        $event = Event::where('id',$request->event_id)
+        ->update([
+            'publish' => 1
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Event published successfully'
         ]);
     }
 }

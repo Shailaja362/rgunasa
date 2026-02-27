@@ -23,25 +23,34 @@ class MyRegisterEventsController extends Controller
         $this->data['student'] =  $student;
         $now = Carbon::now();
         $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')->where('student_id', $student->id)
+        ->whereHas('get_event_schedule', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester);
+         })
             ->get();
         $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
-            ->whereHas('get_event_attendance', function ($query) use ($now) {
+            ->whereHas('get_event_attendance', function ($query) use ($student) {
                 $query->whereNotNull('entry_time')
-                       ->whereNotNull('exit_time');
+                       ->whereNotNull('exit_time')
+                       ->where('student_id', $student->id);
             })
             ->where('student_id', $student->id)
             ->get();
+
         $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 1)
             ->count();
         $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
-            ->whereHas('get_event_attendance', function ($query) use ($now) {
+            ->whereHas('get_event_attendance', function ($query) use ($student) {
                 $query->whereNotNull('entry_time')
-                    ->whereNotNull('exit_time');
+                    ->whereNotNull('exit_time')
+                    ->where('student_id', $student->id);
             })
             ->where('status', 3)
             ->count();
-        $events = Event::get();
+        $events = Event::where('publish', 1)->get();
         $myuploads = StudentUploadProof::select('student_id', 'event_id')
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')

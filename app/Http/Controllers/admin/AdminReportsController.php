@@ -50,7 +50,9 @@ class AdminReportsController extends Controller
             }
         }
         $adminId = Auth::guard('admin')->id();
-        $this->data['event'] = Event::where('created_by', $adminId)->get();
+        $this->data['event'] = Event::where('created_by', $adminId)
+            ->where('publish', 1)
+            ->get();
         $this->data['programmes'] = Programme::get();
         return view('admin.create_admin_report')->with($this->data);
     }

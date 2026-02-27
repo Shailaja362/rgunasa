@@ -14,7 +14,7 @@ class EventRegisterdReportController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['events'] = Event::get();
+        $this->data['events'] = Event::where('publish',1)->get();
         $this->data['statusLabels']  = [
             1 => 'Registered',
             2 => 'Approved',

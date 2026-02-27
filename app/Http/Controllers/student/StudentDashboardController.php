@@ -17,7 +17,7 @@ class StudentDashboardController extends Controller
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
-        $this->data['events'] = Event::get();
+        $this->data['events'] = Event::where('publish',1)->get();
         // Student's registrations
         $studentRegistrations = StudentEventRegistration::with('event', 'schedule')
             ->where('student_id', $student->id)
@@ -48,6 +48,7 @@ class StudentDashboardController extends Controller
                     ->where('semester', $student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
+            ->where('publish',1)
             ->get();
 
         $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
@@ -68,6 +69,7 @@ class StudentDashboardController extends Controller
                     // ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
+            ->where('publish', 1)
             ->get();
 
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {

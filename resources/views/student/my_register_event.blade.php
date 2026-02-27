@@ -49,7 +49,7 @@
                 @foreach ($registeredEvents as $event)
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
-                            'event_id' => $event->event->id,
+                            'event_schedule_id' => $event->event_schedule_id,
                         ])
                             ->whereHas('student', function ($query) use ($student) {
                                 $query
@@ -125,7 +125,7 @@
                 @foreach ($completedEvents as $event)
                     @php
                         $registered = \App\Models\StudentEventRegistration::where([
-                            'event_id' => $event->event->id,
+                            'event_schedule_id' => $event->event_schedule_id,
                         ])
                             ->whereHas('student', function ($query) use ($student) {
                                 $query

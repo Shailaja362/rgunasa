@@ -61,6 +61,7 @@ return new class extends Migration
             $table->string('contact_email');
             $table->string('banner_image')->nullable(); // store image path
             $table->enum('status', ['pending', 'completed'])->default('pending');
+            $table->tinyInteger('publish')->comment('0 - Not Published , 1 - Published');
             $table->enum('is_technical_event', ['y', 'n'])->default('n')->comment('Y - Yes , N - No');
             $table->timestamps();
 

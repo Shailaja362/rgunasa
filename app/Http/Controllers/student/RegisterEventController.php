@@ -20,7 +20,7 @@ class RegisterEventController extends Controller
     public function index(Request $request)
     {
         $now = Carbon::now();
-        $this->data['events'] = Event::get();
+        $this->data['events'] = Event::where('publish', 1)->get();
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
@@ -28,38 +28,39 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] = Event::with('registrations.student')->whereHas('get_dep_events', function ($q) use ($student) {
+        $this->data['ongoingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
-                ->where('semester', $student->semester)
                 ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                  $q->where('programme_id', $student->programme_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('semester', $student->semester)
                     ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
+            ->where('publish', 1)
             ->get();
         // Upcoming Events
-        $this->data['upcomingEvents'] = Event::with('registrations.student')
-            ->whereHas('get_dep_events', function ($q) use ($student) {
-                  $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
-                    ->where('semester', $student->semester)
-                    ->where('batch', $student->batch)
-                    ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
-            })
+        $this->data['upcomingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester);
+            // ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
+        })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                  $q->where('programme_id', $student->programme_id)
+                $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('semester', $student->semester)
                     ->where('batch', $student->batch)
-                    ->where('event_date', '>=', Carbon::now()->toDateString())
+                    ->where('semester', $student->semester)
+                    // ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
+            ->where('publish', 1)
             ->get();
 
         $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)

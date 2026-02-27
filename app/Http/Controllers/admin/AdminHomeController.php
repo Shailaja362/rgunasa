@@ -23,6 +23,7 @@ class AdminHomeController extends Controller
 
         $adminId = Auth::guard('admin')->id();
         $this->data['events'] = Event::with('registrations')
+            ->where('publish', 1)
             ->where('created_by', $adminId)
             ->orderBy('created_at', 'DESC')
             ->get();
@@ -30,6 +31,7 @@ class AdminHomeController extends Controller
 
         $this->data['upcoming_events'] = Event::where('created_by', $adminId)
             ->where('created_by', $adminId)
+            ->where('publish', 1)
             ->whereHas('schedules', function ($query) use ($today) {
                 $query->whereDate('event_date', '>=', $today);
             })

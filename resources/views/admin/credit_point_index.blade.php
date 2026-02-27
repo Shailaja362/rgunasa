@@ -13,19 +13,6 @@
             <input type="hidden" name="semester" id="hidden_semester">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-medium mb-1">Programme</label>
-                    <select name="programme_id" id="programme_id" class="w-full border rounded px-3 py-2 choice-select"
-                        {{ $editData ? 'disabled' : '' }}>
-                        <option value="">All Programmes</option>
-                        @foreach ($programmes as $prog)
-                            <option value="{{ $prog->id }}"
-                                {{ old('programme_id', $editData->programme_id ?? '') == $prog->id ? 'selected' : '' }}>
-                                {{ $prog->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
                     <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
                     <select name="semester" id="semester" {{ $editData ? 'disabled' : '' }}
                         class="semester w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
@@ -72,7 +59,6 @@
                 <thead class="bg-primary text-white uppercase text-sm">
                     <tr>
                         <th class="px-2 py-3 text-left text-sm font-semibold">S.No</th>
-                        <th class="px-2 py-3 text-left text-sm font-semibold">Programme</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Semester</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Credit Points</th>
                         <th class="px-2 py-3 text-left text-sm font-semibold">Action</th>
@@ -83,7 +69,6 @@
                     @forelse ($credit_points as $index => $row)
                         <tr class="border-t">
                             <td class="px-2 py-3">{{ $loop->iteration }}</td>
-                            <td class="px-2 py-3">{{ $row->programme?->name }}</td>
                             <td class="px-2 py-3">{{ $row->semester }}</td>
                             <td class="px-2 py-3">{{ $row->credit_points }}</td>
                             <td class="px-2 py-3">

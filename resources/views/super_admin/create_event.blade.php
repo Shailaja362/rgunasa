@@ -357,11 +357,26 @@
             </div>
         </div>
         <!-- Center-Aligned Button -->
-        <div class="flex justify-center mt-10">
-            <button type="submit" id="submitBtn"
-                class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
-                <i class="fas fa-save"></i> Create Event </button>
-        </div>
+        <div class="flex justify-center mt-10 gap-4">
+
+    <button type="submit" id="createEventBtn"
+        class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
+        <i class="fas fa-save"></i> Create Event
+    </button>
+   <button type="button"
+    id="publishBtn"
+    data-event_id="{{ $edit_event->id ?? '' }}"
+    @if(!empty($edit_event) && $edit_event->publish == 1)
+        disabled
+        class="px-3 w-43 bg-gray-400 text-white font-semibold py-1 rounded-full cursor-not-allowed"
+    @else
+        class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition"
+    @endif>
+
+    <i class="fas fa-paper-plane"></i>
+    {{ (!empty($edit_event) && $edit_event->publish == 1) ? 'Published' : 'Publish' }}
+</button>
+</div>
     </form>
 </x-layouts.app>
 
@@ -374,4 +389,5 @@
         dateFormat: "d/m/Y",
     });
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('admin/js/events.js') }}?v={{ time() }}"></script>

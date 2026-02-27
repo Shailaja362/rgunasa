@@ -23,12 +23,16 @@ class SuperAdminHomeController extends Controller
         // Total Upcoming Events (event date > today)
         $this->data['upcomingEvents'] = Event::whereHas('schedules', function ($q) {
             $q->whereDate('event_date', '>', now());
-        })->count();
+        })
+        ->where('publish',1)
+        ->count();
 
         // Ongoing Events (event date = today)
         $this->data['ongoingEvents'] = Event::whereHas('schedules', function ($q) {
             $q->whereDate('event_date', now());
-        })->count();
+        })
+        ->where('publish', 1)
+        ->count();
 
         // Total Admins with role_id 2
         $this->data['totalAdmins'] = Admin::where('role_id', 2)->count();
@@ -40,7 +44,9 @@ class SuperAdminHomeController extends Controller
         $this->data['upcomingEventsThisWeek'] = Event::whereHas('schedules', function ($q) use ($startOfWeek, $endOfWeek) {
             $q->whereBetween('event_date', [$startOfWeek, $endOfWeek])
                 ->whereDate('event_date', '>', now());
-        })->count();
+        })
+            ->where('publish', 1)
+            ->count();
 
         // Admins Created This Month
         $this->data['adminsThisMonth'] = Admin::whereMonth('created_at', now()->month)

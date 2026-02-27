@@ -11,8 +11,7 @@ class CreditPointAssignController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['credit_points'] = CreditPoint::with('programme')->paginate(10);
-        $this->data['programmes'] = Programme::all();
+        $this->data['credit_points'] = CreditPoint::paginate(10);
         $editData = null;
 
         if ($request->edit_id) {
@@ -34,22 +33,19 @@ class CreditPointAssignController extends Controller
             ]);
         } else {
             $request->validate([
-                'programme_id' => 'required',
                 'semester' => 'required',
                 'credit_points' => 'required|numeric|min:0'
             ]);
-            $existing = CreditPoint::where('programme_id', $request->programme_id)
-                ->where('semester', $request->semester)
+            $existing = CreditPoint::where('semester', $request->semester)
                 ->first();
             if ($existing) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Credit Points for this Programme and Semester already exists'
+                    'message' => 'Credit Points for this Semester already exists'
                 ]);
             }
-            
+
             $creditpoint = new CreditPoint();
-            $creditpoint->programme_id = $request->programme_id;
             $creditpoint->semester = $request->semester;
             $creditpoint->credit_points = $request->credit_points;
             $creditpoint->save();

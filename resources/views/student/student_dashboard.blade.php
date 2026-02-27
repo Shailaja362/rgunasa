@@ -80,8 +80,11 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $dept
-                                ->registrations()
+                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                                'event_schedule_id',
+                                $dept->id,
+                            )
+                                // ->registrations()
                                 ->whereHas('student', function ($query) use ($student) {
                                     $query
                                         ->where('programme_id', $student->programme_id)
@@ -90,6 +93,7 @@
                                         ->where('semester', $student->semester);
                                 })
                                 ->count();
+
                             if ($dept->is_reserve_date == 'y') {
                                 $start_time = $event->reserve_start_time;
                                 $end_time = $event->reserve_end_time;
@@ -244,8 +248,10 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = $department
-                                ->registrations()
+                            $registeredCount =  \App\Models\StudentEventRegistration::where(
+                                'event_schedule_id',
+                                $department->id,
+                            )
                                 ->whereHas('student', function ($query) use ($student) {
                                     $query
                                         ->where('programme_id', $student->programme_id)
@@ -406,9 +412,10 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($registeredEvents as $register_event)
                     @php
-                        $registered = \App\Models\StudentEventRegistration::where([
-                            'event_id' => $register_event->event_id,
-                        ])
+                        $registered = \App\Models\StudentEventRegistration::where(
+                                'event_schedule_id',
+                                $register_event->event_schedule_id,
+                            )
                             ->whereHas('student', function ($query) use ($student) {
                                 $query
                                     ->where('programme_id', $student->programme_id)

@@ -60,8 +60,10 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = $department
-                                ->registrations()
+                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                                'event_schedule_id',
+                                $department->id,
+                            )
                                 ->whereHas('student', function ($query) use ($student) {
                                      $query->where('programme_id', $student->programme_id)
                                            ->where('section', $student->section)
@@ -226,8 +228,10 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = $dept
-                                ->registrations()
+                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                                'event_schedule_id',
+                                $dept->id,
+                            )
                                 ->whereHas('student', function ($query) use ($student) {
                                      $query->where('programme_id', $student->programme_id)
                                            ->where('section', $student->section)

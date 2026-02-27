@@ -134,5 +134,6 @@ Route::prefix('admin')->group(function () {
         //credit point assign for programme and semester wise
         Route::get('/credit-point-assign', [CreditPointAssignController::class, 'index'])->name('credit_point_assign');
         Route::post('/save-credit-point', [CreditPointAssignController::class, 'saveCreditPoint'])->name('save_credit_point');
+        Route::post('/publish-event', [EventsController::class, 'publishEvent'])->name('publish_event');
     });
 });

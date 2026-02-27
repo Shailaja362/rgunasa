@@ -139,7 +139,7 @@
                                     {{ $schedule->event->title ?? '-' }}
                                 </td>
                                 <td class="px-4 py-2">
-                                    {{ $schedule->programme->name ?? '-' }}
+                                    {{ $schedule->programme->name ?? '-' }} - {{ $schedule->section ?? '' }}
                                 </td>
                                 <td class="px-4 py-2">
                                     {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
@@ -206,7 +206,7 @@
 
                                             <span
                                                 class="{{ $color[0] }} {{ $color[1] }} px-2 py-1 rounded-full text-xs mr-1">
-                                                {{ $dept }}
+                                                {{ $dept }} - {{ $schedule->section ?? '' }}
                                             </span>
                                         @endforeach
                                     @else

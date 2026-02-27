@@ -25,10 +25,14 @@ class StudentAttendanceController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['events'] = Event::with('get_club')->paginate(10);
+            $this->data['events'] = Event::with('get_club')
+                ->where('publish', 1)
+                ->paginate(10);
         } else {
             $this->data['events'] = Event::with('get_club')
-                ->where('created_by', $adminId)->paginate(10);
+                ->where('created_by', $adminId)
+                ->where('publish', 1)
+                ->paginate(10);
         }
         return view('admin.student_attendance_index')->with($this->data);
     }
