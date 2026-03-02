@@ -23,6 +23,7 @@ use App\Http\Controllers\super_admin\AssignTasksController;
 use App\Http\Controllers\super_admin\ReviewReportsController;
 use App\Http\Controllers\super_admin\SuperAdminHomeController;
 use App\Http\Controllers\student\StudentImportExportController;
+use App\Http\Controllers\StudentCreditController;
 use App\Http\Controllers\super_admin\StudentApprovalController;
 
 Route::prefix('admin')->group(function () {
@@ -35,6 +36,7 @@ Route::prefix('admin')->group(function () {
         Route::post('update-password', [AdminPasswordController::class, 'updatePassword'])->name('password.update');
         Route::any('/security-check', [SuperAdminAuthController::class, 'securityCheck'])->name('security_check');
     });
+
     Route::middleware('auth:admin')->group(function () {
         Route::any('/superadmin-security', [SuperAdminAuthController::class, 'index'])->name('superadmin_security');
         Route::get('/home', [AdminHomeController::class, 'index'])->name('home');
@@ -135,5 +137,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/credit-point-assign', [CreditPointAssignController::class, 'index'])->name('credit_point_assign');
         Route::post('/save-credit-point', [CreditPointAssignController::class, 'saveCreditPoint'])->name('save_credit_point');
         Route::post('/publish-event', [EventsController::class, 'publishEvent'])->name('publish_event');
+        Route::get('/student-credits', [StudentCreditController::class, 'index'])->name('student_credits');
+        Route::get('export-student-credits', [StudentCreditController::class, 'exportCredits'])
+            ->name('export_student_credits');
     });
 });

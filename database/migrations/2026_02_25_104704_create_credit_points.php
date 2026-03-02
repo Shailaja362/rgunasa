@@ -13,12 +13,9 @@ return new class extends Migration
     {
         Schema::create('credit_points', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('programme_id');
             $table->enum('semester', ['1', '2', '3', '4', '5', '6', '7', '8'])->nullable();
             $table->decimal('credit_points', 5, 2)->default(0);
             $table->timestamps();
-
-            $table->foreign('programme_id')->references('id')->on('programmes')->onDelete('no action');
         });
     }
 

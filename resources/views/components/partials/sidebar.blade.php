@@ -50,20 +50,20 @@
             {{ $name }}
         </div>
         <div class="text-center font-sm text-sm text-primary">
-             {{  $dept_name }}
+            {{ $dept_name }}
         </div>
         @if (!empty(session()->get('admin')) || !empty(session()->get('super_admin')))
-        <div class="text-center font-sm text-sm">
-             {{  $desig_name }}
-        </div>
+            <div class="text-center font-sm text-sm">
+                {{ $desig_name }}
+            </div>
         @endif
         <div class="text-center font-medium text-md text-primary">
             ID - {{ $id }}
         </div>
     </div>
-    <ul class="mt-8 mx-3 space-y-2">
-        <x-menu.list>
-            @if (!empty(session()->get('student')))
+    <ul class="">
+        @if (!empty(session()->get('student')))
+            <x-menu.list>
                 <x-slot:trigger>
                     <x-menu.item trigger name="Curriculum" icon="fa-book" />
                 </x-slot:trigger>
@@ -73,48 +73,82 @@
                     <x-menu.item name="My Registration" icon="fa-check-circle" route="my_register_events" />
                     {{-- <x-menu.item name="Certificates" icon="fa-trophy" route="certificates" /> --}}
                 </x-slot:menus>
-            @endif
-            @if (!empty(session()->get('admin')))
+            </x-menu.list>
+        @endif
+        @if (!empty(session()->get('admin')))
+            <x-menu.list>
                 <x-slot:trigger>
                 </x-slot:trigger>
                 <x-slot:menus>
                     <x-menu.item name="Home" icon="fa-home" route="home" />
+                </x-slot:menus>
+            </x-menu.list>
+            <x-menu.list>
+                <x-slot:trigger>
+                    <x-menu.item trigger name="Configuration" icon="fa-conf" />
+                </x-slot:trigger>
+                <x-slot:menus>
                     <x-menu.item name="Department" icon="fas fa-building" route="department_list" />
                     <x-menu.item name="Programme" icon="fas fa-book" route="programme_list" />
                     <x-menu.item name="Faculty" icon="fas fa-chalkboard-teacher" route="faculty_list" />
                     <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
+                    <x-menu.item name="Credit Point Assign" icon="fa-trophy" route="credit_point_assign" />
+                </x-slot:menus>
+            </x-menu.list>
+            <x-menu.list>
+                <x-slot:trigger>
+                    <x-menu.item trigger name="Event Management" icon="fa-conf" />
+                </x-slot:trigger>
+                <x-slot:menus>
                     <x-menu.item name="Create Event" icon="fas fa-pencil-alt" route="event_list" />
                     <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
-                    {{-- <x-menu.item name="Student Approval" icon="fas fa-user-check" route="student_approval" /> --}}
                     <x-menu.item name="Reports" icon="fa-book" route="reports" />
                 </x-slot:menus>
-            @endif
-            @if (!empty(session()->get('super_admin')))
+            </x-menu.list>
+        @endif
+        @if (!empty(session()->get('super_admin')))
+            <x-menu.list>
                 <x-slot:trigger>
                 </x-slot:trigger>
                 <x-slot:menus>
                     <x-menu.item name="Home" icon="fa-home" route="super_admin_home" />
-                    <x-menu.item name="Events" icon="fa-calendar-minus" route="events" />
+                </x-slot:menus>
+            </x-menu.list>
+            <x-menu.list>
+                <x-slot:trigger>
+                    <x-menu.item trigger name="Configuration" icon="fa-conf" />
+                </x-slot:trigger>
+                <x-slot:menus>
                     <x-menu.item name="Department" icon="fas fa-building" route="department_list" />
                     <x-menu.item name="Programme" icon="fas fa-book" route="programme_list" />
                     <x-menu.item name="Faculty" icon="fas fa-chalkboard-teacher" route="faculty_list" />
                     <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
-                    <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Admin" icon="fas fa-chalkboard-teacher" route="admin_list" />
                     <x-menu.item name="Credit Point Assign" icon="fa-trophy" route="credit_point_assign" />
+                </x-slot:menus>
+            </x-menu.list>
+            <x-menu.list>
+                <x-slot:trigger>
+                    <x-menu.item trigger name="Event Management" icon="fa-conf" />
+                </x-slot:trigger>
+                <x-slot:menus>
+                    <x-menu.item name="Events" icon="fa-calendar-minus" route="events" />
+                    <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
                     <x-menu.item name="Assign Tasks" icon="fa-check-circle" route="assign_tasks" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
+                    <x-menu.item name="Reports" icon="fa-book" route="reports" />
                     <x-menu.item name="Review Reports" icon="fa-check-circle" route="review_reports" />
-                    {{-- <x-menu.item name="Student Approval" icon="fa-graduation-cap" route="student_approval" /> --}}
+                    <x-menu.item name="Student Credits" icon="fa-trophy" route="student_credits" />
                 </x-slot:menus>
-            @endif
-        </x-menu.list>
+            </x-menu.list>
+        @endif
+
         <x-menu.item name="Privacy Policy" icon="fa-book-open" route="privacy_policy" />
         <x-menu.item name="Terms and Conditions" icon="fa-file-contract " route="terms_and_conditions" />
         @if (!empty(session()->get('student')))

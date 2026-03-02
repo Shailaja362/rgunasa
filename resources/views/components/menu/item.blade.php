@@ -2,7 +2,7 @@
 <li class="w-full mt-1">
     @if ($route)
         <a href="{{ $route ? route($route) : '#' }}"
-            class="flex w-full text-primary hover:text-white items-center gap-2 px-1 py-2 text-[14px] font-medium rounded-3xl transition hover:bg-primary @if ($route && request()->routeIs($route)) bg-primary text-white not-only:@endif">
+            class="flex w-full text-primary hover:text-white items-center gap-2 px-2 py-2 text-[14px] font-medium rounded-3xl transition hover:bg-primary @if ($route && request()->routeIs($route)) bg-primary text-white not-only:@endif">
             <i class="fa {{ $icon }} w-5"></i>
             <span>{{ $name }}</span>
 
@@ -12,7 +12,7 @@
         </a>
     @else
         <button type="submit"
-            class="flex w-full text-primary hover:text-white items-center gap-2 px-1 py-2 text-[14px] font-medium rounded-3xl transition hover:bg-primary @if ($route && request()->routeIs($route)) bg-primary @endif ">
+            class="flex w-full text-primary hover:text-white items-center gap-2 px-2 py-2 text-[14px] font-medium rounded-3xl transition hover:bg-primary @if ($route && request()->routeIs($route)) bg-primary @endif ">
             <i class="fa {{ $icon }} w-5"></i>
             <span class="flex-1 text-left">{{ $name }}</span>
 

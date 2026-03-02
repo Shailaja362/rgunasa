@@ -32,4 +32,9 @@ class Student extends Authenticatable
     {
         return $this->hasMany(StudentFeedback::class, 'student_id');
     }
+
+    public function registrations()
+    {
+        return $this->hasMany(StudentEventRegistration::class, 'student_id');
+    }
 }

@@ -51,4 +51,5 @@ class StudentEventRegistration extends Model
     {
         return $this->belongsTo(EventSchedule::class, 'event_schedule_id',);
     }
+    
 }
