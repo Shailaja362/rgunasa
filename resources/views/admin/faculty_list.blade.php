@@ -18,7 +18,7 @@
                 {{-- Department Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="department_id"
-                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
                         <option value="">All Departments</option>
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}"
@@ -32,7 +32,7 @@
                 {{-- Designation Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="designation_id"
-                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
                         <option value="">All Designations</option>
                         @foreach ($designations as $designation)
                             <option value="{{ $designation->id }}"
@@ -46,7 +46,7 @@
                     class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white text-sm rounded-full hover:opacity-90 transition">
                     <i class="fa fa-search mr-1"></i> Search
                 </button>
-                @if (request()->hasAny(['search', 'status', 'programme_officer']))
+                @if (request()->hasAny(['search', 'department_id', 'designation_id']))
                     <a href="{{ route('faculty_list') }}"
                         class="px-6 py-2 bg-gray-400 text-white text-sm rounded-full hover:bg-gray-500 transition">
                         Reset

@@ -98,7 +98,7 @@
                 {{-- Department Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="programme_officer"
-                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
                         <option value="">All Programme Officer</option>
                         @foreach ($programme_officer as $officer)
                             <option value="{{ $officer->id }}"
@@ -136,7 +136,7 @@
             </form>
         </div>
     </section>
-    
+
     <section class="p-2 mt-3">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Event Lists</h4>

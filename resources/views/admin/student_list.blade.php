@@ -55,7 +55,7 @@
     @if (session('success'))
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast("{{ session('success') }}", "success",2000);
+                showToast("{{ session('success') }}", "success", 2000);
             });
         </script>
     @endif
@@ -63,7 +63,7 @@
     @if (session('error'))
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast("{{ session('error') }}", "error",2000);
+                showToast("{{ session('error') }}", "error", 2000);
             });
         </script>
     @endif
@@ -90,52 +90,87 @@
     </div>
 
     <h4 class="font-semibold text-gray-800 mb-4">Student Filter</h4>
-    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
-        <div class="mt-6">
-            <form method="GET" action="{{ route('student_list') }}" class="flex gap-3 mb-4">
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Search name / email / mobile"
-                    class="border border-gray-300 rounded-full px-4 py-2 w-[300px] text-sm">
-                <select name="department_id" class="border border-gray-300 rounded-full px-4 py-2 text-sm">
-                    <option value="">All Departments</option>
-                    @foreach ($departments as $dept)
-                        <option value="{{ $dept->id }}"
-                            {{ request('department_id') == $dept->id ? 'selected' : '' }}>
-                            {{ $dept->name }}
-                        </option>
-                    @endforeach
-                </select>
+    <section class="p-4 bg-white rounded-xl shadow-md mt-3">
+        <div class="mt-4">
+            <form method="GET" action="{{ route('student_list') }}"
+                class="flex flex-col md:flex-row md:items-center gap-3">
 
-                <button type="submit"
-                    class="px-5 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full">
-                    <i class="fa fa-search"></i> Search
-                </button>
+                {{-- Search Input --}}
+                <div class="w-full md:flex-1">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search name / email / mobile"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm
+                              focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
 
-                @if (request()->hasAny(['search', 'department_id']))
-                    <a href="{{ route('student_list') }}" class="px-5 py-2 bg-gray-400 text-white rounded-full">
-                        Reset
-                    </a>
-                @endif
+                {{-- Department Filter --}}
+                <div class="w-full md:w-64">
+                    <select name="department_id"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm
+                               focus:outline-none focus:ring-2 focus:ring-primary choice-select">
+                        <option value="">All Departments</option>
+                        @foreach ($departments as $dept)
+                            <option value="{{ $dept->id }}"
+                                {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                                {{ $dept->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="flex gap-2">
+                    <button type="submit"
+                        class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600
+                               text-white text-sm rounded-full hover:opacity-90 transition">
+                        <i class="fa fa-search mr-1"></i> Search
+                    </button>
+
+                    @if (request()->hasAny(['search', 'department_id']))
+                        <a href="{{ route('student_list') }}"
+                            class="px-5 py-2 bg-gray-400 text-white text-sm rounded-full hover:bg-gray-500 transition">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+
             </form>
         </div>
     </section>
 
     <h4 class="font-semibold text-gray-800 mb-4 mt-4">Promote Student</h4>
-    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
-        <div class="mt-6">
-            <form id="promoteForm" method="POST" action="{{ route('promote_student') }}" class="flex gap-3 mb-4">
+    <section class="p-4 bg-white rounded-xl shadow-md mt-3">
+        <div class="mt-4">
+            <form id="promoteForm" method="POST" action="{{ route('promote_student') }}"
+                class="flex flex-col sm:flex-row sm:items-center gap-3">
                 @csrf
-                <select id="batchSelect" name="batch" required
-                    class="w-[600px] border border-gray-300 focus:border-primary focus:ring-1 focus:ring-primary rounded-full px-4 py-2 text-sm">
-                    <option value="">Select Batch</option>
-                    @foreach ($batch as $b)
-                        <option value="{{ $b }}">{{ $b }}</option>
-                    @endforeach
-                </select>
-                <button type="button" onclick="openModal()"
-                    class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full hover:opacity-90 transition">
-                    <i class="fa fa-rocket mr-1"></i> Promote
-                </button>
+                <!-- Batch Select -->
+                <div class="w-full sm:w-auto sm:min-w-[350px]">
+                    <select id="batchSelect" name="batch" required
+                        class="w-full border border-gray-300
+                               focus:border-primary focus:ring-1 focus:ring-primary
+                               rounded-full px-4 py-2 text-sm choice-select">
+                        <option value="">Select Batch</option>
+                        @foreach ($batch as $b)
+                            <option value="{{ $b }}">{{ $b }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Promote Button -->
+                <div>
+                    <button type="button" onclick="openModal()"
+                        class="px-6 py-2
+                               bg-gradient-to-r from-primary to-pink-600
+                               text-white rounded-full
+                               hover:opacity-90 transition
+                               flex items-center gap-2">
+
+                        <i class="fa fa-rocket"></i>
+                        <span>Promote</span>
+                    </button>
+                </div>
+
             </form>
         </div>
     </section>
@@ -209,10 +244,10 @@
 <script>
     function openModal() {
         let batch = document.getElementById('batchSelect').value;
-  if(!batch){
-      showToast("Please select a batch when promoting students", "error",2000);
-      return;
-  }
+        if (!batch) {
+            showToast("Please select a batch when promoting students", "error", 2000);
+            return;
+        }
 
         document.getElementById('selectedBatch').innerText = batch;
         document.getElementById('promotionModal').classList.remove('hidden');

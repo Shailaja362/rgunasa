@@ -60,17 +60,17 @@ $(document).on("submit", "#eventReportForm", function (e) {
         {
             id: "#batch",
             condition: (val) => val === "",
-            message: "Section field is required",
+            message: "Batch field is required",
         },
         {
             id: "#semester",
             condition: (val) => val === "",
-            message: "Section field is required",
+            message: "Semester field is required",
         },
         {
             id: "#event_date",
             condition: (val) => val === "",
-            message: "Section field is required",
+            message: "Event Date field is required",
         },
     ];
 

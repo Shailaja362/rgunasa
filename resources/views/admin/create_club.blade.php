@@ -32,9 +32,9 @@
             </div>
 
             <div>
-                <label class="block text-sm font-medium">Faculty</label>
+                <label class="block text-sm font-medium">Faculty<span class="text-red-500">*</span></label>
                <select name="faculty_id" id="faculty_id"
-                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1">
+                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 choice-select">
                     <option value="">Select Faculty</option>
                     @foreach ($faculty as $fac)
                         <option value="{{ $fac->id }}"

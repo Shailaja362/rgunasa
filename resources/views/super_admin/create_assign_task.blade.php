@@ -16,7 +16,7 @@
                 <div class="col-span-2">
                     <label class="block text-sm font-medium">Select Admin<span class="text-red-600">*</span></label>
                     <select name="admin_id" id="admin_id"
-                        class="bg-[#D9D9D9] w-full rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                        class="choice-select bg-[#D9D9D9] w-full rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                         <option value="">Select Admin</option>
                         @foreach ($admins as $admin)
                             <option value="{{ $admin->id }}"

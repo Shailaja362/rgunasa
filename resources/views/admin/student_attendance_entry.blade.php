@@ -24,7 +24,7 @@
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <div>
                     <label class="block text-sm font-medium">Programme</label>
-                    <select name="programme_id" class="border rounded-lg px-3 py-3 w-full mt-2" id="programme_id">
+                    <select name="programme_id" class="border rounded-lg px-3 py-3 w-full mt-2 choice-select" id="programme_id">
                         <option value="">-- Select Programme --</option>
                         @foreach ($get_schedule_event as $id => $value)
                             <option value="{{ $value->programme->id }}"
@@ -43,7 +43,7 @@
             <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                 <div>
                     <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
-                    <select name="section" id="section" class="border rounded-lg px-3 py-2 w-full mt-2">
+                    <select name="section" id="section" class="border rounded-lg px-3 py-2 w-full mt-2 choice-select">
                         <option value="" selected disabled>Select Section</option>
                         <option value="a" {{ request('section') == 'a' ? 'selected' : '' }}>A</option>
                         <option value="b" {{ request('section') == 'b' ? 'selected' : '' }}>B</option>

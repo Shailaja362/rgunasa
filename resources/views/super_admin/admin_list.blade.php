@@ -97,7 +97,7 @@
                 {{-- Department Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="department_id"
-                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
                         <option value="">All Departments</option>
                         @foreach ($departments as $dept)
                             <option value="{{ $dept->id }}"
@@ -111,7 +111,7 @@
                 {{-- Designation Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="designation_id"
-                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
                         <option value="">All Designations</option>
                         @foreach ($designations as $designation)
                             <option value="{{ $designation->id }}"

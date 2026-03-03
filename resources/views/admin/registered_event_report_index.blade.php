@@ -69,13 +69,13 @@
                         placeholder="Student name / Email" class="w-full border rounded px-3 py-2">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium">Batch</label>
                     <input type="text" name="batch" id="batch" value="{{ request('batch') }}"
                         placeholder="e.g, 2025-2029"
                         class="w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
                 </div>
                 <div>
-                    <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium"> Semester</label>
                     <select name="semester" id="semester"
                         class="semester w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                         <option value="" selected disabled>Select Semester</option>

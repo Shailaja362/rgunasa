@@ -32,7 +32,7 @@
             <div>
                 <label class="block text-sm font-medium">Select Club<span class="text-red-600">*</span></label>
                 <select name="club_id" id="club_id"
-                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
+                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                     <option value="">Select Club</option>
                     @foreach ($club as $club_value)
                         <option value="{{ $club_value->id }}" @if (!empty($edit_event) && $edit_event->club_id == $club_value->id) selected @endif>
@@ -46,7 +46,7 @@
             <div>
                 <label class="block text-sm font-medium">Programme Officer<span class="text-red-600">*</span></label>
                 <select name="programme_officer" id="programme_officer"
-                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
+                    class="choice-select bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
                     <option value="">Select Programme Officer</option>
                     @if (!empty($edit_faculty))
                         <option value="{{ $edit_faculty->id }}" selected>{{ $edit_faculty->name }}</option>
@@ -167,7 +167,7 @@
                                 Programme <span class="text-red-500">*</span>
                             </label>
                             <select name="departments[{{ $index }}][programme_id]"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department">
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department choice-select">
                                 <option value="">Select Programme</option>
                                 @foreach ($programmes as $d)
                                     <option value="{{ $d->id }}"
@@ -242,7 +242,7 @@
                             <label class="block text-sm font-medium"> Semester <span
                                     class="text-red-500">*</span></label>
                             <select name="departments[{{ $index }}][semester]" id="semester"
-                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                                 <option value="" selected disabled>Select Semester</option>
                                 <option value="1" {{ $dept?->semester == '1' ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ $dept?->semester == '2' ? 'selected' : '' }}>2</option>

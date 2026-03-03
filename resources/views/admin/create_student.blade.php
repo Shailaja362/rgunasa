@@ -54,7 +54,7 @@
             </div>
              <div>
                 <label class="block text-sm font-medium">Department<span class="text-red-500">*</span></label>
-                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="department_id" id="department_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                     <option value="">Select Department</option>
                     @foreach ($department as $depart)
                         <option value="{{ $depart->id }}"
@@ -66,7 +66,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Programme<span class="text-red-500">*</span></label>
-                <select name="programme_id" id="programme_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="programme_id" id="programme_id" class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                     <option value="">Select Programme</option>
                     @foreach ($programme as $prog)
                         <option value="{{ $prog->id }}"
@@ -88,7 +88,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium"> Section <span class="text-red-500">*</span></label>
-                <select name="section" id="section" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="section" id="section" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                     <option value="" selected disabled>Select Section</option>
                     <option value="a" {{  $edit_student?->section == "a" ? 'selected' : '' }}>A</option>
                     <option value="b" {{  $edit_student?->section == "b" ? 'selected' : '' }}>B</option>
@@ -104,7 +104,7 @@
             </div>
             <div>
                 <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
-                <select name="semester" id="semester" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="semester" id="semester" class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                     <option value="" selected disabled>Select Semester</option>
                     <option value="1" {{  $edit_student?->semester == "1" ? 'selected' : '' }}>1</option>
                     <option value="2" {{  $edit_student?->semester == "2" ? 'selected' : '' }}>2</option>
