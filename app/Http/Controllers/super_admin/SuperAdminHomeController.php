@@ -25,6 +25,7 @@ class SuperAdminHomeController extends Controller
             $q->whereDate('event_date', '>', now());
         })
         ->where('publish',1)
+        ->where('is_active', 'y')
         ->count();
 
         // Ongoing Events (event date = today)
@@ -32,6 +33,7 @@ class SuperAdminHomeController extends Controller
             $q->whereDate('event_date', now());
         })
         ->where('publish', 1)
+        ->where('is_active', 'y')
         ->count();
 
         // Total Admins with role_id 2
@@ -46,6 +48,7 @@ class SuperAdminHomeController extends Controller
                 ->whereDate('event_date', '>', now());
         })
             ->where('publish', 1)
+            ->where('is_active', 'y')
             ->count();
 
         // Admins Created This Month

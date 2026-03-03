@@ -64,10 +64,50 @@
                     {{-- <span class="bg-white text-xs px-4 py-1 rounded-full">This Academic Year</span> --}}
                 </div>
             </div>
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl shadow-lg p-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-indigo-700 font-medium text-medium">
+                            Credit Summary
+                        </p>
+                        <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                            @if ($config_credit->credit_points == 0)
+                                0
+                            @else
+                                {{ $earned_credit ?? 0 }}
+                            @endif /{{ isset($config_credit->credit_points) ? round($config_credit->credit_points) : '' }}
+                            <span class="text-sm font-normal text-gray-500">Credits</span>
+                        </h3>
+                    </div>
+                    <img src="{{ asset('/images/certificates.png') }}" alt="Certificates" class="w-14 h-14">
+                </div>
+                <div class="grid grid-cols-2 gap-4 mt-6 text-center">
+                    <div class="bg-white rounded-xl p-3 shadow-sm">
+                        <p class="text-xs text-gray-500">Earned</p>
+                        <p class="text-lg font-bold text-green-600">
+                            @if ($config_credit->credit_points == 0)
+                                0
+                            @else
+                                {{ $earned_credit ?? 0 }}
+                            @endif
+                        </p>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-3 shadow-sm">
+                        <p class="text-xs text-gray-500">Pending</p>
+                        <p class="text-lg font-bold text-red-500">
+                            @if ($config_credit->credit_points == 0)
+                                0
+                            @else
+                                {{ $pending_credit ?? 0 }}
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
         <!-- Section Header -->
         <div class="bg-[#F2E8F5] rounded-full px-5 py-3 mt-8 flex justify-between items-center">
-            <!-- Left side -->
             <h3 class="font-semibold text-primary">Events</h3>
         </div>
 
@@ -248,7 +288,7 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount =  \App\Models\StudentEventRegistration::where(
+                            $registeredCount = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $department->id,
                             )
@@ -413,9 +453,9 @@
                 @foreach ($registeredEvents as $register_event)
                     @php
                         $registered = \App\Models\StudentEventRegistration::where(
-                                'event_schedule_id',
-                                $register_event->event_schedule_id,
-                            )
+                            'event_schedule_id',
+                            $register_event->event_schedule_id,
+                        )
                             ->whereHas('student', function ($query) use ($student) {
                                 $query
                                     ->where('programme_id', $student->programme_id)

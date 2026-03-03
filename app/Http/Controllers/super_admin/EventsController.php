@@ -68,8 +68,7 @@ class EventsController extends Controller
             $schedule->departments = $departments;
             return $schedule;
         });
-
-
+        
         $this->data['registeredEvents'] = EventSchedule::select(
             'event_schedules.id',
             'event_schedules.event_id',
@@ -100,9 +99,14 @@ class EventsController extends Controller
                 'event_schedules.id',
                 'event_schedules.event_id',
                 'event_schedules.event_date',
-                'event_schedules.programme_id'
+                'event_schedules.programme_id',
+                'event_schedules.section',
             )
             ->with('event', 'programme')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->orderByDesc('event_schedules.event_date')
             ->paginate(10)
             ->appends($request->query());
@@ -138,9 +142,17 @@ class EventsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')->paginate(10);
+            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
+                  ->where([
+                    'publish' => 1,
+                    'is_active' => 'y'
+                  ])->paginate(10);
         } else {
             $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
+                ->where([
+                    'publish' => 1,
+                    'is_active' => 'y'
+                ])
                 ->where('created_by', $adminId)->paginate(10);
         }
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
@@ -225,6 +237,7 @@ class EventsController extends Controller
             $event->contact_email = $request['contact_email']  ?? '';
             $event->duration_months = $request['duration_months'];
             $event->is_technical_event = $request['is_technical_event'] ?? '';
+            $event->is_active = $request['is_active'] ?? '';
             $event->save();
 
             $submittedScheduleIds = collect($request->departments)

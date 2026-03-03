@@ -98,8 +98,28 @@
 
                 </div>
             </div>
+            @if (!empty($edit_event))
+            <div>
+                <label class="block text-sm font-medium"> Is Active <span class="text-red-500">*</span></label>
+                <div class="flex items-center gap-6 mt-2">
+                    {{-- YES --}}
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_active" value="y"
+                            class="text-primary focus:ring-primary is_active"
+                            {{ old('is_active', optional($edit_event)->is_active) === 'y' ? 'checked' : '' }}>
+                        <span class="ml-2 text-sm">Active</span>
+                    </label>
 
-
+                    {{-- NO --}}
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="is_active" value="n"
+                            class="text-primary focus:ring-primary is_active"
+                            {{ old('is_active', optional($edit_event)->is_active) === 'n' ? 'checked' : '' }}>
+                        <span class="ml-2 text-sm">In Active</span>
+                    </label>
+                </div>
+            </div>
+            @endif
             <div>
                 <label class="block text-sm font-medium">Event Type <span class="text-red-600">*</span></label>
                 <select name="event_type" id="event_type"
@@ -214,8 +234,8 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
-                            <input type="text" name="departments[{{ $index }}][batch]" id="batch" value="{{ $dept->batch ?? '' }}"
-                                placeholder="e.g, 2025-2029"
+                            <input type="text" name="departments[{{ $index }}][batch]" id="batch"
+                                value="{{ $dept->batch ?? '' }}" placeholder="e.g, 2025-2029"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
                         </div>
                         <div>
@@ -235,9 +255,11 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Credit Points <span class="text-red-500">*</span></label>
-                            <input type="number" name="departments[{{ $index }}][credit_points]" id="credit_points"
-                                value="{{ $dept->credit_points ?? '' }}" placeholder="Enter Event Credit Points"
+                            <label class="block text-sm font-medium">Credit Points <span
+                                    class="text-red-500">*</span></label>
+                            <input type="number" name="departments[{{ $index }}][credit_points]"
+                                id="credit_points" value="{{ $dept->credit_points ?? '' }}"
+                                placeholder="Enter Event Credit Points"
                                 class="credit_points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
                         </div>
                     </div>
@@ -359,24 +381,20 @@
         <!-- Center-Aligned Button -->
         <div class="flex justify-center mt-10 gap-4">
 
-    <button type="submit" id="createEventBtn"
-        class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
-        <i class="fas fa-save"></i> Create Event
-    </button>
-   <button type="button"
-    id="publishBtn"
-    data-event_id="{{ $edit_event->id ?? '' }}"
-    @if(!empty($edit_event) && $edit_event->publish == 1)
-        disabled
+            <button type="submit" id="createEventBtn"
+                class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition">
+                <i class="fas fa-save"></i> Create Event
+            </button>
+            <button type="button" id="publishBtn" data-event_id="{{ $edit_event->id ?? '' }}"
+                @if (!empty($edit_event) && $edit_event->publish == 1) disabled
         class="px-3 w-43 bg-gray-400 text-white font-semibold py-1 rounded-full cursor-not-allowed"
     @else
-        class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition"
-    @endif>
+        class="px-3 w-43 bg-gradient-to-r from-primary to-pink-600 text-white font-semibold py-1 rounded-full hover:opacity-90 transition" @endif>
 
-    <i class="fas fa-paper-plane"></i>
-    {{ (!empty($edit_event) && $edit_event->publish == 1) ? 'Published' : 'Publish' }}
-</button>
-</div>
+                <i class="fas fa-paper-plane"></i>
+                {{ !empty($edit_event) && $edit_event->publish == 1 ? 'Published' : 'Publish' }}
+            </button>
+        </div>
     </form>
 </x-layouts.app>
 

@@ -23,7 +23,10 @@ class AdminHomeController extends Controller
 
         $adminId = Auth::guard('admin')->id();
         $this->data['events'] = Event::with('registrations')
-            ->where('publish', 1)
+            ->where([
+            'publish' => 1,
+            'is_active' => 'y'
+            ])
             ->where('created_by', $adminId)
             ->orderBy('created_at', 'DESC')
             ->get();
@@ -31,7 +34,10 @@ class AdminHomeController extends Controller
 
         $this->data['upcoming_events'] = Event::where('created_by', $adminId)
             ->where('created_by', $adminId)
-            ->where('publish', 1)
+            ->where([
+                'publish' => 1,
+                'is_active' => 'y'
+            ])
             ->whereHas('schedules', function ($query) use ($today) {
                 $query->whereDate('event_date', '>=', $today);
             })
@@ -42,12 +48,18 @@ class AdminHomeController extends Controller
 
         $this->data['pending_approvals'] = StudentEventRegistration::with('event')
                                              ->whereHas('event' , function($query) use($adminId) {
-                                                 $query->where('created_by',  $adminId);
+                                                 $query->where('created_by',  $adminId)
+                                                  ->where('publish' , 1)
+                                                  ->where('is_active' , 'y');
                                              })
                                              ->where('status',1)
                                              ->get();
-        $this->data['submitted_reports'] = EventReport::where('created_by', $adminId)
+        $this->data['submitted_reports'] = EventReport::with('get_event')->where('created_by', $adminId)
             ->select('event_id', DB::raw('COUNT(*) as total_reports'))
+            ->whereHas('get_event', function ($query) {
+                $query->where('publish', 1)
+                      ->where('is_active', 'y');
+            })
             ->groupBy('event_id')
             ->get();
         $this->data['total_tasks'] = Tasks::where('admin_id', $adminId)->count();

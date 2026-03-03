@@ -14,7 +14,8 @@ class EventRegisterdReportController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['events'] = Event::where('publish',1)->get();
+        $this->data['events'] = Event::where('publish',1)
+            ->where('is_active', 'y')->get();
         $this->data['statusLabels']  = [
             1 => 'Registered',
             2 => 'Approved',
@@ -36,6 +37,10 @@ class EventRegisterdReportController extends Controller
                 'student.get_department',
                 'get_event_schedule'
             ])
+                ->whereHas('event', function ($query) {
+                    $query->where('publish', 1)
+                        ->where('is_active', 'y');
+                })
                 ->when($request->event_id, function ($q) use ($request) {
                     $q->where('event_id', $request->event_id);
                 })
@@ -96,6 +101,10 @@ class EventRegisterdReportController extends Controller
             'student',
             'student.get_department',
             'get_event_schedule'])
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->when($request->event_id, fn($q) => $q->where('event_id', $request->event_id))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->when($request->from_date, function ($q) use ($request) {

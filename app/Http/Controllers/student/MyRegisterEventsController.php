@@ -29,6 +29,10 @@ class MyRegisterEventsController extends Controller
                 ->where('batch', $student->batch)
                 ->where('semester', $student->semester);
          })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->get();
         $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
             ->whereHas('get_event_attendance', function ($query) use ($student) {
@@ -36,26 +40,50 @@ class MyRegisterEventsController extends Controller
                        ->whereNotNull('exit_time')
                        ->where('student_id', $student->id);
             })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('student_id', $student->id)
             ->get();
 
-        $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
+        $this->data['activeCount'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('status', 1)
             ->count();
-        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance','event')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($student) {
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
                     ->where('student_id', $student->id);
             })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('status', 3)
             ->count();
-        $events = Event::where('publish', 1)->get();
-        $myuploads = StudentUploadProof::select('student_id', 'event_id')
+        $events = Event::where([
+            'publish' => 1,
+            'is_active' => 'y'
+        ])->get();
+        $myuploads = StudentUploadProof::with('event')->select('student_id', 'event_id')
             ->where('student_id', $student->id)
+            ->whereHas('event', function ($query) {
+              $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->groupBy('student_id', 'event_id')
             ->get();
-        $activecount = StudentEventRegistration::where('student_id', $student->id)->count();
+        $activecount = StudentEventRegistration::with('event')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
+            ->where('student_id', $student->id)->count();
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
         return view('student.my_register_event')->with($this->data);
     }
@@ -141,17 +169,25 @@ class MyRegisterEventsController extends Controller
     public function getUploadedProof(Request $request)
     {
         try {
-            $proofs = StudentUploadProof::where([
+            $proofs = StudentUploadProof::with('event')->where([
                 'student_id' => $request->student_id,
                 'event_id'   => $request->event_id,
                 'event_schedule_id' => $request->schedule_id
-            ])->get();
+            ])
+                ->whereHas('event', function ($query) {
+                    $query->where('publish', 1)
+                        ->where('is_active', 'y');
+                })->get();
 
-            $feedback = StudentFeedback::where([
+            $feedback = StudentFeedback::with('event')->where([
                 'student_id' => $request->student_id,
                 'event_id'   => $request->event_id,
                 'event_schedule_id' => $request->schedule_id
-            ])->first();
+            ])
+                ->whereHas('event', function ($query) {
+                    $query->where('publish', 1)
+                        ->where('is_active', 'y');
+                })->first();
 
 
             return response()->json([

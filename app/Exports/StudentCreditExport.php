@@ -18,10 +18,16 @@ class StudentCreditExport implements FromCollection, WithHeadings
 
     public function collection()
     {
-        return $this->students->map(function ($student, $index)  {
+        return $this->students->map(function ($student, $index) {
             $events = $student->registrations->map(function ($registration) {
-                return $registration->get_event_schedule->event->title .' - ' . (isset($registration->get_event_schedule->credit_points) ? round($registration->get_event_schedule->credit_points) : '')  ?? '';
+                return $registration->get_event_schedule->event->title . ' - ' . (isset($registration->get_event_schedule->credit_points) ? round($registration->get_event_schedule->credit_points) : '')  ?? '';
             })->implode(', ');
+            if ($student->earned_credits > 4) {
+                $earned = 4;
+            } else {
+                $earned = $student->earned_credits;
+            }
+            $pending = $this->creditpoints->credit_points - $earned;
             return [
                 'S.No' => $index + 1,
                 'Register Number' => $student->register_number,
@@ -30,8 +36,9 @@ class StudentCreditExport implements FromCollection, WithHeadings
                 'Section' => $student->section,
                 'Semester' => $student->semester,
                 'Attended Events' => $events ?: 'No Events',
+                'Semester Credit Points' => (isset($this->creditpoints->credit_points) ? round($this->creditpoints->credit_points) : '')  ?? '',
                 'Earned Credit Points' => $student->earned_credits ?? 0,
-                'Semester Credit Points' => (isset($this->creditpoints->credit_points) ? round($this->creditpoints->credit_points) : '')  ?? ''
+                'Pending Credit Points' => $pending
             ];
         });
     }
@@ -46,8 +53,9 @@ class StudentCreditExport implements FromCollection, WithHeadings
             'Section',
             'Semester',
             'Attended Events',
+            'Semester Credit Points',
             'Earned Credit Points',
-            'Semester Credit Points'
+            'Pending Credit Points',
         ];
     }
 }

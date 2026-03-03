@@ -30,6 +30,10 @@ class CertificatesController extends Controller
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
             )
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->get();
 
 
@@ -39,8 +43,12 @@ class CertificatesController extends Controller
     public function downloadCertificate(Request $request)
     {
         $event = Event::with('get_admin')->where('id', $request->event_id)->first();
-        $registration = StudentEventRegistration::where('event_id', $event->id)
+        $registration = StudentEventRegistration::with('event')->where('event_id', $event->id)
             ->where('student_id', $request->student_id)
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->first();
         $student = Student::with('get_department')->where('id',$request->student_id)->first();
         $pdf = Pdf::loadView('student.certificates.template', [

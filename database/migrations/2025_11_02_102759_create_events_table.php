@@ -63,6 +63,7 @@ return new class extends Migration
             $table->enum('status', ['pending', 'completed'])->default('pending');
             $table->tinyInteger('publish')->comment('0 - Not Published , 1 - Published');
             $table->enum('is_technical_event', ['y', 'n'])->default('n')->comment('Y - Yes , N - No');
+            $table->enum('is_active', ['y', 'n'])->default('y')->comment('Y - Yes , N - No');
             $table->timestamps();
 
             $table->foreign('faculty_id')->references('id')->on('faculties')->onDelete('no action');

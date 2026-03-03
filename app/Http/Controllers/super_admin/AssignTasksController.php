@@ -29,7 +29,10 @@ class AssignTasksController extends Controller
         $adminId = Auth::guard('admin')->id();
         $this->data['tasks'] = Tasks::where('created_by', $adminId)->with('get_admin', 'get_task_images')->get();
         $this->data['pending_tasks'] = Tasks::where(['created_by' => $adminId, 'status' => 'pending'])->count();
-        $this->data['ongoing_tasks'] = Event::where('publish', 1)->with('get_task')
+        $this->data['ongoing_tasks'] = Event::where([
+        'publish' => 1 ,
+        'is_active' => 'y'
+        ])->with('get_task')
             ->whereHas('get_task', function ($query) use ($adminId) {
                 $query->where('created_by', $adminId);
                 // ->whereNotIn('status', ['pending', 'accepted']);

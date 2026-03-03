@@ -88,19 +88,19 @@
     </form>
 
     @if (request()->filled('programme_id') && request()->filled('semester'))
-    <form method="POST" action="{{ route('grade_save') }}" class="mt-8 p-5">
-        @csrf
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-5 p-5">
+        <form method="POST" action="{{ route('grade_save') }}" class="mt-8 p-5">
+            @csrf
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mt-5 p-5">
                 <div class="flex justify-end mb-4">
-                <a href="{{ route('export_student_credits', [
-                    'programme_id' => request()->programme_id,
-                    'semester' => request()->semester,
-                    'section' => request()->section
-                ]) }}"
-                   class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                    <i class="fas fa-file-excel"></i> Export Excel
-                </a>
-            </div>
+                    <a href="{{ route('export_student_credits', [
+                        'programme_id' => request()->programme_id,
+                        'semester' => request()->semester,
+                        'section' => request()->section,
+                    ]) }}"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        <i class="fas fa-file-excel"></i> Export Excel
+                    </a>
+                </div>
                 <div class="overflow-x-auto">
                     <div>
                         <h1><b>Programme Name : </b>{{ $progm->name ?? '' }} <br>
@@ -118,10 +118,19 @@
                                 <th class="px-2 py-3 text-left font-semibold">Student Name</th>
                                 <th class="px-2 py-3 text-left font-semibold">Attended Events</th>
                                 <th class="px-2 py-3 text-left font-semibold">Earned Credit Points</th>
+                                <th class="px-2 py-3 text-left font-semibold">Pending Credit Points</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 bg-white">
                             @forelse($student_credits as $index => $student)
+                                @php
+                                    if ($student->earned_credits > 4) {
+                                        $earned = 4;
+                                    } else {
+                                        $earned = $student->earned_credits;
+                                    }
+                                    $pending = $credit_points->credit_points - $earned;
+                                @endphp
                                 <tr class="hover:bg-gray-50 transition">
                                     <td class="px-2 py-3">{{ $index + 1 }}</td>
                                     <td class="px-2 py-3">{{ $student->register_number ?? '' }}</td>
@@ -148,7 +157,11 @@
                                         @endif
                                     </td>
                                     <td class="px-2 py-3 font-semibold text-green-600 text-center">
-                                        {{ $student->earned_credits ?? 0 }}</td>
+                                        {{ $earned ?? 0 }}
+                                    </td>
+                                    <td class="px-2 py-3 font-semibold text-red-600 text-center">
+                                        {{ $pending ?? 0 }}
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>

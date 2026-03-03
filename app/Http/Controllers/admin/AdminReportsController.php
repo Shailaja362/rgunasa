@@ -30,9 +30,17 @@ class AdminReportsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme')->paginate(10);
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event')
+                ->whereHas('get_event', function ($query) {
+                    $query->where('publish', 1)
+                        ->where('is_active', 'y');
+                })->paginate(10);
         } else {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme')
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event')
+                ->whereHas('get_event', function ($query) {
+                    $query->where('publish', 1)
+                        ->where('is_active', 'y');
+                })
                 ->where('created_by', $adminId)->paginate(10);
         }
         return view('admin.admin_reports_index')->with($this->data);
@@ -51,7 +59,10 @@ class AdminReportsController extends Controller
         }
         $adminId = Auth::guard('admin')->id();
         $this->data['event'] = Event::where('created_by', $adminId)
-            ->where('publish', 1)
+            ->where([
+                'publish' => 1 ,
+                'is_active' => 'y'
+            ])
             ->get();
         $this->data['programmes'] = Programme::get();
         return view('admin.create_admin_report')->with($this->data);

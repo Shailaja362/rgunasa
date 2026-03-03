@@ -20,15 +20,22 @@ class RegisterEventController extends Controller
     public function index(Request $request)
     {
         $now = Carbon::now();
-        $this->data['events'] = Event::where('publish', 1)->get();
+        $this->data['events'] = Event::where([
+            'publish' => 1,
+            'is_active' => 'y'
+        ])->get();
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
-        $myuploads = StudentUploadProof::select('student_id', 'event_id')
+        $myuploads = StudentUploadProof::with('event')->select('student_id', 'event_id')
+            ->whereHas('event', function ($query) {
+              $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
+        $this->data['ongoingEvents'] =  Event::with('event')->whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
                 ->where('batch', $student->batch)
@@ -42,7 +49,10 @@ class RegisterEventController extends Controller
                     ->where('semester', $student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
-            ->where('publish', 1)
+            ->where([
+                'publish' => 1,
+                'is_active' => 'y'
+            ])
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
@@ -60,23 +70,43 @@ class RegisterEventController extends Controller
                     // ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
-            ->where('publish', 1)
+            ->where([
+            'publish' => 1,
+            'is_active' => 'y'
+            ])
             ->get();
 
-        $this->data['activeCount'] = StudentEventRegistration::where('student_id', $student->id)
+        $this->data['activeCount'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
             ->where('status', 1)
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->count();
-        $activecount = StudentEventRegistration::where('student_id', $student->id)->count();
+        $activecount = StudentEventRegistration::with('event')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
+            ->where('student_id', $student->id)->count();
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
-        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance')->where('student_id', $student->id)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance','event')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
             })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('status', 3)
             ->count();
         $this->data['studentRegistrations'] = StudentEventRegistration::where('student_id', $student->id)
-            ->with('event') // eager load event for date and type
+            ->with('event')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->get();
         return view('student.register_event_index')->with($this->data);
     }
@@ -166,7 +196,11 @@ class RegisterEventController extends Controller
     {
         if ($request->ajax() && $request->get_student) {
             $student = session()->get('student');
-            $event = Event::where('id', $request->event_id)->first();
+            $event = Event::where([
+                'id' => $request->event_id,
+                'publish' => 1,
+                'is_active' => 'y'
+            ])->first();
             return response()->json([
                 'success' => true,
                 'student' => $student,
