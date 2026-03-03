@@ -29,7 +29,11 @@ class EventsController extends Controller
             'event',
             'programme',
             'registrations.student.get_department'
-        ]);
+        ])
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            });
         if ($from && $to) {
             $baseQuery->whereBetween('event_date', [$from, $to]);
         } elseif ($from) {
@@ -68,7 +72,7 @@ class EventsController extends Controller
             $schedule->departments = $departments;
             return $schedule;
         });
-        
+
         $this->data['registeredEvents'] = EventSchedule::select(
             'event_schedules.id',
             'event_schedules.event_id',
@@ -142,19 +146,32 @@ class EventsController extends Controller
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
-                  ->where([
-                    'publish' => 1,
-                    'is_active' => 'y'
-                  ])->paginate(10);
+            $query = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations');
         } else {
-            $this->data['events'] = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
-                ->where([
-                    'publish' => 1,
-                    'is_active' => 'y'
-                ])
-                ->where('created_by', $adminId)->paginate(10);
+            $query = Event::with('get_faculty', 'schedules', 'get_task', 'schedules.registrations')
+                      ->where('created_by', $adminId);
         }
+
+         if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'LIKE', "%{$search}%")
+                  ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $query->where('is_active', $request->department_id);
+        }
+
+        if ($request->filled('programme_officer')) {
+            $query->where('faculty_id', $request->programme_officer);
+        }
+        $this->data['events'] = $query
+            ->orderBy('id', 'desc')
+            ->paginate(25)
+            ->withQueryString();
+        $this->data['programme_officer'] = Faculty::get();
         $this->data['tasks'] = Tasks::with('get_admin', 'get_task_images', 'get_event')->where('admin_id', $adminId)->get();
         return view('super_admin.event_list')->with($this->data);
     }
@@ -162,7 +179,6 @@ class EventsController extends Controller
     public function saveEvent(Request $request)
     {
         try {
-
             $rules = [
                 'event_title'   => 'required',
                 'club_id'   => 'required',
@@ -237,7 +253,7 @@ class EventsController extends Controller
             $event->contact_email = $request['contact_email']  ?? '';
             $event->duration_months = $request['duration_months'];
             $event->is_technical_event = $request['is_technical_event'] ?? '';
-            $event->is_active = $request['is_active'] ?? '';
+            $event->is_active = $request['is_active'] ?? 'y';
             $event->save();
 
             $submittedScheduleIds = collect($request->departments)
@@ -324,10 +340,10 @@ class EventsController extends Controller
             'event_id' => 'required|exists:events,id'
         ]);
 
-        $event = Event::where('id',$request->event_id)
-        ->update([
-            'publish' => 1
-        ]);
+        $event = Event::where('id', $request->event_id)
+            ->update([
+                'publish' => 1
+            ]);
 
         return response()->json([
             'success' => true,

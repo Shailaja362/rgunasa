@@ -71,11 +71,11 @@
                             Credit Summary
                         </p>
                         <h3 class="text-2xl font-bold text-gray-800 mt-1">
-                            @if ($config_credit->credit_points == 0)
+                            @if (!isset($config_credit->credit_points) || $config_credit->credit_points == 0)
                                 0
                             @else
                                 {{ $earned_credit ?? 0 }}
-                            @endif /{{ isset($config_credit->credit_points) ? round($config_credit->credit_points) : '' }}
+                            @endif /{{ isset($config_credit->credit_points) ? round($config_credit->credit_points) : 0 }}
                             <span class="text-sm font-normal text-gray-500">Credits</span>
                         </h3>
                     </div>
@@ -85,7 +85,7 @@
                     <div class="bg-white rounded-xl p-3 shadow-sm">
                         <p class="text-xs text-gray-500">Earned</p>
                         <p class="text-lg font-bold text-green-600">
-                            @if ($config_credit->credit_points == 0)
+                            @if (!isset($config_credit->credit_points) || $config_credit->credit_points == 0)
                                 0
                             @else
                                 {{ $earned_credit ?? 0 }}
@@ -96,7 +96,7 @@
                     <div class="bg-white rounded-xl p-3 shadow-sm">
                         <p class="text-xs text-gray-500">Pending</p>
                         <p class="text-lg font-bold text-red-500">
-                            @if ($config_credit->credit_points == 0)
+                            @if (!isset($config_credit->credit_points) || $config_credit->credit_points == 0)
                                 0
                             @else
                                 {{ $pending_credit ?? 0 }}
@@ -174,7 +174,7 @@
                                 !$permanentBlock &&
                                 !$cooldownActive &&
                                 $availableSeats > 0 &&
-                                $deadline->gte($today) &&
+                                !$deadline->endOfDay()->isPast() &&
                                 !$paidEventConflict;
                         @endphp
                         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -339,7 +339,7 @@
                                 !$permanentBlock &&
                                 !$cooldownActive &&
                                 $availableSeats > 0 &&
-                                $deadline->gte($today) &&
+                                !$deadline->endOfDay()->isPast() &&
                                 !$paidEventConflict;
                         @endphp
                         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">

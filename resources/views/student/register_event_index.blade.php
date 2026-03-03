@@ -115,7 +115,7 @@
                                 !$permanentBlock &&
                                 !$cooldownActive &&
                                 $availableSeats > 0 &&
-                                $deadline->gte($today) &&
+                                !$deadline->endOfDay()->isPast() &&
                                 !$paidEventConflict;
                         @endphp
                         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
@@ -281,7 +281,7 @@
                                 !$permanentBlock &&
                                 !$cooldownActive &&
                                 $availableSeats > 0 &&
-                                $deadline->gte($today) &&
+                                !$deadline->endOfDay()->isPast() &&
                                 !$paidEventConflict;
                         @endphp
                         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">

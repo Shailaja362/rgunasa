@@ -84,6 +84,59 @@
             @endforeach
         </div>
     @endif
+
+    <section class="bg-white rounded-xl shadow-md p-4 mt-3">
+        <div class="w-full">
+            <form method="GET" action="{{ route('event_list') }}" class="flex flex-wrap items-center gap-3">
+                {{-- Search Input --}}
+                <div class="w-full sm:w-auto flex-1 min-w-[250px]">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search event name here"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+
+                {{-- Department Filter --}}
+                <div class="w-full sm:w-auto">
+                    <select name="programme_officer"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Programme Officer</option>
+                        @foreach ($programme_officer as $officer)
+                            <option value="{{ $officer->id }}"
+                                {{ request('programme_officer') == $officer->id ? 'selected' : '' }}>
+                                {{ $officer->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Designation Filter --}}
+                <div class="w-full sm:w-auto">
+                    <select name="status"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">Status</option>
+                        <option value="y" {{ request('status') == 'y' ? 'selected' : '' }}>Active</option>
+                        <option value="n" {{ request('status') == 'n' ? 'selected' : '' }}>In Active</option>
+                    </select>
+                </div>
+
+                {{-- Search Button --}}
+                <button type="submit"
+                    class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white text-sm rounded-full hover:opacity-90 transition">
+                    <i class="fa fa-search mr-1"></i> Search
+                </button>
+
+                {{-- Reset Button --}}
+                @if (request()->hasAny(['search', 'status', 'programme_officer']))
+                    <a href="{{ route('event_list') }}"
+                        class="px-6 py-2 bg-gray-400 text-white text-sm rounded-full hover:bg-gray-500 transition">
+                        Reset
+                    </a>
+                @endif
+
+            </form>
+        </div>
+    </section>
+    
     <section class="p-2 mt-3">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Event Lists</h4>
@@ -96,6 +149,7 @@
                             <th class="px-2 py-2">Event Name</th>
                             <th class="px-2 py-2">Programme Officer</th>
                             <th class="px-2 py-2">Departments</th>
+                            <th class="px-2 py-2">Status</th>
                             <th class="px-2 py-2">Action</th>
                         </tr>
                     </thead>
@@ -143,6 +197,13 @@
                                             </div>
                                         @endforeach
                                     </div>
+                                </td>
+                                <td class="px-3 py-2">
+                                 @if ($event->is_active == 'y')
+                                  <span class="bg-green-100 text-green-700 p-2 rounded-full"> Active </span>
+                                 @else
+                                    <span class="bg-red-100 text-red-700 p-2 rounded-full"> InActive </span>
+                                 @endif
                                 </td>
                                 <!-- Action -->
                                 <td class="px-3 py-2 text-center">

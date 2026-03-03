@@ -11,9 +11,33 @@ use Illuminate\Http\Request;
 
 class FacultyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->data['faculty'] = Faculty::with('get_department','get_designation')->paginate(10);
+        $query = Faculty::with('get_department', 'get_designation');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('mobile_number', 'LIKE', "%{$search}%")
+                    ->orWhere('faculty_code', 'LIKE', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->filled('designation_id')) {
+            $query->where('designation_id', $request->designation_id);
+        }
+
+        $this->data['faculty']  = $query
+            ->orderBy('id', 'desc')
+            ->paginate(25)
+            ->withQueryString();
+        $this->data['departments'] = Department::orderBy('name')->get();
+        $this->data['designations'] = Designation::orderBy('name')->get();
         return view('admin/faculty_list')->with($this->data);
     }
 
@@ -129,7 +153,7 @@ class FacultyController extends Controller
             } else {
                 ActivityLog::add($faculty->name . ' - New Faculty Created', auth('admin')->user());
             }
-            
+
             return response()->json([
                 'success' => true,
                 'message' => $message

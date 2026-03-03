@@ -22,13 +22,25 @@ class AdminController extends Controller
                 $q->where('name', 'LIKE', "%{$search}%")
                     ->orWhere('email', 'LIKE', "%{$search}%")
                     ->orWhere('mobile_number', 'LIKE', "%{$search}%");
+                    ->orWhere('mobile_number', 'LIKE', "%{$search}%")
+                    ->orWhere('emp_code', 'LIKE', "%{$search}%");
             });
+        }
+
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+
+        if ($request->filled('designation_id')) {
+            $query->where('designation_id', $request->designation_id);
         }
 
         $this->data['admins'] = $query
             ->orderBy('id', 'desc')
             ->paginate(25)
             ->withQueryString();
+        $this->data['departments'] = Department::orderBy('name')->get();
+        $this->data['designations'] = Designation::orderBy('name')->get();
         return view('super_admin/admin_list')->with($this->data);
     }
 

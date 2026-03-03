@@ -22,12 +22,12 @@ class StudentDashboardController extends Controller
         $this->data['events'] = Event::where([
             'publish' => 1,
             'is_active' => 'y'
-            ])->get();
+        ])->get();
         // Student's registrations
         $studentRegistrations = StudentEventRegistration::with('event', 'schedule')
             ->whereHas('event', function ($query) {
-                $query->where('publish',1)
-                     ->where('is_active','y');
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
             })
             ->where('student_id', $student->id)
             ->get();
@@ -65,6 +65,10 @@ class StudentDashboardController extends Controller
             ->get();
 
         $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
             ->where('student_id', $student->id)
             ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
@@ -83,8 +87,8 @@ class StudentDashboardController extends Controller
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
             ->where([
-            'publish' => 1,
-            'is_active' =>'y'
+                'publish' => 1,
+                'is_active' => 'y'
             ])
             ->get();
 
@@ -126,8 +130,8 @@ class StudentDashboardController extends Controller
             ->where('grade', '!=', 'd')
             ->whereHas('get_event_schedule', function ($q) use ($student) {
                 $q->where('semester', $student->semester)
-                  ->where('batch', $student->batch)
-                  ->where('programme_id', $student->programme_id);
+                    ->where('batch', $student->batch)
+                    ->where('programme_id', $student->programme_id);
             })
             ->with('get_event_schedule:id,credit_points')
             ->get()
@@ -135,13 +139,13 @@ class StudentDashboardController extends Controller
                 return $reg->get_event_schedule->credit_points ?? 0;
             });
 
-            if($earnedCredits > 4){
-                $earned = 4;
-            }else{
-                $earned =  $earnedCredits;
-            }
-       $this->data['earned_credit'] = $earned;
-       $this->data['pending_credit'] =  $this->data['config_credit']?->credit_points - $earned;
+        if ($earnedCredits > 4) {
+            $earned = 4;
+        } else {
+            $earned =  $earnedCredits;
+        }
+        $this->data['earned_credit'] = $earned;
+        $this->data['pending_credit'] =  $this->data['config_credit']?->credit_points - $earned;
         return view('student.student_dashboard')->with($this->data);
     }
 }

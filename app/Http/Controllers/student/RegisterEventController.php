@@ -29,7 +29,7 @@ class RegisterEventController extends Controller
         $this->data['studentId'] = $student->id;
         $myuploads = StudentUploadProof::with('event')->select('student_id', 'event_id')
             ->whereHas('event', function ($query) {
-              $query->where('publish', 1)
+                $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
             ->where('student_id', $student->id)
@@ -71,8 +71,8 @@ class RegisterEventController extends Controller
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
             ->where([
-            'publish' => 1,
-            'is_active' => 'y'
+                'publish' => 1,
+                'is_active' => 'y'
             ])
             ->get();
 
@@ -90,7 +90,7 @@ class RegisterEventController extends Controller
             })
             ->where('student_id', $student->id)->count();
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
-        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance','event')->where('student_id', $student->id)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance', 'event')->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($now) {
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time');
@@ -122,7 +122,7 @@ class RegisterEventController extends Controller
         try {
             $event = Event::findOrFail($request->event_id);
             $schedule = EventSchedule::findOrFail($request->schedule_id);
-            $student = Student::where('id',$request->stu_id)->first();
+            $student = Student::where('id', $request->stu_id)->first();
             $lastRegistration = StudentEventRegistration::where([
                 'student_id' => $request->stu_id,
                 'event_id'   => $event->id,

@@ -8,14 +8,30 @@ use Illuminate\Http\Request;
 use App\Models\StudentEventRegistration;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EventRegisterdReportController extends Controller
 {
     public function index(Request $request)
     {
-        $this->data['events'] = Event::where('publish',1)
-            ->where('is_active', 'y')->get();
+        $adminId = Auth::guard('admin')->id();
+        if (!empty(session()->get('super_admin'))) {
+            $this->data['events'] = Event::with('get_club')
+                ->where([
+                    'publish' => 1,
+                    'is_active' => 'y'
+                ])
+                ->get();
+        } else {
+            $this->data['events'] = Event::with('get_club')
+                ->where('created_by', $adminId)
+                ->where([
+                    'publish' => 1,
+                    'is_active' => 'y'
+                ])
+                ->get();
+        }
         $this->data['statusLabels']  = [
             1 => 'Registered',
             2 => 'Approved',

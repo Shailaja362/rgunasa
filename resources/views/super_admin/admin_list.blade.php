@@ -83,21 +83,59 @@
         </form>
     </div>
     <h4 class="font-semibold text-gray-800 mb-4">Admin Filter</h4>
-    <section class="p-2 bg-white rounded-xl shadow-md mt-3">
-        <div class="mt-6">
-            <form method="GET" action="{{ route('admin_list') }}" class="flex gap-3 mb-4">
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="Search name / email / mobile"
-                    class="border border-gray-300 rounded-full px-4 py-2 w-[500px] text-sm">
+    <section class="bg-white rounded-xl shadow-md p-4 mt-3">
+        <div class="w-full">
+            <form method="GET" action="{{ route('admin_list') }}" class="flex flex-wrap items-center gap-3">
+
+                {{-- Search Input --}}
+                <div class="w-full sm:w-auto flex-1 min-w-[250px]">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search name / email / mobile"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+
+                {{-- Department Filter --}}
+                <div class="w-full sm:w-auto">
+                    <select name="department_id"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Departments</option>
+                        @foreach ($departments as $dept)
+                            <option value="{{ $dept->id }}"
+                                {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                                {{ $dept->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Designation Filter --}}
+                <div class="w-full sm:w-auto">
+                    <select name="designation_id"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                        <option value="">All Designations</option>
+                        @foreach ($designations as $designation)
+                            <option value="{{ $designation->id }}"
+                                {{ request('designation_id') == $designation->id ? 'selected' : '' }}>
+                                {{ $designation->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Search Button --}}
                 <button type="submit"
-                    class="px-5 py-2 bg-gradient-to-r from-primary to-pink-600 text-white rounded-full">
-                    <i class="fa fa-search"></i> Search
+                    class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white text-sm rounded-full hover:opacity-90 transition">
+                    <i class="fa fa-search mr-1"></i> Search
                 </button>
-                @if (request()->hasAny(['search']))
-                    <a href="{{ route('admin_list') }}" class="px-5 py-2 bg-gray-400 text-white rounded-full">
+
+                {{-- Reset Button --}}
+                @if (request()->hasAny(['search', 'department_id', 'designation_id']))
+                    <a href="{{ route('admin_list') }}"
+                        class="px-6 py-2 bg-gray-400 text-white text-sm rounded-full hover:bg-gray-500 transition">
                         Reset
                     </a>
                 @endif
+
             </form>
         </div>
     </section>
