@@ -35,7 +35,7 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] =  Event::with('event')->whereHas('get_dep_events', function ($q) use ($student) {
+        $this->data['ongoingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
                 ->where('batch', $student->batch)

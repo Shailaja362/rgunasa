@@ -45,7 +45,8 @@
             <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                 <div>
                     <label class="block text-sm font-medium mb-1">Programme</label>
-                    <select name="programme_id" id="programme_id" class="border rounded-lg px-3 py-2 w-full choice-select">
+                    <select name="programme_id" id="programme_id"
+                        class="border rounded-lg px-3 py-2 w-full choice-select">
                         <option value="">-- Select Programme --</option>
                         @foreach ($schedule_department as $departmentId => $schedules)
                             @php
@@ -135,7 +136,10 @@
                                 @php
                                     $feedback = $registration->get_feedback?->first();
                                     $proofs = $registration->get_student_upload_proof ?? collect();
-                                    $grade = $registration->grades->first();
+                                    $grade = \App\Models\StudentEventRegistration::where([
+                                        'event_schedule_id' => $registration->event_schedule_id,
+                                        'student_id' => $registration->student_id,
+                                    ])->first();
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition">
                                     <input type="hidden" name="grades[schedule][{{ $registration->student_id }}]"
