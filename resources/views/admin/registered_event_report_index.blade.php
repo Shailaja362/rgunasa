@@ -165,6 +165,8 @@
         let fromDate = $('input[name="from_date"]').val();
         let toDate = $('input[name="to_date"]').val();
         let search = $('input[name="search"]').val();
+        let semester = $('select[name="semester"]').val();
+        let batch = $('input[name="batch"]').val();
 
         // Check if all fields are empty
         if (
@@ -172,7 +174,7 @@
             status === '' &&
             fromDate === '' &&
             toDate === '' &&
-            search.trim() === ''
+            search.trim() === '' && semester === '' && batch === ''
         ) {
             e.preventDefault();
             showToast('Please select at least one filter before downloading the report.', "error", 2000);
