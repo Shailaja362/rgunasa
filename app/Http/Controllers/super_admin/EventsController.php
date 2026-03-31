@@ -201,9 +201,9 @@ class EventsController extends Controller
             }
 
             if (empty($request['event_id']) && !$request->has('old_banner')) {
-                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'required|image';
             } else if ($request->hasFile('banner_image')) {
-                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'image';
             }
 
             $request->validate($rules);
