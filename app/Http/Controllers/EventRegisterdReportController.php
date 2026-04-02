@@ -163,14 +163,20 @@ class EventRegisterdReportController extends Controller
 
         if ($request->type === 'excel') {
             return Excel::download(
-                new EventRegistrationExport($filters),
+                new EventRegistrationExport([
+                    'registrations' => collect($this->data['registrations'] ?? []),
+                    'statusLabels'  => $this->data['statusLabels'] ?? [],
+                ]),
                 'event-registrations.xlsx'
             );
         }
 
         if ($request->type === 'csv') {
             return Excel::download(
-                new EventRegistrationExport($filters),
+                new EventRegistrationExport([
+                    'registrations' => collect($this->data['registrations'] ?? []),
+                    'statusLabels'  => $this->data['statusLabels'] ?? [],
+                ]),
                 'event-registrations.csv'
             );
         }
