@@ -27,6 +27,8 @@ class RegisterEventController extends Controller
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
+        $isFirstYearStudent = in_array((int) $student->semester, [1, 2]);
+        $today = Carbon::now()->toDateString();
         $myuploads = StudentUploadProof::with('event')->select('student_id', 'event_id')
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
@@ -35,41 +37,30 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
-                ->where('event_date', Carbon::now()->toDateString());
+        $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
+            $q->whereDate('event_date', Carbon::now()->toDateString());
+            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
         })
-            ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester)
-                    ->where('event_date', Carbon::now()->toDateString());
-            }, 'get_dep_events.registrations'])
-            ->where([
-                'publish' => 1,
-                'is_active' => 'y'
+            ->with([
+                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
+                    $q->whereDate('event_date', Carbon::now()->toDateString());
+                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+                },
+                'get_dep_events.registrations'
             ])
+            ->where('publish', 1)
             ->get();
         // Upcoming Events
-        $this->data['upcomingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester);
-            // ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
+        $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
+            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
         })
-            ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester)
-                    // ->where('event_date', '>=', Carbon::now()->toDateString())
-                    ->orderBy('event_date', 'asc');
-            }, 'get_dep_events.registrations'])
+            ->with([
+                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
+                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+                    $q->orderBy('event_date', 'asc');
+                },
+                'get_dep_events.registrations'
+            ])
             ->where([
                 'publish' => 1,
                 'is_active' => 'y'
@@ -207,5 +198,28 @@ class RegisterEventController extends Controller
                 'event' => $event
             ]);
         }
+    }
+
+    private function applyStudentScheduleFilter($q, $student, $isFirstYearStudent)
+    {
+        $q->where(function ($subQ) use ($student, $isFirstYearStudent) {
+            $subQ->where(function ($normalQ) use ($student) {
+                $normalQ->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester);
+            });
+            if ($isFirstYearStudent) {
+                $subQ->orWhere(function ($firstYearQ) use ($student) {
+                    $firstYearQ->whereNull('programme_id')
+                        ->whereNull('section')
+                        ->whereNull('semester')
+                        ->where(function ($batchQ) use ($student) {
+                            $batchQ->whereNull('batch')
+                                ->orWhere('batch', $student->batch);
+                        });
+                });
+            }
+        });
     }
 }

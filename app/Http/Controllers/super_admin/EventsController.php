@@ -194,6 +194,18 @@ class EventsController extends Controller
                 'contact_email'   => 'required',
                 'event_type'   => 'required',
                 'duration_months' => 'required',
+                'departments' => 'required|array|min:1',
+                'departments.*.programme_id' => 'nullable|exists:programmes,id',
+                'departments.*.section' => 'nullable|in:a,b,c,d,e,f,r',
+                'departments.*.event_date' => 'required|date_format:d/m/Y',
+                'departments.*.is_reserve_date' => 'nullable|in:y,n',
+                'departments.*.seat_count' => 'required|integer|min:1',
+                'departments.*.batch' => [
+                    'nullable',
+                    'regex:/^\d{4}-\d{4}$/'
+                ],
+                'departments.*.semester' => 'nullable|in:1,2,3,4,5,6,7,8',
+                'departments.*.credit_points' => 'required|numeric|min:0|max:4',
             ];
 
             if ($request['event_type'] == 'paid') {
@@ -258,22 +270,24 @@ class EventsController extends Controller
 
             $submittedScheduleIds = collect($request->departments)
                 ->pluck('schedule_id')
-                ->filter() // removes null / empty
+                ->filter()
                 ->values();
+
             EventSchedule::where('event_id', $event->id)
                 ->whereNotIn('id', $submittedScheduleIds)
                 ->delete();
+
             foreach ($request->departments as $schedule) {
                 $data = [
-                    'event_id'      => $event->id,
-                    'programme_id' => $schedule['programme_id'],
-                    'section'       => $schedule['section'],
-                    'event_date'    => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
-                    'is_reserve_date'  => $schedule['is_reserve_date'] ?? 'n',
-                    'seat_count'    => $schedule['seat_count'],
-                    'batch'    => $schedule['batch'],
-                    'semester'    => $schedule['semester'],
-                    'credit_points'    => $schedule['credit_points'],
+                    'event_id'        => $event->id,
+                    'programme_id'    => !empty($schedule['programme_id']) ? $schedule['programme_id'] : null,
+                    'section'         => !empty($schedule['section']) ? $schedule['section'] : null,
+                    'event_date'      => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
+                    'is_reserve_date' => $schedule['is_reserve_date'] ?? 'n',
+                    'seat_count'      => $schedule['seat_count'],
+                    'batch'           => !empty($schedule['batch']) ? $schedule['batch'] : null,
+                    'semester'        => !empty($schedule['semester']) ? $schedule['semester'] : null,
+                    'credit_points'   => $schedule['credit_points'],
                 ];
 
                 if (!empty($schedule['schedule_id'])) {

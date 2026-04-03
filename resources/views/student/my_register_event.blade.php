@@ -48,49 +48,40 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($registeredEvents as $event)
                     @php
-                        $registered = \App\Models\StudentEventRegistration::where([
-                            'event_schedule_id' => $event->event_schedule_id,
-                        ])
-                            ->whereHas('student', function ($query) use ($student) {
-                                $query
-                                    ->where('programme_id', $student->programme_id)
-                                    ->where('semester', $student->semester)
-                                    ->where('batch', $student->batch)
-                                    ->where('section', $student->section);
-                            })
-                            ->count();
-                        if ($event->get_event_schedule->is_reserve_date == 'y') {
+                        if ($event->get_event_schedule && $event->get_event_schedule->is_reserve_date == 'y') {
                             $start_time = $event->event->reserve_start_time;
                             $end_time = $event->event->reserve_end_time;
                         } else {
                             $start_time = $event->event->start_time;
                             $end_time = $event->event->end_time;
                         }
-                        $available = $event->get_event_schedule
-                            ? $event->get_event_schedule->seat_count - $registered
-                            : 0;
+
+                        $available = $event->available_seats ?? 0;
                     @endphp
+
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
                             <img src="{{ asset('storage/' . $event->event->banner_image) }}" alt="Event"
                                 class="rounded-t-2xl w-full h-48 object-cover">
+
                             @if ($event->event->event_type == 'paid')
                                 <span
-                                    class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
+                                    class="absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
                                     Premium
                                 </span>
                             @endif
+
                             <span
-                                class="absolute @if ($event->event->event_type == 'paid') mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
-                                <span class="text-2xl">{{ $available }} </span><span>Seats
-                                    <pre> Available</span></pre>
-                                </span>
+                                class="absolute @if ($event->event->event_type == 'paid') mt-2 top-10 @else top-3 @endif right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                <span class="text-2xl">{{ $available }}</span> Seats Available
                             </span>
+
                             <span
                                 class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
                                 {{ $event->event->title }}
                             </span>
                         </div>
+
                         <div class="p-2 details">
                             <div class="grid grid-cols-1 gap-1 md:grid-cols-4 text-xs">
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
@@ -101,12 +92,14 @@
                                         {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:i A') : '-' }}
                                     </p>
                                 </div>
+
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
                                         {{ optional($event->get_event_schedule)->event_date ? \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
+
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
                                     <i class="fa fa-map-marker text-primary" aria-hidden="true"></i>
                                     <p class="px-2">{{ $event->event->location }}</p>
@@ -124,63 +117,58 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($completedEvents as $event)
                     @php
-                        $registered = \App\Models\StudentEventRegistration::where([
-                            'event_schedule_id' => $event->event_schedule_id,
-                        ])
-                            ->whereHas('student', function ($query) use ($student) {
-                                $query
-                                    ->where('programme_id', $student->programme_id)
-                                    ->where('section', $student->section)
-                                    ->where('semester', $student->semester)
-                                    ->where('batch', $student->batch);
-                            })
-                            ->count();
-                        if ($event->get_event_schedule->is_reserve_date == 'y') {
+                        if ($event->get_event_schedule && $event->get_event_schedule->is_reserve_date == 'y') {
                             $start_time = $event->event->reserve_start_time;
                             $end_time = $event->event->reserve_end_time;
                         } else {
                             $start_time = $event->event->start_time;
                             $end_time = $event->event->end_time;
                         }
-                        $available = $event->get_event_schedule->seat_count - $registered;
+
+                        $available = $event->available_seats ?? 0;
                     @endphp
+
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">
                             <img src="{{ asset('storage/' . $event->event->banner_image) }}" alt="Event"
                                 class="rounded-t-2xl w-full h-48 object-cover">
+
                             <span
                                 class="absolute top-3 right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
                                 <span class="text-2xl">{{ $available }}</span> Seats Available
                             </span>
+
                             <span
                                 class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
                                 {{ $event->event->title }}
                             </span>
                         </div>
+
                         <div class="p-2 details">
                             <div class="grid grid-cols-1 gap-1 md:grid-cols-4 text-xs">
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                     <i class="fa fa-clock text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
-                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:iA') : '-' }}
+                                        {{ $start_time ? \Carbon\Carbon::parse($start_time)->format('h:i A') : '-' }}
                                         -
-                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
+                                        {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:i A') : '-' }}
                                     </p>
                                 </div>
+
                                 <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
                                     <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
                                     <p class="px-1">
                                         {{ optional($event->get_event_schedule)->event_date ? \Carbon\Carbon::parse($event->get_event_schedule->event_date)->format('F j, Y') : '-' }}
                                     </p>
                                 </div>
+
                                 <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
                                     <i class="fa fa-map-marker text-primary" aria-hidden="true"></i>
                                     <p class="px-1">{{ $event->event->location }}</p>
                                 </div>
                             </div>
-                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 text-xs mt-2">
 
-                                <!-- View Details Button -->
+                            <div class="grid grid-cols-1 gap-3 md:grid-cols-2 text-xs mt-2">
                                 <div class="flex border border-primary items-center justify-center rounded-full px-5 py-1 view-details-btn cursor-pointer hover:bg-primary hover:text-white transition text-primary"
                                     data-event_id="{{ $event->event->id }}" data-title="{{ $event->event->title }}"
                                     data-image="{{ asset('storage/' . $event->event->banner_image) }}"
@@ -189,23 +177,17 @@
                                     data-start="{{ \Carbon\Carbon::parse($start_time)->format('h:i A') }}"
                                     data-end="{{ \Carbon\Carbon::parse($end_time)->format('h:i A') }}"
                                     data-location="{{ $event->event->location }}">
-                                    <p class="px-2 text-center">
-                                        View Details
-                                    </p>
+                                    <p class="px-2 text-center">View Details</p>
                                 </div>
-                                <!-- Upload Proof Button -->
+
                                 <div class="flex border border-primary text-primary items-center justify-center rounded-full px-5 py-1 upload cursor-pointer hover:bg-primary hover:text-white transition"
                                     data-event_id="{{ $event->event->id }}"
                                     data-schedule_id="{{ $event->get_event_schedule->id }}"
                                     data-student_id="{{ $event->student_id }}"
                                     data-is_technical="{{ $event->event->is_technical_event }}">
-                                    <p class="px-2 text-center">
-                                        Upload Proof
-                                    </p>
+                                    <p class="px-2 text-center">Upload Proof</p>
                                 </div>
-
                             </div>
-
                         </div>
                     </div>
                 @endforeach

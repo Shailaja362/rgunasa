@@ -160,39 +160,39 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "",
             message: "Please Enter Duration Month",
         },
-        {
-            id: ".department",
-            condition: (val) => val === "",
-            message: "Please Select Programme",
-        },
-        {
-            id: ".section",
-            condition: (val) => val === "",
-            message: "Please Select Section",
-        },
+        // {
+        //     id: ".department",
+        //     condition: (val) => val === "",
+        //     message: "Please Select Programme",
+        // },
+        // {
+        //     id: ".section",
+        //     condition: (val) => val === "",
+        //     message: "Please Select Section",
+        // },
         {
             id: ".event_date",
             condition: (val) => val === "",
             message: "Please Select Event Date",
         },
-        {
-            id: ".batch",
-            condition: (val) => {
-                const regex = /^\d{4}-\d{4}$/;
-                if (val === "" || !regex.test(val)) {
-                    return true;
-                }
-                const [start, end] = val.split("-").map(Number);
-                return end <= start;
-            },
-            message:
-                "Batch must be in YYYY-YYYY format and end year must be greater than start year",
-        },
-        {
-            id: ".semester",
-            condition: (val) => val === "",
-            message: "Semester is required",
-        },
+        // {
+        //     id: ".batch",
+        //     condition: (val) => {
+        //         const regex = /^\d{4}-\d{4}$/;
+        //         if (val === "" || !regex.test(val)) {
+        //             return true;
+        //         }
+        //         const [start, end] = val.split("-").map(Number);
+        //         return end <= start;
+        //     },
+        //     message:
+        //         "Batch must be in YYYY-YYYY format and end year must be greater than start year",
+        // },
+        // {
+        //     id: ".semester",
+        //     condition: (val) => val === "",
+        //     message: "Semester is required",
+        // },
         {
             id: ".credit_points",
             condition: (val) => val === "",
@@ -201,10 +201,35 @@ $(document).on("submit", "#eventForm", function (e) {
     ];
 
     let isValid = true;
+
     for (const field of fields) {
         const result = validateField(field);
         if (!result) isValid = false;
     }
+
+    $(".dept-card").each(function () {
+        let batch = $(this).find(".batch").val();
+
+        if (batch) {
+            const regex = /^\d{4}-\d{4}$/;
+            if (!regex.test(batch)) {
+                showToast("Batch must be in YYYY-YYYY format", "error", 2000);
+                isValid = false;
+                return false;
+            }
+
+            const [start, end] = batch.split("-").map(Number);
+            if (end <= start) {
+                showToast(
+                    "Batch end year must be greater than start year",
+                    "error",
+                    2000,
+                );
+                isValid = false;
+                return false;
+            }
+        }
+    });
 
     let eventType = $("#event_type").val();
     let price = $("#price").val();
@@ -329,41 +354,70 @@ $("#confirmDelete").on("click", function () {
     });
 });
 
+let programmeOfficerChoice = new Choices("#programme_officer", {
+    searchEnabled: true
+});
+
 $(document).on("change", "#club_id", function () {
     var clubId = $(this).val();
+
     if (clubId) {
         $.ajax({
-            url: "/admin/create-event", // Route to get officers
+            url: "/admin/create-event",
             type: "GET",
             dataType: "json",
             data: {
                 clubId: clubId,
                 get_programme_officer: true,
             },
+
             success: function (response) {
-                $("#programme_officer").empty(); // Clear previous options
-                $("#programme_officer").append(
-                    '<option value="">Select Programme Officer</option>',
-                );
-                if (response.success && response.faculty != "") {
-                    var officer = response.faculty.get_faculty;
-                    $("#programme_officer").append(
-                        '<option value="' +
-                            officer.id +
-                            '">' +
-                            officer.name +
-                            "</option>",
-                    );
+                programmeOfficerChoice.clearChoices();
+
+                let choices = [];
+
+                choices.push({
+                    value: "",
+                    label: "",
+                    disabled: true,
+                    selected: true,
+                });
+
+                if (response.success && response.faculty) {
+                    let officer = response.faculty.get_faculty;
+
+                    choices.push({
+                        value: officer.id,
+                        label: officer.name,
+                    });
                 }
+
+                programmeOfficerChoice.setChoices(
+                    choices,
+                    "value",
+                    "label",
+                    true,
+                );
             },
+
             error: function () {
                 showToast("Unable to fetch programme officers!", "error", 2000);
             },
         });
     } else {
-        $("#programme_officer").empty();
-        $("#programme_officer").append(
-            '<option value="">Select Programme Officer</option>',
+        programmeOfficerChoice.clearChoices();
+        programmeOfficerChoice.setChoices(
+            [
+                {
+                    value: "",
+                    label: "",
+                    disabled: true,
+                    selected: true,
+                },
+            ],
+            "value",
+            "label",
+            true,
         );
     }
 });

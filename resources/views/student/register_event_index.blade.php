@@ -60,17 +60,35 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                            $isCommonFirstYearEvent =
+                                is_null($department->programme_id) &&
+                                is_null($department->section) &&
+                                is_null($department->semester) &&
+                                (is_null($department->batch) || $department->batch == $student->batch);
+
+                            $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $department->id,
-                            )
-                                ->whereHas('student', function ($query) use ($student) {
-                                     $query->where('programme_id', $student->programme_id)
-                                           ->where('section', $student->section)
-                                           ->where('semester', $student->semester)
-                                           ->where('batch', $student->batch);
-                                })
-                                ->count();
+                            );
+
+                            if ($isCommonFirstYearEvent) {
+                                $registeredCountQuery->whereHas('student', function ($query) {
+                                    $query->whereIn('semester', [1, 2]);
+                                    if (!empty($student->batch)) {
+                                        $query->where('batch', $student->batch);
+                                    }
+                                });
+                            } else {
+                                $registeredCountQuery->whereHas('student', function ($query) use ($student) {
+                                    $query
+                                        ->where('programme_id', $student->programme_id)
+                                        ->where('section', $student->section)
+                                        ->where('batch', $student->batch)
+                                        ->where('semester', $student->semester);
+                                });
+                            }
+
+                            $registeredCount = $registeredCountQuery->count();
                             if ($department->is_reserve_date == 'y') {
                                 $start_time = $event->reserve_start_time;
                                 $end_time = $event->reserve_end_time;
@@ -228,17 +246,36 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                            $isCommonFirstYearEvent =
+                                is_null($department->programme_id) &&
+                                is_null($department->section) &&
+                                (is_null($department->batch) || $department->batch == $student->batch) &&
+                                is_null($department->semester);
+
+                            $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
-                                $dept->id,
-                            )
-                                ->whereHas('student', function ($query) use ($student) {
-                                     $query->where('programme_id', $student->programme_id)
-                                           ->where('section', $student->section)
-                                           ->where('semester', $student->semester)
-                                           ->where('batch', $student->batch);
-                                })
-                                ->count();
+                                $department->id,
+                            );
+
+                            if ($isCommonFirstYearEvent) {
+                                $registeredCountQuery->whereHas('student', function ($query) {
+                                    $query->whereIn('semester', [1, 2]);
+                                    if (!empty($student->batch)) {
+                                        $query->where('batch', $student->batch);
+                                    }
+                                });
+                            } else {
+                                $registeredCountQuery->whereHas('student', function ($query) use ($student) {
+                                    $query
+                                        ->where('programme_id', $student->programme_id)
+                                        ->where('section', $student->section)
+                                        ->where('batch', $student->batch)
+                                        ->where('semester', $student->semester);
+                                });
+                            }
+
+                            $registeredCount = $registeredCountQuery->count();
+
                             if ($dept->is_reserve_date == 'y') {
                                 $start_time = $ongoing_event->reserve_start_time;
                                 $end_time = $ongoing_event->reserve_end_time;

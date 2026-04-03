@@ -75,7 +75,8 @@
                                 0
                             @else
                                 {{ $earned_credit ?? 0 }}
-                            @endif /{{ isset($config_credit->credit_points) ? round($config_credit->credit_points) : 0 }}
+                            @endif
+                            /{{ isset($config_credit->credit_points) ? round($config_credit->credit_points) : 0 }}
                             <span class="text-sm font-normal text-gray-500">Credits</span>
                         </h3>
                     </div>
@@ -120,20 +121,48 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                            // $registeredCount = \App\Models\StudentEventRegistration::where(
+                            //     'event_schedule_id',
+                            //     $dept->id,
+                            // )
+                            //     // ->registrations()
+                            //     ->whereHas('student', function ($query) use ($student) {
+                            //         $query
+                            //             ->where('programme_id', $student->programme_id)
+                            //             ->where('section', $student->section)
+                            //             ->where('batch', $student->batch)
+                            //             ->where('semester', $student->semester);
+                            //     })
+                            //     ->count();
+
+                            $isCommonFirstYearEvent =
+                                is_null($dept->programme_id) &&
+                                is_null($dept->section) &&
+                                is_null($dept->semester) && (is_null($dept->batch) || $dept->batch == $student->batch);
+
+                            $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $dept->id,
-                            )
-                                // ->registrations()
-                                ->whereHas('student', function ($query) use ($student) {
+                            );
+
+                            if ($isCommonFirstYearEvent) {
+                                $registeredCountQuery->whereHas('student', function ($query) {
+                                    $query->whereIn('semester', [1, 2]);
+                                       if (!empty($student->batch)) {
+                $query->where('batch', $student->batch);
+            }
+                                });
+                            } else {
+                                $registeredCountQuery->whereHas('student', function ($query) use ($student) {
                                     $query
                                         ->where('programme_id', $student->programme_id)
                                         ->where('section', $student->section)
                                         ->where('batch', $student->batch)
                                         ->where('semester', $student->semester);
-                                })
-                                ->count();
+                                });
+                            }
 
+                            $registeredCount = $registeredCountQuery->count();
                             if ($dept->is_reserve_date == 'y') {
                                 $start_time = $event->reserve_start_time;
                                 $end_time = $event->reserve_end_time;
@@ -288,18 +317,49 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
+                            // $registeredCount = \App\Models\StudentEventRegistration::where(
+                            //     'event_schedule_id',
+                            //     $department->id,
+                            // )
+                            //     ->whereHas('student', function ($query) use ($student) {
+                            //         $query
+                            //             ->where('programme_id', $student->programme_id)
+                            //             ->where('section', $student->section)
+                            //             ->where('batch', $student->batch)
+                            //             ->where('semester', $student->semester);
+                            //     })
+                            //     ->count();
+
+                            $isCommonFirstYearEvent =
+                                is_null($department->programme_id) &&
+                                is_null($department->section) &&
+                                (is_null($department->batch) || $department->batch == $student->batch) &&
+                                is_null($department->semester);
+
+                            $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $department->id,
-                            )
-                                ->whereHas('student', function ($query) use ($student) {
+                            );
+
+                            if ($isCommonFirstYearEvent) {
+                                $registeredCountQuery->whereHas('student', function ($query) {
+                                    $query->whereIn('semester', [1, 2]);
+                                       if (!empty($student->batch)) {
+                                          $query->where('batch', $student->batch);
+                                         }
+                                });
+                            } else {
+                                $registeredCountQuery->whereHas('student', function ($query) use ($student) {
                                     $query
                                         ->where('programme_id', $student->programme_id)
                                         ->where('section', $student->section)
                                         ->where('batch', $student->batch)
                                         ->where('semester', $student->semester);
-                                })
-                                ->count();
+                                });
+                            }
+
+                            $registeredCount = $registeredCountQuery->count();
+
                             if ($department->is_reserve_date == 'y') {
                                 $start_time = $ongoing_event->reserve_start_time;
                                 $end_time = $ongoing_event->reserve_end_time;
@@ -452,18 +512,50 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($registeredEvents as $register_event)
                     @php
-                        $registered = \App\Models\StudentEventRegistration::where(
+                        // $registered = \App\Models\StudentEventRegistration::where(
+                        //     'event_schedule_id',
+                        //     $register_event->event_schedule_id,
+                        // )
+                        //     ->whereHas('student', function ($query) use ($student) {
+                        //         $query
+                        //             ->where('programme_id', $student->programme_id)
+                        //             ->where('section', $student->section)
+                        //             ->where('batch', $student->batch)
+                        //             ->where('semester', $student->semester);
+                        //     })
+                        //     ->count();
+                        $schedule = $register_event->get_event_schedule;
+
+                        $isCommonFirstYearEvent =
+                            $schedule &&
+                            is_null($schedule->programme_id) &&
+                            is_null($schedule->section) &&
+                            (is_null($schedule->batch) || $schedule->batch == $student->batch) &&
+                            is_null($schedule->semester);
+
+                        $registeredQuery = \App\Models\StudentEventRegistration::where(
                             'event_schedule_id',
                             $register_event->event_schedule_id,
-                        )
-                            ->whereHas('student', function ($query) use ($student) {
+                        );
+
+                        if ($isCommonFirstYearEvent) {
+                            $registeredQuery->whereHas('student', function ($query) {
+                                $query->whereIn('semester', [1, 2]);
+                                if (!empty($student->batch)) {
+                                      $query->where('batch', $student->batch);
+                                }
+                            });
+                        } else {
+                            $registeredQuery->whereHas('student', function ($query) use ($student) {
                                 $query
                                     ->where('programme_id', $student->programme_id)
                                     ->where('section', $student->section)
                                     ->where('batch', $student->batch)
                                     ->where('semester', $student->semester);
-                            })
-                            ->count();
+                            });
+                        }
+
+                        $registered = $registeredQuery->count();
                         if ($register_event->get_event_schedule->is_reserve_date == 'y') {
                             $start_time = $register_event->event->reserve_start_time;
                             $end_time = $register_event->event->reserve_end_time;

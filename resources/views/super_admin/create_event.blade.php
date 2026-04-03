@@ -99,26 +99,26 @@
                 </div>
             </div>
             @if (!empty($edit_event))
-            <div>
-                <label class="block text-sm font-medium"> Is Active <span class="text-red-500">*</span></label>
-                <div class="flex items-center gap-6 mt-2">
-                    {{-- YES --}}
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="is_active" value="y"
-                            class="text-primary focus:ring-primary is_active"
-                            {{ old('is_active', optional($edit_event)->is_active) === 'y' ? 'checked' : '' }}>
-                        <span class="ml-2 text-sm">Active</span>
-                    </label>
+                <div>
+                    <label class="block text-sm font-medium"> Is Active <span class="text-red-500">*</span></label>
+                    <div class="flex items-center gap-6 mt-2">
+                        {{-- YES --}}
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="is_active" value="y"
+                                class="text-primary focus:ring-primary is_active"
+                                {{ old('is_active', optional($edit_event)->is_active) === 'y' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm">Active</span>
+                        </label>
 
-                    {{-- NO --}}
-                    <label class="inline-flex items-center">
-                        <input type="radio" name="is_active" value="n"
-                            class="text-primary focus:ring-primary is_active"
-                            {{ old('is_active', optional($edit_event)->is_active) === 'n' ? 'checked' : '' }}>
-                        <span class="ml-2 text-sm">In Active</span>
-                    </label>
+                        {{-- NO --}}
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="is_active" value="n"
+                                class="text-primary focus:ring-primary is_active"
+                                {{ old('is_active', optional($edit_event)->is_active) === 'n' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm">In Active</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
             @endif
             <div>
                 <label class="block text-sm font-medium">Event Type <span class="text-red-600">*</span></label>
@@ -140,6 +140,7 @@
                 @endif
             </div>
         </div>
+
         <h1 class="text-primary font-semibold mt-10">Department-wise Schedule</h1>
         <p>Add one or more department schedules</p>
         <div id="departmentContainer" class="space-y-6 mt-6">
@@ -168,7 +169,7 @@
                             </label>
                             <select name="departments[{{ $index }}][programme_id]"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department choice-select">
-                                <option value="">Select Programme</option>
+                                <option value="">All Programmes</option>
                                 @foreach ($programmes as $d)
                                     <option value="{{ $d->id }}"
                                         @if (!empty($dept) && $dept->programme_id == $d->id) selected @endif>
@@ -183,7 +184,7 @@
                                     class="text-red-500">*</span></label>
                             <select name="departments[{{ $index }}][section]" id="section"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" selected disabled>Select Section</option>
+                                <option value="">All Sections</option>
                                 <option value="a" {{ $dept?->section == 'a' ? 'selected' : '' }}>A</option>
                                 <option value="b" {{ $dept?->section == 'b' ? 'selected' : '' }}>B</option>
                                 <option value="c" {{ $dept?->section == 'c' ? 'selected' : '' }}>C</option>
@@ -243,7 +244,7 @@
                                     class="text-red-500">*</span></label>
                             <select name="departments[{{ $index }}][semester]" id="semester"
                                 class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
-                                <option value="" selected disabled>Select Semester</option>
+                                <option value="">All Semesters</option>
                                 <option value="1" {{ $dept?->semester == '1' ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ $dept?->semester == '2' ? 'selected' : '' }}>2</option>
                                 <option value="3" {{ $dept?->semester == '3' ? 'selected' : '' }}>3</option>

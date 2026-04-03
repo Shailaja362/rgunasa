@@ -148,7 +148,7 @@
                             <th class="px-2 py-2">Banner</th>
                             <th class="px-2 py-2">Event Name</th>
                             <th class="px-2 py-2">Programme Officer</th>
-                            <th class="px-2 py-2">Departments</th>
+                            <th class="px-2 py-2">Programmes</th>
                             <th class="px-2 py-2">Status</th>
                             <th class="px-2 py-2">Action</th>
                         </tr>
@@ -174,7 +174,7 @@
                                             <div
                                                 class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
                                                 <div class="text-xs font-bold text-gray-800 mb-1">
-                                                    {{ $schedule?->programme?->name }}
+                                                    {{ $schedule?->programme?->name  ?? 'All Programmes' }}
                                                 </div>
                                                 <div class="text-xs text-gray-600 mb-1">
                                                     <span class="font-medium">Event Date:</span>
@@ -189,7 +189,7 @@
                                                 </div>
                                                 <div class="text-xs text-gray-600">
                                                     <span class="font-medium">Section:</span>
-                                                    {{ strtoupper($schedule->section) }}
+                                                   {{ $schedule->section ? strtoupper($schedule->section) : 'All Sections' }}
                                                     <span class="mx-2">|</span>
                                                     <span class="font-medium">Seats:</span>
                                                     {{ $schedule->seat_count }}

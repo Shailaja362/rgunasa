@@ -16,6 +16,7 @@ class EventRegisterdReportController extends Controller
     public function index(Request $request)
     {
         $adminId = Auth::guard('admin')->id();
+
         if (!empty(session()->get('super_admin'))) {
             $this->data['events'] = Event::with('get_club')
                 ->where([
@@ -32,7 +33,8 @@ class EventRegisterdReportController extends Controller
                 ])
                 ->get();
         }
-        $this->data['statusLabels']  = [
+
+        $this->data['statusLabels'] = [
             1 => 'Registered',
             2 => 'Approved',
             3 => 'Completed',
@@ -45,58 +47,25 @@ class EventRegisterdReportController extends Controller
             3 => 'bg-green-100 text-green-700',
             4 => 'bg-red-100 text-red-700',
         ];
-        // Registrations query
+
         if (!empty($request->all())) {
-            $this->data['registrations'] = StudentEventRegistration::with([
+            $query = StudentEventRegistration::with([
                 'event',
                 'student',
                 'student.get_department',
                 'get_event_schedule'
-            ])
-                ->whereHas('event', function ($query) {
-                    $query->where('publish', 1)
-                        ->where('is_active', 'y');
-                })
-                ->when($request->event_id, function ($q) use ($request) {
-                    $q->where('event_id', $request->event_id);
-                })
-                ->when($request->status, function ($q) use ($request) {
-                    $q->where('status', $request->status);
-                })
-                ->when($request->from_date, function ($q) use ($request) {
-                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%');
-                    });
-                })
-                ->when($request->to_date, function ($q) use ($request) {
-                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%');
-                    });
-                })
-                ->when($request->search, function ($q) use ($request) {
-                    $q->whereHas('student', function ($student) use ($request) {
-                        $student->where('name', 'like', '%' . $request->search . '%')
-                               ->orWhere('email', 'like', '%' . $request->search . '%');
-                    });
-                })
-                ->when($request->batch, function ($q) use ($request) {
-                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->where('batch', 'like', '%' . $request->batch . '%');
-                    });
-                })
-                ->when($request->semester, function ($q) use ($request) {
-                    $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                        $schedule->where('semester', 'like', '%' . $request->semester . '%');
-                    });
-                })
+            ]);
+
+            $this->data['registrations'] = $this->applyRegistrationReportFilters($query, $request)
                 ->latest()
-                ->paginate(10);
+                ->paginate(10)
+                ->appends($request->all());
         } else {
             $this->data['registrations'] = new LengthAwarePaginator(
-                collect(), // empty collection
-                0,         // total
-                10,        // per page
-                1,         // current page
+                collect(),
+                0,
+                10,
+                1,
                 ['path' => request()->url(), 'query' => request()->query()]
             );
         }
@@ -113,46 +82,30 @@ class EventRegisterdReportController extends Controller
             4 => 'Cancelled',
         ];
 
-        $this->data['registrations'] = StudentEventRegistration::with(['event',
+        $query = StudentEventRegistration::with([
+            'event',
             'student',
             'student.get_department',
-            'get_event_schedule'])
+            'get_event_schedule'
+        ])
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
-            })
-            ->when($request->event_id, fn($q) => $q->where('event_id', $request->event_id))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->when($request->from_date, function ($q) use ($request) {
-                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                    $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%');
-                });
-            })
-            ->when($request->to_date, function ($q) use ($request) {
-                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                    $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%');
-                });
-            })
-            ->when($request->search, function ($q) use ($request) {
-                $q->whereHas('student', function ($student) use ($request) {
-                    $student->where('name', 'like', '%' . $request->search . '%')
-                        ->orWhere('email', 'like', '%' . $request->search . '%');
-                });
-            })
-            ->when($request->batch, function ($q) use ($request) {
-                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                    $schedule->where('batch', 'like', '%' . $request->batch . '%');
-                });
-            })
-            ->when($request->semester, function ($q) use ($request) {
-                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
-                    $schedule->where('semester', 'like', '%' . $request->semester . '%');
-                });
-            })
+            });
+
+        $this->data['registrations'] = $this->applyRegistrationReportFilters($query, $request)
             ->latest()
             ->get();
 
-        $filters = $request->only(['event_id', 'status', 'from_date', 'to_date', 'search','batch','semester']);
+        $filters = $request->only([
+            'event_id',
+            'status',
+            'from_date',
+            'to_date',
+            'search',
+            'batch',
+            'semester'
+        ]);
 
         if ($request->type === 'word') {
             return response()
@@ -189,5 +142,72 @@ class EventRegisterdReportController extends Controller
 
             return $pdf->download('event-registrations.pdf');
         }
+    }
+
+    private function applyRegistrationReportFilters($query, Request $request)
+    {
+        $query->when($request->event_id, fn($q) => $q->where('event_id', $request->event_id))
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->from_date, function ($q) use ($request) {
+                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
+                    $schedule->whereDate('event_date', 'like', '%' . $request->from_date . '%');
+                });
+            })
+            ->when($request->to_date, function ($q) use ($request) {
+                $q->whereHas('get_event_schedule', function ($schedule) use ($request) {
+                    $schedule->whereDate('event_date', 'like', '%' . $request->to_date . '%');
+                });
+            })
+            ->when($request->search, function ($q) use ($request) {
+                $q->whereHas('student', function ($student) use ($request) {
+                    $student->where('name', 'like', '%' . $request->search . '%')
+                        ->orWhere('email', 'like', '%' . $request->search . '%');
+                });
+            });
+
+        $query->when($request->filled('semester') || $request->filled('batch'), function ($q) use ($request) {
+            $semester = $request->semester;
+            $batch = $request->batch;
+            $isFirstYearFilter = in_array((int) $semester, [1, 2]);
+
+            $q->whereHas('student', function ($studentQ) use ($semester, $batch) {
+                if (!empty($semester)) {
+                    $studentQ->where('semester', $semester);
+                }
+
+                if (!empty($batch)) {
+                    $studentQ->where('batch', $batch);
+                }
+            });
+
+            $q->whereHas('get_event_schedule', function ($scheduleQ) use ($semester, $batch, $isFirstYearFilter) {
+                $scheduleQ->where(function ($mainQ) use ($semester, $batch, $isFirstYearFilter) {
+                    $mainQ->where(function ($normalQ) use ($semester, $batch) {
+                        if (!empty($semester)) {
+                            $normalQ->where('semester', $semester);
+                        }
+                        if (!empty($batch)) {
+                            $normalQ->where('batch', $batch);
+                        }
+                    });
+
+                    if ($isFirstYearFilter) {
+                        $mainQ->orWhere(function ($commonQ) use ($batch) {
+                            $commonQ->whereNull('programme_id')
+                                ->whereNull('section')
+                                ->whereNull('semester')
+                                ->where(function ($batchQ) use ($batch) {
+                                    $batchQ->whereNull('batch');
+                                    if (!empty($batch)) {
+                                        $batchQ->orWhere('batch', $batch);
+                                    }
+                                });
+                        });
+                    }
+                });
+            });
+        });
+
+        return $query;
     }
 }

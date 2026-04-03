@@ -4,13 +4,14 @@ namespace App\Http\Controllers\student;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
 use App\Models\StudentFeedback;
 use App\Models\StudentUploadProof;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -22,43 +23,48 @@ class MyRegisterEventsController extends Controller
         $student = session()->get('student');
         $this->data['student'] =  $student;
         $now = Carbon::now();
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')->where('student_id', $student->id)
-        ->whereHas('get_event_schedule', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester);
-         })
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
-            ->get();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
-            ->whereHas('get_event_attendance', function ($query) use ($student) {
-                $query->whereNotNull('entry_time')
-                       ->whereNotNull('exit_time')
-                       ->where('student_id', $student->id);
-            })
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
+        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
             ->where('student_id', $student->id)
-            ->get();
+            ->whereHas('get_event_schedule', function ($q) use ($student) {
+                $this->applyStudentScheduleFilter($q, $student);
+            })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
+            ->get()
+            ->map(function ($event) use ($student) {
+                $schedule = $event->get_event_schedule;
 
-        $this->data['activeCount'] = StudentEventRegistration::with('event')->where('student_id', $student->id)
+                $registered = $this->getRegisteredCountForSchedule($schedule, $student);
+                $seatCount = $schedule->seat_count ?? 0;
+                $availableSeats = max($seatCount - $registered, 0);
+
+                $event->registered_count = $registered;
+                $event->available_seats = $availableSeats;
+
+                return $event;
+            });
+        $this->data['activeCount'] = StudentEventRegistration::with('event')
+            ->where('student_id', $student->id)
+            ->whereHas('get_event_schedule', function ($q) use ($student) {
+                $this->applyStudentScheduleFilter($q, $student);
+            })
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
             ->where('status', 1)
             ->count();
-        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance','event')->where('student_id', $student->id)
+        $this->data['attendedCount'] = StudentEventRegistration::with('get_event_attendance', 'event')
+            ->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($student) {
                 $query->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
                     ->where('student_id', $student->id);
+            })
+            ->whereHas('get_event_schedule', function ($q) use ($student) {
+                $this->applyStudentScheduleFilter($q, $student);
             })
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
@@ -70,20 +76,51 @@ class MyRegisterEventsController extends Controller
             'publish' => 1,
             'is_active' => 'y'
         ])->get();
+        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
+            ->where('student_id', $student->id)
+            ->whereHas('get_event_attendance', function ($query) use ($student) {
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time')
+                    ->where('student_id', $student->id);
+            })
+            ->whereHas('get_event_schedule', function ($q) use ($student) {
+                $this->applyStudentScheduleFilter($q, $student);
+            })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
+            ->get()
+            ->map(function ($event) use ($student) {
+                $schedule = $event->get_event_schedule;
+
+                $registered = $this->getRegisteredCountForSchedule($schedule, $student);
+                $seatCount = $schedule->seat_count ?? 0;
+                $availableSeats = max($seatCount - $registered, 0);
+
+                $event->registered_count = $registered;
+                $event->available_seats = $availableSeats;
+
+                return $event;
+            });
         $myuploads = StudentUploadProof::with('event')->select('student_id', 'event_id')
             ->where('student_id', $student->id)
             ->whereHas('event', function ($query) {
-              $query->where('publish', 1)
+                $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
             ->groupBy('student_id', 'event_id')
             ->get();
         $activecount = StudentEventRegistration::with('event')
+            ->where('student_id', $student->id)
+            ->whereHas('get_event_schedule', function ($q) use ($student) {
+                $this->applyStudentScheduleFilter($q, $student);
+            })
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->where('student_id', $student->id)->count();
+            ->count();
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
         return view('student.my_register_event')->with($this->data);
     }
@@ -91,12 +128,13 @@ class MyRegisterEventsController extends Controller
     public function uploadProof(Request $request)
     {
         DB::beginTransaction();
-
         try {
+            $student = session()->get('student');
+
             $validated = $request->validate([
                 'student_id'      => 'required|integer',
                 'event_id'        => 'required|integer',
-                'schedule_id'     => 'required|integer',
+                'schedule_id'     => 'required|integer|exists:event_schedules,id',
                 'proof.*'         => 'nullable|file|max:10240',
                 'ratings'         => 'required|array',
                 'ratings.*'       => 'required|integer|min:1|max:5',
@@ -104,9 +142,36 @@ class MyRegisterEventsController extends Controller
                 'removed_proofs'  => 'nullable|array',
             ]);
 
+            // Security: logged in student only
+            if ((int) $validated['student_id'] !== (int) $student->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized student access.',
+                ], 403);
+            }
+
+            // Validate schedule belongs to student OR first year common event
+            $schedule = EventSchedule::where('id', $validated['schedule_id'])
+                ->where('event_id', $validated['event_id'])
+                ->where(function ($q) use ($student) {
+                    $this->applyStudentScheduleFilter($q, $student);
+                })
+                ->first();
+
+            if (!$schedule) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid event schedule for this student.',
+                ], 422);
+            }
+
             /* ================= Delete removed proofs ================= */
             if (!empty($validated['removed_proofs'])) {
-                $proofs = StudentUploadProof::whereIn('id', $validated['removed_proofs'])->get();
+                $proofs = StudentUploadProof::whereIn('id', $validated['removed_proofs'])
+                    ->where('student_id', $student->id)
+                    ->where('event_id', $validated['event_id'])
+                    ->where('event_schedule_id', $validated['schedule_id'])
+                    ->get();
 
                 foreach ($proofs as $proof) {
                     Storage::disk('public')->delete($proof->file_path);
@@ -117,12 +182,11 @@ class MyRegisterEventsController extends Controller
             /* ================= Upload new files ================= */
             if ($request->hasFile('proof')) {
                 foreach ($request->file('proof') as $file) {
-
                     $fileName = uniqid() . '_' . $file->getClientOriginalName();
                     $filePath = $file->storeAs('student_upload_proof', $fileName, 'public');
 
                     StudentUploadProof::create([
-                        'student_id'        => $validated['student_id'],
+                        'student_id'        => $student->id,
                         'event_id'          => $validated['event_id'],
                         'event_schedule_id' => $validated['schedule_id'],
                         'file_name'         => $fileName,
@@ -135,7 +199,7 @@ class MyRegisterEventsController extends Controller
             /* ================= Update feedback ================= */
             StudentFeedback::updateOrCreate(
                 [
-                    'student_id'        => $validated['student_id'],
+                    'student_id'        => $student->id,
                     'event_id'          => $validated['event_id'],
                     'event_schedule_id' => $validated['schedule_id'],
                 ],
@@ -153,11 +217,13 @@ class MyRegisterEventsController extends Controller
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
+
             Log::error('Upload proof failed', [
                 'error' => $e->getMessage(),
                 'line'  => $e->getLine(),
                 'file'  => $e->getFile(),
             ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong. Please try again.',
@@ -165,37 +231,143 @@ class MyRegisterEventsController extends Controller
         }
     }
 
-
     public function getUploadedProof(Request $request)
     {
         try {
-            $proofs = StudentUploadProof::with('event')->where([
-                'student_id' => $request->student_id,
-                'event_id'   => $request->event_id,
-                'event_schedule_id' => $request->schedule_id
-            ])
+            $student = session()->get('student');
+
+            $request->validate([
+                'student_id' => 'required|integer',
+                'event_id' => 'required|integer',
+                'schedule_id' => 'required|integer|exists:event_schedules,id',
+            ]);
+
+            // Security check
+            if ((int) $request->student_id !== (int) $student->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized student access.',
+                ], 403);
+            }
+
+            // Validate schedule belongs to student OR first year common event
+            $schedule = EventSchedule::where('id', $request->schedule_id)
+                ->where('event_id', $request->event_id)
+                ->where(function ($q) use ($student) {
+                    $this->applyStudentScheduleFilter($q, $student);
+                })
+                ->first();
+
+            if (!$schedule) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid event schedule for this student.',
+                ], 422);
+            }
+
+            $proofs = StudentUploadProof::with('event')
+                ->where([
+                    'student_id' => $student->id,
+                    'event_id' => $request->event_id,
+                    'event_schedule_id' => $request->schedule_id,
+                ])
                 ->whereHas('event', function ($query) {
                     $query->where('publish', 1)
                         ->where('is_active', 'y');
-                })->get();
+                })
+                ->get();
 
-            $feedback = StudentFeedback::with('event')->where([
-                'student_id' => $request->student_id,
-                'event_id'   => $request->event_id,
-                'event_schedule_id' => $request->schedule_id
-            ])
+            $feedback = StudentFeedback::with('event')
+                ->where([
+                    'student_id' => $student->id,
+                    'event_id' => $request->event_id,
+                    'event_schedule_id' => $request->schedule_id,
+                ])
                 ->whereHas('event', function ($query) {
                     $query->where('publish', 1)
                         ->where('is_active', 'y');
-                })->first();
-
+                })
+                ->first();
 
             return response()->json([
-                'proofs'   => $proofs,
-                'feedback' => $feedback
+                'success' => true,
+                'proofs' => $proofs,
+                'feedback' => $feedback,
             ]);
-        } catch (Exception $e) {
-            return $e->getMessage();
+        } catch (\Throwable $e) {
+            Log::error('Get uploaded proof failed', [
+                'error' => $e->getMessage(),
+                'line'  => $e->getLine(),
+                'file'  => $e->getFile(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong. Please try again.',
+            ], 500);
         }
+    }
+
+    private function applyStudentScheduleFilter($q, $student)
+    {
+        $isFirstYearStudent = in_array((int) $student->semester, [1, 2]);
+
+        $q->where(function ($subQ) use ($student, $isFirstYearStudent) {
+
+            // Student-specific events
+            $subQ->where(function ($normalQ) use ($student) {
+                $normalQ->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester);
+            });
+
+            // Common first year events
+            if ($isFirstYearStudent) {
+                $subQ->orWhere(function ($firstYearQ) use ($student) {
+                    $firstYearQ->whereNull('programme_id')
+                        ->whereNull('section')
+                        ->whereNull('semester')
+                        ->where(function ($batchQ) use ($student) {
+                            $batchQ->whereNull('batch')
+                                ->orWhere('batch', $student->batch);
+                        });
+                });
+            }
+        });
+    }
+
+    private function getRegisteredCountForSchedule($schedule, $student)
+    {
+        if (!$schedule) {
+            return 0;
+        }
+
+        $isCommonFirstYearEvent =
+            is_null($schedule->programme_id) &&
+            is_null($schedule->section) &&
+            is_null($schedule->semester) &&
+            in_array((int) $student->semester, [1, 2]);
+
+        $query = \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id);
+
+        if ($isCommonFirstYearEvent) {
+            $query->whereHas('student', function ($q) use ($student) {
+                $q->whereIn('semester', [1, 2]);
+
+                if (!empty($student->batch)) {
+                    $q->where('batch', $student->batch);
+                }
+            });
+        } else {
+            $query->whereHas('student', function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester);
+            });
+        }
+
+        return $query->count();
     }
 }
