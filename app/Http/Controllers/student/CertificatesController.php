@@ -43,22 +43,28 @@ class CertificatesController extends Controller
     public function downloadCertificate(Request $request)
     {
         $event = Event::with('get_admin')->where('id', $request->event_id)->first();
-        $registration = StudentEventRegistration::with('event')->where('event_id', $event->id)
+        $registration = StudentEventRegistration::with('event')
+            ->where('event_id', $event->id)
             ->where('student_id', $request->student_id)
             ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
+                $query->where('publish', 1)->where('is_active', 'y');
             })
             ->first();
-        $student = Student::with('get_department')->where('id',$request->student_id)->first();
-        $pdf = Pdf::loadView('student.certificates.template', [
-            'event' =>  $event,
-            'student' => $student,
+        $student = Student::with('get_department')->where('id', $request->student_id)->first();
+        $template = ($event->event_type == "paid")
+            ? 'student.certificates.paid_certificate'
+            : 'student.certificates.free_certificate';
+
+        $pdf = Pdf::loadView($template, [
+            'event'        => $event,
+            'student'      => $student,
             'registration' => $registration,
-         ]);
-        $filename = 'certificate-' . $event->title ?? '' . '-' . $student->name ?? '' . '.pdf';
-        $user = auth('student')->user();
-        ActivityLog::add($student->name . ' - ' . $event->title . " - Certificate Downloaded", auth('student')->user());
+        ])->setPaper('a4', 'landscape');
+        $filename = 'certificate-' . str_replace(' ', '-', $event->title ?? '') . '-' . str_replace(' ', '-', $student->name ?? '') . '.pdf';
+        ActivityLog::add(
+            $student->name . ' - ' . $event->title . ' - Certificate Downloaded',
+            auth('student')->user()
+        );
         return $pdf->stream($filename);
     }
 }

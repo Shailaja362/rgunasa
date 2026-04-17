@@ -27,10 +27,12 @@
                     <select name="programme_id" class="border rounded-lg px-3 py-3 w-full mt-2 choice-select" id="programme_id">
                         <option value="">-- Select Programme --</option>
                         @foreach ($get_schedule_event as $id => $value)
-                            <option value="{{ $value->programme->id }}"
-                                {{ request('programme_id') == $value->programme->id ? 'selected' : '' }}>
-                                {{ $value->programme->name ?? '' }}
-                            </option>
+                           @if (!empty($value->programme))
+                           <option value="{{ $value->programme->id }}"
+                               {{ request('programme_id') == $value->programme->id ? 'selected' : '' }}>
+                               {{ $value->programme->name ?? '' }}
+                           </option>
+                           @endif
                         @endforeach
                     </select>
                 </div>

@@ -71,7 +71,7 @@
                     <x-menu.item name="Dashboard" icon="fa-home" route="student_dashboard" />
                     <x-menu.item name="Register for Events" icon="fa-calendar" route="register_events" />
                     <x-menu.item name="My Registration" icon="fa-check-circle" route="my_register_events" />
-                    {{-- <x-menu.item name="Certificates" icon="fa-trophy" route="certificates" /> --}}
+                    <x-menu.item name="Certificates" icon="fa-trophy" route="certificates" />
                 </x-slot:menus>
             </x-menu.list>
         @endif
