@@ -95,7 +95,6 @@
                             {{ old('is_technical_event', optional($edit_event)->is_technical_event) === 'n' ? 'checked' : '' }}>
                         <span class="ml-2 text-sm">No</span>
                     </label>
-
                 </div>
             </div>
             @if (!empty($edit_event))
@@ -129,6 +128,28 @@
                     <option value="free" @if (!empty($edit_event) && $edit_event->event_type == 'free') selected @endif>Free</option>
                 </select>
             </div>
+            @if (!empty($edit_event))
+                <div>
+                    <label class="block text-sm font-medium"> Is First Year <span class="text-red-500">*</span></label>
+                    <div class="flex items-center gap-6 mt-2">
+                        {{-- YES --}}
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="is_first_year" value="y"
+                                class="text-primary focus:ring-primary is_first_year"
+                                {{ old('is_first_year', optional($edit_event)->is_first_year) === 'y' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm">Yes</span>
+                        </label>
+
+                        {{-- NO --}}
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="is_first_year" value="n"
+                                class="text-primary focus:ring-primary is_first_year"
+                                {{ old('is_first_year', optional($edit_event)->is_first_year) === 'n' ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm">No</span>
+                        </label>
+                    </div>
+                </div>
+            @endif
 
             <div id="priceFieldContainer">
                 @if (!empty($edit_event) && $edit_event->event_type == 'paid')

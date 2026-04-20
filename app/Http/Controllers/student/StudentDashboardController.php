@@ -116,16 +116,12 @@ class StudentDashboardController extends Controller
                 'schedule' => function ($q) use ($student, $isFirstYearStudent) {
                     $q->whereDate('event_date', '>', Carbon::now()->toDateString())
                         ->where(function ($subQ) use ($student, $isFirstYearStudent) {
-
-                            // Normal events
                             $subQ->where(function ($normalQ) use ($student) {
                                 $normalQ->where('programme_id', $student->programme_id)
                                     ->where('section', $student->section)
                                     ->where('batch', $student->batch)
                                     ->where('semester', $student->semester);
                             });
-
-                            // First year common events
                             if ($isFirstYearStudent) {
                                 $subQ->orWhere(function ($firstYearQ) use ($student) {
                                     $firstYearQ->whereNull('programme_id')
@@ -165,15 +161,11 @@ class StudentDashboardController extends Controller
             })
             ->whereHas('get_event_schedule', function ($q) use ($student, $isFirstYearStudent) {
                 $q->where(function ($subQ) use ($student, $isFirstYearStudent) {
-
-                    // Normal events
                     $subQ->where(function ($normalQ) use ($student) {
                         $normalQ->where('programme_id', $student->programme_id)
                             ->where('batch', $student->batch)
                             ->where('semester', $student->semester);
                     });
-
-                    // First year common events
                     if ($isFirstYearStudent) {
                         $subQ->orWhere(function ($firstYearQ) use ($student) {
                             $firstYearQ->whereNull('programme_id')

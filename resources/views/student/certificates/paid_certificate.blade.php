@@ -8,6 +8,18 @@
             margin: 0;
         }
 
+        @font-face {
+            font-family: 'Axiforma';
+            src: url('{{ public_path('fonts/Axiforma-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Axiforma';
+            src: url('{{ public_path('fonts/Axiforma-SemiBold.ttf') }}') format('truetype');
+            font-weight: bold;
+        }
+
         body {
             margin: 0;
             padding: 0;
@@ -31,21 +43,13 @@
             left: 100px;
             right: 100px;
             text-align: center;
-            line-height: 2.8;
+            line-height: 2.3;
             font-size: 13px;
         }
 
         /* TEXT */
         .line {
-            font-size: 15px;
-            font-weight: 500;
             margin-bottom: 10px;
-        }
-
-        /* SMALL TEXT */
-        .small {
-            font-size: 14px;
-            font-weight: 500;
         }
 
         /* UNDERLINES */
@@ -84,7 +88,7 @@
         .tag {
             position: absolute;
             top: 160px;
-            right: 125px;
+            right: 185px;
             color: #fff;
             font-size: 11px;
             font-weight: bold;
@@ -190,6 +194,14 @@
             justify-content: space-between;
             text-align: center;
         }
+
+        .divider {
+            width: 1px;
+            height: 30px;
+            background-color: grey;
+            display: inline-block;
+            margin: 0 10px;
+        }
     </style>
 </head>
 
@@ -201,10 +213,12 @@
         </div>
         <div class="tag">
             <img style="height: 50px;" src="{{ public_path('images/rtc_logo.png') }}">
-            <img style="height: 50px;" src="{{ public_path('images/logos/coe_logo_copy.png') }}">
+            <div class="divider" style="height: 30px; top:5px; position:absolute; left:365px;"></div>
+            <img style="height: 35px; top:5px; position:absolute; left:380px;"
+                src="{{ public_path('images/logos/coe_logo.png') }}">
         </div>
         <div class="content">
-            <div class="line">
+            <div>
                 This is to certify that
                 <span class="underline"><b>{{ $student->name }}</b></span>
                 of
@@ -227,7 +241,7 @@
         <div class="sign-left1 sign">
             Issued on:
             <span class="issued_underline">
-                {{ isset($event->event_date) ? \Carbon\Carbon::parse($event->event_date)->format('F d, Y') : '' }}
+                {{ \Carbon\Carbon::now()->format('F d, Y') }}
             </span>
         </div>
         <div class="sign-left sign">

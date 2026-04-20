@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <style>
@@ -7,10 +8,22 @@
             margin: 0;
         }
 
+        @font-face {
+            font-family: 'Axiforma';
+            src: url('{{ public_path('fonts/Axiforma-Regular.ttf') }}') format('truetype');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'Axiforma';
+            src: url('{{ public_path('fonts/Axiforma-SemiBold.ttf') }}') format('truetype');
+            font-weight: bold;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            font-family: DejaVu Sans, sans-serif;
+            font-family: 'Axiforma', sans-serif;
         }
 
         /* EXACT A4 LANDSCAPE */
@@ -26,23 +39,19 @@
         /* ================= CONTENT ================= */
         .content {
             position: absolute;
-            top: 250px;
+            top: 210px;
             left: 100px;
             right: 100px;
             text-align: center;
+            font-weight: 600;
+            font-size: 13pt;
+            /* letter-spacing: -0.04em; */
+            line-height: 16.5px;
         }
 
         /* TEXT */
         .line {
-            font-size: 21px;
-            font-weight: 600;
             margin-bottom: 10px;
-        }
-
-        /* SMALL TEXT */
-        .small {
-            font-size: 19px;
-            font-weight: 500;
         }
 
         /* UNDERLINES */
@@ -76,7 +85,6 @@
             top: 160px;
             right: 33px;
             color: #fff;
-            font-size: 11px;
             font-weight: bold;
             padding: 5px 10px;
             text-align: center;
@@ -89,7 +97,7 @@
         /* ================= CLUB LOGOS ================= */
         .club-logos {
             position: absolute;
-            bottom: 225px;
+            bottom: 245px;
             left: 60px;
             right: 60px;
             text-align: center;
@@ -97,7 +105,7 @@
 
         .club-logos-first {
             position: absolute;
-            bottom: 300px;
+            bottom: 310px;
             left: 60px;
             right: 60px;
             text-align: center;
@@ -116,12 +124,12 @@
         /* ================= FOOTER TEXT ================= */
         .footer-text {
             position: absolute;
-            bottom: 125px;
+            bottom: 140px;
             left: 120px;
             right: 120px;
             text-align: center;
             font-size: 13px;
-            line-height: 16px;
+            line-height: 11.5px;
         }
 
         /* ================= SIGNATURES ================= */
@@ -158,6 +166,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="certificate">
         <div class="top-logos">
@@ -167,23 +176,23 @@
             <img src="{{ public_path('images/logos/non.png') }}">
         </div>
         <div class="content">
-            <div class="line">
+            <div>
                 This is to certify that
-                <span class="underline">{{ $student->name }}</span>
+                <span class="underline line"><b>{{ $student->name }}</b></span>
                 of
-                <span class="underline">{{ $student->get_department->name }}</span>
+                <span class="underline line"><b>{{ $student->get_department->name }}</b></span>
             </div>
             <div class="line small">
                 has actively participated and made valuable contributions to
             </div>
             <div class="line">
-                <span class="underline event">{{ $event->title }}</span>
+                <span class="underline event"><b>{{ $event->title }}</b></span>
             </div>
             <div class="line small">
                 and has secured
-                <span class="underline">{{ strtoupper($registration->grade) }}</span>
+                <span class="underline"><b>{{ strtoupper($registration->grade) }}</b></span>
                 during the
-                <span class="underline">{{ $registration?->student?->semester ?? '' }}</span>
+                <span class="underline"><b>{{ $registration?->student?->semester ?? '' }}</b></span>
                 semester.
             </div>
             <div class="line small">
@@ -196,21 +205,21 @@
             <img src="{{ public_path('images/logos/nasa_4.png') }}" alt="">
             <img src="{{ public_path('images/logos/layer_4.png') }}" alt="">
             <img src="{{ public_path('images/logos/hue_saturation_1.png') }}" alt="">
-            <img src="{{ public_path('images/logos/femme_fusion_2.png') }}" alt="">
-            <img src="{{ public_path('images/logos/sky_watching_club.png') }}" alt="">
+            <img style="height:25px;" src="{{ public_path('images/logos/femme_fution.png') }}" alt="">
+            <img src="{{ public_path('images/logos/sky.png') }}" alt="">
             <img src="{{ public_path('images/logos/rise_english_club.png') }}" alt="">
         </div>
         <div class="club-logos">
             <img src="{{ public_path('images/logos/cultural_club.png') }}">
             <img src="{{ public_path('images/logos/layer_2.png') }}">
-            <img src="{{ public_path('images/logos/dcp_femme.png') }}">
-            <img src="{{ public_path('images/logos/IMG_6855.png') }}">
+            <img style="height:25px;" src="{{ public_path('images/logos/dpc.png') }}">
+            <img src="{{ public_path('images/logos/club_media.png') }}">
             <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
             <img src="{{ public_path('images/logos/tamil_mandram.png') }}">
             <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
             <img src="{{ public_path('images/logos/the_vibe_club.png') }}">
             <img src="{{ public_path('images/logos/the_food_security.png') }}">
-            <img src="{{ public_path('images/logos/origami.png') }}">
+            <img style="height:40px;" src="{{ public_path('images/logos/origami.png') }}">
             <img src="{{ public_path('images/logos/layer_9.png') }}">
             <img src="{{ public_path('images/logos/layer_6.png') }}">
             <img src="{{ public_path('images/logos/layer_2_copy.png') }}">
@@ -236,4 +245,11 @@
         </div>
     </div>
 </body>
+
 </html>
+
+
+
+
+
+
