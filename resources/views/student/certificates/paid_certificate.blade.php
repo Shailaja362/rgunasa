@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <style>
@@ -73,15 +72,12 @@
         }
 
         /* ================= TOP LOGOS ================= */
-        .top-logos {
+        .top-logos img {
+            height: 95px;
             position: absolute;
             top: 90px;
-            right: 140px;
-        }
-
-        .top-logos img {
-            height: 55px;
-            margin-left: 4px;
+            right: 50px;
+            /* margin-left: 4px; */
         }
 
         /* ================= TAG ================= */
@@ -98,18 +94,10 @@
 
         /* ================= CLUB LOGOS ================= */
         .club-logos {
-            position: absolute;
-            bottom: 225px;
+            /* position: absolute;
+            bottom: 105px;
             left: 60px;
-            right: 60px;
-            text-align: center;
-        }
-
-        .club-logos-first {
-            position: absolute;
-            bottom: 300px;
-            left: 60px;
-            right: 60px;
+            right: 60px; */
             text-align: center;
         }
 
@@ -126,7 +114,7 @@
         /* ================= FOOTER TEXT ================= */
         .footer-text {
             position: absolute;
-            bottom: 125px;
+            /* bottom: 125px; */
             left: 120px;
             right: 120px;
             text-align: center;
@@ -152,19 +140,8 @@
         .sign-center {
             position: absolute;
             bottom: 60px;
-            right: 400px;
+            right: 300px;
             text-align: center;
-        }
-
-        .sign-right {
-            position: absolute;
-            bottom: 60px;
-            right: 155px;
-            text-align: center;
-        }
-
-        .sign-right img {
-            height: 40px;
         }
 
         .sign-left img {
@@ -202,20 +179,38 @@
             display: inline-block;
             margin: 0 10px;
         }
+
+        .club-logos {
+            position: absolute;
+            bottom: 190px;
+            left: 60px;
+            right: 60px;
+            text-align: center;
+        }
+
+        .club-logos-first {
+            position: absolute;
+            bottom: 270px;
+            left: 60px;
+            right: 60px;
+            text-align: center;
+        }
+
+        .club-logos img {
+            height: 45px;
+            margin: 0 3px;
+        }
+
+        .club-logos-first img {
+            height: 35px;
+            margin: 0 3px;
+        }
     </style>
 </head>
-
 <body>
     <div class="certificate">
         <div class="top-logos">
-            <img src="{{ public_path('images/logos/aic_raise_logo_vertical.png') }}">
-            <img src="{{ public_path('images/logos/niti_logo.png') }}">
-        </div>
-        <div class="tag">
-            <img style="height: 50px;" src="{{ public_path('images/rtc_logo.png') }}">
-            <div class="divider" style="height: 30px; top:5px; position:absolute; left:365px;"></div>
-            <img style="height: 35px; top:5px; position:absolute; left:380px;"
-                src="{{ public_path('images/logos/coe_logo.png') }}">
+            <img src="{{ public_path('images/coe_certificates/coe_logo.png') }}">
         </div>
         <div class="content">
             <div>
@@ -231,13 +226,33 @@
                 <span class="underline event"><b>{{ $event->title }}</b></span>
             </div>
             <div class="line small">
-                as part of the Value-Added Learning Series by Rathinam Technical Campus in association with
-            </div>
-            <div class="line small">
-                AIC RAISE supported by Atal Innovation Mission, NITI AAYOG, Govt. of India.
+                as part of the Value-Added Learning Series by Rathinam Technical Campus
             </div>
         </div>
-
+        <div class="club-logos-first">
+            <img src="{{ public_path('images/coe_certificates/ai_skill_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/cisco_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/bio_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/web_3_0_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/cloud_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/chip_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/mac_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/meta_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/co_manufacturing_hub.png') }}" alt="">
+        </div>
+        <div class="club-logos">
+            <img src="{{ public_path('images/coe_certificates/climate_action_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/data_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/m2m_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/cyber_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/design_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/drone_tech_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/ev_tech_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/quantum_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/robotics_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/rpa_hub.png') }}" alt="">
+            <img src="{{ public_path('images/coe_certificates/startup_school_hub.png') }}" alt="">
+        </div>
         <div class="sign-left1 sign">
             Issued on:
             <span class="issued_underline">
@@ -254,11 +269,6 @@
             <div class="sign-name">Dr. K. Geetha</div>
             <div class="sign-title">Principal - Administration</div>
         </div>
-        <div class="sign-right sign">
-            <img src="{{ public_path('images/logos/dr_nagaraj_sign.png') }}">
-            <div class="sign-name">Dr. B. Nagaraj</div>
-            <div class="sign-title">Chief Executive Officer - AIC RAISE</div>
-        </div>
 </body>
-
 </html>
+

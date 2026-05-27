@@ -136,14 +136,14 @@
         .sign-left {
             position: absolute;
             bottom: 25px;
-            left: 390px;
+            left: 370px;
             text-align: center;
         }
 
         .sign-right {
             position: absolute;
             bottom: 25px;
-            right: 325px;
+            right: 345px;
             text-align: center;
         }
 
@@ -212,10 +212,10 @@
         <div class="club-logos">
             <img src="{{ public_path('images/logos/cultural_club.png') }}">
             <img src="{{ public_path('images/logos/layer_2.png') }}">
+            <img src="{{ public_path('images/logos/tamil_mandram.png') }}">
             <img style="height:25px;" src="{{ public_path('images/logos/dpc.png') }}">
             <img src="{{ public_path('images/logos/club_media.png') }}">
             <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
-            <img src="{{ public_path('images/logos/tamil_mandram.png') }}">
             <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
             <img src="{{ public_path('images/logos/the_vibe_club.png') }}">
             <img src="{{ public_path('images/logos/the_food_security.png') }}">
@@ -247,9 +247,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
