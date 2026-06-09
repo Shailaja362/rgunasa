@@ -66,7 +66,7 @@
         }
 
         .underline_department {
-            min-width: 560px;
+            min-width: 570px;
         }
 
         .underline_event {
