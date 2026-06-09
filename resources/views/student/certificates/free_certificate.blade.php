@@ -46,7 +46,7 @@
             font-weight: 600;
             /* letter-spacing: -0.04em; */
             line-height: 1.2;
-            font-size: 16.5px;
+            font-size: 17px;
         }
 
         /* TEXT */
@@ -212,14 +212,14 @@
         </div>
         <div class="content">
             <div>
-                This is to certify that Mr. / Ms.
+                This is to certify that 
                 <span class="underline line underline_name"><b>{{ $student->name }}</b></span> Reg. No. <span
                     class="underline line underline_reg"><b>{{ $student->register_number }}</b></span><br>
                 of
                 <span class="underline line underline_department"><b>{{ $student->get_department->name }}</b></span>
             </div>
             <div class="line small">
-                has actively participated and made valuable contributions to <span
+                has actively participated and made valuable contributions to the <span
                     class="underline event underline_event"><b>{{ $event->title }}</b></span>
             </div>
 
@@ -227,13 +227,13 @@
                 and has secured
                 <span class="underline underline_grade">
                     @if ($registration->grade == 'a')
-                        Winner <b>({{ strtoupper($registration->grade) }})</b>
+                        WINNER <b>({{ strtoupper($registration->grade) }})</b>
                     @elseif ($registration->grade == 'b')
-                        Runner <b>({{ strtoupper($registration->grade) }})</b>
+                        RUNNER <b>({{ strtoupper($registration->grade) }})</b>
                     @elseif ($registration->grade == 'c')
-                        Completed <b>({{ strtoupper($registration->grade) }})</b>
+                        COMPLETED <b>({{ strtoupper($registration->grade) }})</b>
                     @elseif ($registration->grade == 'd')
-                        Disqualified <b>({{ strtoupper($registration->grade) }})</b>
+                        DISQUALIFIED<b>({{ strtoupper($registration->grade) }})</b>
                     @endif
                 </span>
                 Grade <br>
@@ -251,7 +251,7 @@
                             $registration?->student?->semester == 4 ||
                             $registration?->student?->semester == 6 ||
                             $registration?->student?->semester == 8)
-                        Even
+                        EVEN
                     @endif
                 </span> semester of the Academic Year <span class="underline underline_aca">2025-2026</span>.
             </div>
@@ -284,7 +284,7 @@
         </div>
         <div class="footer-text">
             THE PRIMARY MOTIVE OF THE NON-ACADEMIC (NAC) SYSTEM AT RATHINAM TECHNICAL CAMPUS (AUTONOMOUS)<br>
-            IS TO INVOLVE STUDENTS IN SOCIAL AND SOCIETAL ENHANCEMENT ACTIVITIES.<br>
+            IS TO INVOLVE STUDENTS IN SOCIETAL ENHANCEMENT ACTIVITIES.<br>
             THE RECIPIENT'S PARTICIPATION IN THIS STUDENT CLUB ACTIVITY HAS MADE A SIGNIFICANT IMPACT,AND AS A
             RESULT,<br>
             THIS CERTIFICATE HAS BEEN ISSUED AND VALUED EQUIVALENT TO ONE NON-ACADEMIC ACTIVITY.<br>
