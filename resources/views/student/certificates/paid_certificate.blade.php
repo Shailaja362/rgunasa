@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <style>
@@ -38,12 +39,12 @@
         /* ================= CONTENT ================= */
         .content {
             position: absolute;
-            top: 250px;
+            top: 230px;
             left: 100px;
             right: 100px;
             text-align: center;
-            line-height: 2.3;
-            font-size: 13px;
+            line-height: 2;
+            font-size: 14px;
         }
 
         /* TEXT */
@@ -59,11 +60,12 @@
             padding: 0 8px;
         }
 
-        .issued_underline {
-            display: inline-block;
-            border-bottom: 2px solid #000;
-            min-width: 100px;
-            padding: 0 8px;
+        .underline_event{
+             min-width: 700px;
+        }
+
+        .underline_department{
+            min-width: 390px;
         }
 
         /* EVENT FIELD */
@@ -125,8 +127,8 @@
         /* ================= SIGNATURES ================= */
         .sign-left {
             position: absolute;
-            bottom: 60px;
-            left: 340px;
+            bottom: 25px;
+            left: 80px;
             text-align: center;
         }
 
@@ -139,8 +141,8 @@
 
         .sign-center {
             position: absolute;
-            bottom: 60px;
-            right: 300px;
+            bottom: 25px;
+            right: 80px;
             text-align: center;
         }
 
@@ -164,7 +166,7 @@
 
         .signatures {
             position: absolute;
-            bottom: 40px;
+            bottom: 25px;
             left: 200px;
             right: 200px;
             display: flex;
@@ -181,6 +183,9 @@
         }
 
         .club-logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             position: absolute;
             bottom: 190px;
             left: 60px;
@@ -190,6 +195,9 @@
 
         .club-logos-first {
             position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             bottom: 270px;
             left: 60px;
             right: 60px;
@@ -198,15 +206,16 @@
 
         .club-logos img {
             height: 45px;
-            margin: 0 3px;
+            margin: 0 20px; /* 50px left + 50px right = 100px gap */
         }
 
         .club-logos-first img {
             height: 35px;
-            margin: 0 3px;
+            margin: 0 20px;
         }
     </style>
 </head>
+
 <body>
     <div class="certificate">
         <div class="top-logos">
@@ -214,19 +223,22 @@
         </div>
         <div class="content">
             <div>
-                This is to certify that
-                <span class="underline"><b>{{ $student->name }}</b></span>
+                This is to certify that Mr. / Ms.
+                <span class="underline"><b>{{ $student->name }}</b></span> Reg. No.<span
+                    class="underline"><b>{{ $student->register_number }}</b></span><br>
                 of
-                <span class="underline"><b>{{ $student->get_department->name }}</b></span>
-            </div>
-            <div class="line small">
-                has successfully participated and demonstrated practical proficiency in
+                <span class="underline underline_department"><b>{{ $student->get_department->name }}</b></span> has successfully participated
+                and demonstrated
             </div>
             <div class="line">
-                <span class="underline event"><b>{{ $event->title }}</b></span>
+                practical proficiency in the titled
             </div>
             <div class="line small">
-                as part of the Value-Added Learning Series by Rathinam Technical Campus
+                <span class="underline underline_event"><b>{{ $event->title }}</b></span>
+            </div>
+            <div class="line small">
+                as a part of the Value-Added Learning Series held on <span
+                    class="underline"><b>{{ \Carbon\Carbon::parse($registration->get_event_schedule->event_date)->format('d-m-Y') }}</b></span>.
             </div>
         </div>
         <div class="club-logos-first">
@@ -253,22 +265,16 @@
             <img src="{{ public_path('images/coe_certificates/rpa_hub.png') }}" alt="">
             <img src="{{ public_path('images/coe_certificates/startup_school_hub.png') }}" alt="">
         </div>
-        <div class="sign-left1 sign">
-            Issued on:
-            <span class="issued_underline">
-                {{ \Carbon\Carbon::now()->format('F d, Y') }}
-            </span>
-        </div>
         <div class="sign-left sign">
             <img src="{{ public_path('images/logos/dr_c_krishnaraj_principal.png') }}">
             <div class="sign-name">Dr. C. Krishnaraj</div>
             <div class="sign-title">Principal - Academics</div>
         </div>
-        <div class="sign-center sign">
+        <div class="sign-center">
             <img src="{{ public_path('images/logos/g_sign.png') }}">
             <div class="sign-name">Dr. K. Geetha</div>
             <div class="sign-title">Principal - Administration</div>
         </div>
 </body>
-</html>
 
+</html>

@@ -44,9 +44,9 @@
             right: 100px;
             text-align: center;
             font-weight: 600;
-            font-size: 13pt;
             /* letter-spacing: -0.04em; */
-            line-height: 16.5px;
+            line-height: 1.2;
+            font-size: 16.5px;
         }
 
         /* TEXT */
@@ -58,8 +58,39 @@
         .underline {
             display: inline-block;
             border-bottom: 2px solid #000;
+            padding: 0 8px 4px 8px;
+            /* added bottom padding so text sits above the line */
+            font-size: 15px;
+            line-height: 1.2;
+            vertical-align: bottom;
+        }
+
+        .underline_department {
+            min-width: 560px;
+        }
+
+        .underline_event {
             min-width: 260px;
-            padding: 0 8px;
+        }
+
+        .underline_grade {
+            min-width: 560px;
+        }
+
+        .underline_name {
+            min-width: 320px;
+        }
+
+        .underline_sem {
+            min-width: 150px;
+        }
+
+        .underline_reg {
+            min-width: 240px;
+        }
+
+        .underline_aca {
+            min-width: 230px;
         }
 
         /* EVENT FIELD */
@@ -96,6 +127,10 @@
 
         /* ================= CLUB LOGOS ================= */
         .club-logos {
+            display: flex;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
             position: absolute;
             bottom: 245px;
             left: 60px;
@@ -105,7 +140,7 @@
 
         .club-logos-first {
             position: absolute;
-            bottom: 310px;
+            bottom: 300px;
             left: 60px;
             right: 60px;
             text-align: center;
@@ -113,12 +148,12 @@
 
         .club-logos img {
             height: 35px;
-            margin: 0 3px;
+            margin: 0 10px;
         }
 
         .club-logos-first img {
             height: 35px;
-            margin: 0 3px;
+            margin: 0 10px;
         }
 
         /* ================= FOOTER TEXT ================= */
@@ -136,14 +171,14 @@
         .sign-left {
             position: absolute;
             bottom: 25px;
-            left: 370px;
+            left: 130px;
             text-align: center;
         }
 
         .sign-right {
             position: absolute;
             bottom: 25px;
-            right: 345px;
+            right: 80px;
             text-align: center;
         }
 
@@ -161,7 +196,7 @@
         }
 
         .sign-title {
-            font-size: 11px;
+            font-size: 10px;
             color: #555;
         }
     </style>
@@ -177,26 +212,48 @@
         </div>
         <div class="content">
             <div>
-                This is to certify that
-                <span class="underline line"><b>{{ $student->name }}</b></span>
+                This is to certify that Mr. / Ms.
+                <span class="underline line underline_name"><b>{{ $student->name }}</b></span> Reg. No. <span
+                    class="underline line underline_reg"><b>{{ $student->register_number }}</b></span><br>
                 of
-                <span class="underline line"><b>{{ $student->get_department->name }}</b></span>
+                <span class="underline line underline_department"><b>{{ $student->get_department->name }}</b></span>
             </div>
             <div class="line small">
-                has actively participated and made valuable contributions to
+                has actively participated and made valuable contributions to <span
+                    class="underline event underline_event"><b>{{ $event->title }}</b></span>
             </div>
-            <div class="line">
-                <span class="underline event"><b>{{ $event->title }}</b></span>
-            </div>
+
             <div class="line small">
                 and has secured
-                <span class="underline"><b>{{ strtoupper($registration->grade) }}</b></span>
-                during the
-                <span class="underline"><b>{{ $registration?->student?->semester ?? '' }}</b></span>
-                semester.
+                <span class="underline underline_grade">
+                    @if ($registration->grade == 'a')
+                        Winner <b>({{ strtoupper($registration->grade) }})</b>
+                    @elseif ($registration->grade == 'b')
+                        Runner <b>({{ strtoupper($registration->grade) }})</b>
+                    @elseif ($registration->grade == 'c')
+                        Completed <b>({{ strtoupper($registration->grade) }})</b>
+                    @elseif ($registration->grade == 'd')
+                        Disqualified <b>({{ strtoupper($registration->grade) }})</b>
+                    @endif
+                </span>
+                Grade <br>
             </div>
             <div class="line small">
-                Organized by Rathinam Technical Campus
+                during the <span class="underline underline_sem">
+                    @if (
+                        $registration?->student?->semester == 1 ||
+                            $registration?->student?->semester == 3 ||
+                            $registration?->student?->semester == 8 ||
+                            $registration?->student?->semester == 7)
+                        ODD
+                    @elseif (
+                        $registration?->student?->semester == 2 ||
+                            $registration?->student?->semester == 4 ||
+                            $registration?->student?->semester == 6 ||
+                            $registration?->student?->semester == 8)
+                        Even
+                    @endif
+                </span> semester of the Academic Year <span class="underline underline_aca">2025-2026</span>.
             </div>
         </div>
         <div class="club-logos-first">
@@ -216,7 +273,6 @@
             <img style="height:25px;" src="{{ public_path('images/logos/dpc.png') }}">
             <img src="{{ public_path('images/logos/club_media.png') }}">
             <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
-            <img src="{{ public_path('images/logos/the_logic_hub.png') }}">
             <img src="{{ public_path('images/logos/the_vibe_club.png') }}">
             <img src="{{ public_path('images/logos/the_food_security.png') }}">
             <img style="height:40px;" src="{{ public_path('images/logos/origami.png') }}">
@@ -227,11 +283,11 @@
             <img src="{{ public_path('images/logos/layer_8.png') }}">
         </div>
         <div class="footer-text">
-            THE PRIMARY MOTIVE OF THE NAC SYSTEM AT RATHINAM TECHNICAL CAMPUS (AUTONOMOUS)<br>
+            THE PRIMARY MOTIVE OF THE NON-ACADEMIC (NAC) SYSTEM AT RATHINAM TECHNICAL CAMPUS (AUTONOMOUS)<br>
             IS TO INVOLVE STUDENTS IN SOCIAL AND SOCIETAL ENHANCEMENT ACTIVITIES.<br>
             THE RECIPIENT'S PARTICIPATION IN THIS STUDENT CLUB ACTIVITY HAS MADE A SIGNIFICANT IMPACT,AND AS A
             RESULT,<br>
-            THEY HAVE EARNED THIS CERTIFICATE VALUED EQUIVALENT TO ONE NON-ACADEMIC ACTIVITY.<br>
+            THIS CERTIFICATE HAS BEEN ISSUED AND VALUED EQUIVALENT TO ONE NON-ACADEMIC ACTIVITY.<br>
         </div>
         <div class="sign-left sign">
             <img src="{{ public_path('images/logos/dr_c_krishnaraj_principal.png') }}">
