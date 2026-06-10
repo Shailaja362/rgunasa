@@ -60,12 +60,20 @@
             padding: 0 8px;
         }
 
-        .underline_event{
-             min-width: 700px;
+        .underline_event {
+            min-width: 700px;
         }
 
-        .underline_department{
+        .underline_department {
             min-width: 390px;
+        }
+
+        .underline_name {
+            min-width: 290px;
+        }
+
+        .underline_reg {
+            min-width: 270px;
         }
 
         /* EVENT FIELD */
@@ -206,7 +214,8 @@
 
         .club-logos img {
             height: 45px;
-            margin: 0 20px; /* 50px left + 50px right = 100px gap */
+            margin: 0 20px;
+            /* 50px left + 50px right = 100px gap */
         }
 
         .club-logos-first img {
@@ -223,15 +232,21 @@
         </div>
         <div class="content">
             <div>
-                This is to certify that Mr. / Ms.
-                <span class="underline"><b>{{ $student->name }}</b></span> Reg. No.<span
-                    class="underline"><b>{{ $student->register_number }}</b></span><br>
+                This is to certify that
+                @if ($student->gender == 'm')
+                Mr.
+                @elseif ($student->gender == 'f')
+                Ms.
+                @endif
+                <span class="underline underline_name"><b>{{ $student->name }}</b></span> Reg. No.<span
+                    class="underline underline_reg"><b>{{ $student->register_number }}</b></span><br>
                 of
-                <span class="underline underline_department"><b>{{ $student->get_department->name }}</b></span> has successfully participated
+                <span class="underline underline_department"><b>{{ $student->get_department->name }}</b></span> has
+                successfully participated
                 and demonstrated
             </div>
             <div class="line">
-                practical proficiency in the titled
+                practical proficiency in the
             </div>
             <div class="line small">
                 <span class="underline underline_event"><b>{{ $event->title }}</b></span>
