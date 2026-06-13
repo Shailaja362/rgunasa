@@ -2,11 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
 
-class Student extends Authenticatable
+class Student extends Authenticatable implements JWTSubject
 {
     use Notifiable;
     protected $guard = 'student';
@@ -36,5 +37,15 @@ class Student extends Authenticatable
     public function registrations()
     {
         return $this->hasMany(StudentEventRegistration::class, 'student_id');
+    }
+
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return [];
     }
 }

@@ -55,13 +55,18 @@ class StudentDashboardController extends Controller
             $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
         })
             ->with([
+                'registrations',
                 'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
                     $q->whereDate('event_date', Carbon::now()->toDateString());
                     $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+                    $q->orderBy('event_date', 'asc');
                 },
                 'get_dep_events.registrations'
             ])
-            ->where('publish', 1)
+            ->where([
+                'publish' => 1,
+                'is_active' => 'y'
+            ])
             ->get();
 
         $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')

@@ -8,6 +8,10 @@ class ActivityLog
 {
     public static function add($title, $user)
     {
+       if(isset($user->register_number)){
+            $user_type = 'student';
+       }
+
         if(!empty(session()->get('admin'))){
            $user_type = 'admin';
         }else if(!empty(session()->get('super_admin'))){

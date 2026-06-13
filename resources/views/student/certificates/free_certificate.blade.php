@@ -225,7 +225,7 @@
             </div>
             <div class="line small">
                 has actively participated and made valuable contributions to the <span
-                    class="underline event underline_event"><b>{{ $event->title }}</b></span>
+                    class="underline event underline_event"><b>{{ strtoupper($event->title) }}</b></span>
             </div>
 
             <div class="line small">

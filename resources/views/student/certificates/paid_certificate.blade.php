@@ -249,7 +249,7 @@
                 practical proficiency in the
             </div>
             <div class="line small">
-                <span class="underline underline_event"><b>{{ $event->title }}</b></span>
+                <span class="underline underline_event"><b>{{ strtoupper($event->title) }}</b></span>
             </div>
             <div class="line small">
                 as a part of the Value-Added Learning Series held on <span
