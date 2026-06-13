@@ -111,7 +111,6 @@
         <div class="bg-[#F2E8F5] rounded-full px-5 py-3 mt-8 flex justify-between items-center">
             <h3 class="font-semibold text-primary">Events</h3>
         </div>
-
         <!-- Upcoming Event Section -->
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Upcoming Events</h4>
@@ -138,7 +137,8 @@
                             $isCommonFirstYearEvent =
                                 is_null($dept->programme_id) &&
                                 is_null($dept->section) &&
-                                is_null($dept->semester) && (is_null($dept->batch) || $dept->batch == $student->batch);
+                                is_null($dept->semester) &&
+                                (is_null($dept->batch) || $dept->batch == $student->batch);
 
                             $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
@@ -148,9 +148,9 @@
                             if ($isCommonFirstYearEvent) {
                                 $registeredCountQuery->whereHas('student', function ($query) {
                                     $query->whereIn('semester', [1, 2]);
-                                       if (!empty($student->batch)) {
-                $query->where('batch', $student->batch);
-            }
+                                    if (!empty($student->batch)) {
+                                        $query->where('batch', $student->batch);
+                                    }
                                 });
                             } else {
                                 $registeredCountQuery->whereHas('student', function ($query) use ($student) {
@@ -344,9 +344,9 @@
                             if ($isCommonFirstYearEvent) {
                                 $registeredCountQuery->whereHas('student', function ($query) {
                                     $query->whereIn('semester', [1, 2]);
-                                       if (!empty($student->batch)) {
-                                          $query->where('batch', $student->batch);
-                                         }
+                                    if (!empty($student->batch)) {
+                                        $query->where('batch', $student->batch);
+                                    }
                                 });
                             } else {
                                 $registeredCountQuery->whereHas('student', function ($query) use ($student) {
@@ -542,7 +542,7 @@
                             $registeredQuery->whereHas('student', function ($query) {
                                 $query->whereIn('semester', [1, 2]);
                                 if (!empty($student->batch)) {
-                                      $query->where('batch', $student->batch);
+                                    $query->where('batch', $student->batch);
                                 }
                             });
                         } else {
@@ -566,7 +566,6 @@
                         $available = $register_event->get_event_schedule
                             ? $register_event->get_event_schedule->seat_count - $registered
                             : 0;
-
                     @endphp
                     <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                         <div class="relative">

@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'admins',
         ],
+        'student-api' => [
+            'driver' => 'jwt',
+            'provider' => 'students',
+        ],
         'web' => [
             'driver' => 'session',
             'provider' => 'users',

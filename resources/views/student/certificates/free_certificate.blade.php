@@ -66,7 +66,7 @@
         }
 
         .underline_department {
-            min-width: 570px;
+            min-width: 600px;
         }
 
         .underline_event {
@@ -78,7 +78,7 @@
         }
 
         .underline_name {
-            min-width: 320px;
+            min-width: 360px;
         }
 
         .underline_sem {
@@ -86,7 +86,7 @@
         }
 
         .underline_reg {
-            min-width: 240px;
+            min-width: 260px;
         }
 
         .underline_aca {
@@ -94,9 +94,9 @@
         }
 
         /* EVENT FIELD */
-        .event {
+        /* .event {
             min-width: 420px;
-        }
+        } */
 
         /* ================= TOP LOGOS ================= */
         .top-logos {
@@ -212,7 +212,12 @@
         </div>
         <div class="content">
             <div>
-                This is to certify that 
+                This is to certify that
+                @if ($student->gender == 'm')
+                Mr.
+                @elseif ($student->gender == 'f')
+                Ms.
+                @endif
                 <span class="underline line underline_name"><b>{{ $student->name }}</b></span> Reg. No. <span
                     class="underline line underline_reg"><b>{{ $student->register_number }}</b></span><br>
                 of
@@ -220,7 +225,7 @@
             </div>
             <div class="line small">
                 has actively participated and made valuable contributions to the <span
-                    class="underline event underline_event"><b>{{ $event->title }}</b></span>
+                    class="underline event underline_event"><b>{{ strtoupper($event->title) }}</b></span>
             </div>
 
             <div class="line small">
