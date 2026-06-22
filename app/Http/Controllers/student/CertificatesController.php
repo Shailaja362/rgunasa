@@ -52,7 +52,7 @@ class CertificatesController extends Controller
             })
             ->first();
         $student = Student::with('get_department')->where('id', $request->student_id)->first();
-        $template = ($event->event_type == "paid")
+        $template = ($event->is_technical_event == "y")
             ? 'student.certificates.paid_certificate'
             : 'student.certificates.free_certificate';
 
