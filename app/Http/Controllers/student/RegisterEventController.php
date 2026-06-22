@@ -52,11 +52,13 @@ class RegisterEventController extends Controller
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
+            $q->where('event_date', '>=', Carbon::now()->toDateString());
             $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
         })
             ->with([
                 'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
                     $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+                    $q->where('event_date', '>=', Carbon::now()->toDateString());
                     $q->orderBy('event_date', 'asc');
                 },
                 'get_dep_events.registrations'

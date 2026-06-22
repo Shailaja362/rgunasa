@@ -77,11 +77,13 @@ class StudentDashboardController extends Controller
             ->where('student_id', $student->id)
             ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
+            $q->where('event_date', '>=', Carbon::now()->toDateString());
             $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
         })
             ->with([
                 'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
                     $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+                    $q->where('event_date', '>=', Carbon::now()->toDateString());
                     $q->orderBy('event_date', 'asc');
                 },
                 'get_dep_events.registrations'
@@ -108,10 +110,10 @@ class StudentDashboardController extends Controller
                             $subQ->orWhere(function ($firstYearQ)  use ($student) {
                                 $firstYearQ->whereNull('programme_id')
                                     ->whereNull('section')
-                                ->where(function ($batchQ) use ($student) {
-                                    $batchQ->whereNull('batch')
-                                        ->orWhere('batch', $student->batch);
-                                })
+                                    ->where(function ($batchQ) use ($student) {
+                                        $batchQ->whereNull('batch')
+                                            ->orWhere('batch', $student->batch);
+                                    })
                                     ->whereNull('semester');
                             });
                         }
@@ -131,10 +133,10 @@ class StudentDashboardController extends Controller
                                 $subQ->orWhere(function ($firstYearQ) use ($student) {
                                     $firstYearQ->whereNull('programme_id')
                                         ->whereNull('section')
-                                    ->where(function ($batchQ) use ($student) {
-                                        $batchQ->whereNull('batch')
-                                            ->orWhere('batch', $student->batch);
-                                    })
+                                        ->where(function ($batchQ) use ($student) {
+                                            $batchQ->whereNull('batch')
+                                                ->orWhere('batch', $student->batch);
+                                        })
                                         ->whereNull('semester');
                                 });
                             }
