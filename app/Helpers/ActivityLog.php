@@ -27,4 +27,9 @@ class ActivityLog
             'user_type' => $user_type,
         ]);
     }
+
+
+
+
+
 }

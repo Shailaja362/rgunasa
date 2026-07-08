@@ -23,8 +23,6 @@ class UpcomingEventController extends Controller
             ], 401);
         }
 
-        $isFirstYearStudent = in_array((int) $student->semester, [1, 2]);
-
         $myUploads = StudentUploadProof::select('student_id', 'event_id')
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->where('student_id', $student->id)
@@ -53,23 +51,25 @@ class UpcomingEventController extends Controller
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->get();
 
-        $today = Carbon::today()->toDateString();
-
-        $upcomingEvents = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent, $today) {
-            $q->whereDate('event_date', '>=', $today);
-            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+        $upcomingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
+                ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
-            ->with([
-                'registrations',
-                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent, $today) {
-                    $q->whereDate('event_date', '>=', $today);
-                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
-                    $q->orderBy('event_date', 'asc');
-                },
-                'get_dep_events.registrations',
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
+                    ->where('event_date', '>=', Carbon::now()->toDateString())
+                    ->orderBy('event_date', 'asc');
+            }, 'get_dep_events.registrations'])
+            ->where([
+                'publish' => 1,
+                'is_active' => 'y'
             ])
-            ->where('publish', 1)
-            ->where('is_active', 'y')
             ->get();
 
         // ✅ Fix 3: Debug — check if events are being fetched at all
@@ -81,7 +81,6 @@ class UpcomingEventController extends Controller
                 'attended_events'           => $attendedEvents,
                 'pending_events'            => $pendingUploads,
                 'data'                      => [],
-                'debug'                     => 'No upcoming events found for this student filter',
             ]);
         }
 
@@ -151,6 +150,7 @@ class UpcomingEventController extends Controller
 
                     return [
                         'event_id'          => $event->id,
+                        'schedule_id'          => $schedule->id,
                         'event_image'       => $event->banner_image
                             ? asset('storage/' . $event->banner_image)
                             : null,
@@ -198,11 +198,11 @@ class UpcomingEventController extends Controller
         });
     }
 
-    private function registeredSeatsForSchedule($schedule, $student)
+    public static function registeredSeatsForSchedule($schedule, $student)
     {
         $query = StudentEventRegistration::where('event_schedule_id', $schedule->id);
 
-        if ($this->isCommonFirstYearSchedule($schedule, $student)) {
+        if (self::isCommonFirstYearSchedule($schedule, $student)) {
             $query->whereHas('student', function ($studentQuery) use ($student) {
                 $studentQuery->whereIn('semester', [1, 2]);
 
@@ -223,7 +223,7 @@ class UpcomingEventController extends Controller
         })->count();
     }
 
-    private function isCommonFirstYearSchedule($schedule, $student)
+    public static function isCommonFirstYearSchedule($schedule, $student)
     {
         return is_null($schedule->programme_id)
             && is_null($schedule->section)

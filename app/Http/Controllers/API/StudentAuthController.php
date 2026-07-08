@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
@@ -33,7 +34,7 @@ class StudentAuthController extends Controller
         ];
 
         try {
-            if (!$token = auth('student-api')->attempt($credentials)) {
+            if (!auth('student-api')->attempt($credentials)) {
                 return response()->json([
                     'status'  => 400,
                     'message' => 'Invalid email or password',
@@ -57,11 +58,11 @@ class StudentAuthController extends Controller
                     'email' => $student->email,
                     'mobile_number' => $student->mobile_number,
                     'access_token' => $token,
-                    'token_type'   => 'bearer',
                     'expires_in'   => $oneYearInMinutes * 60, // seconds
                 ]
             ], 200);
         } catch (\Exception $e) {
+
             return response()->json([
                 'status' => 500,
                 'message' => 'Login failed',

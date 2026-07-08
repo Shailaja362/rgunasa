@@ -63,10 +63,12 @@ class StudentAttendanceController extends Controller
                 $request->batch,
                 $request->semester
             );
+
             if (!empty($schedules)) {
                 $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
                     ->where('event_schedule_id', $schedules->id)
                     ->get();
+
                 $this->data['registeredStudents'] =
                     StudentEventRegistration::with('student.get_department', 'student.get_programme')
                     ->where('event_id', $eventId)
@@ -149,14 +151,15 @@ class StudentAttendanceController extends Controller
 
     private function resolveSchedule($eventId, $programmeId, $date,$section,$batch,$semester)
     {
+
         return EventSchedule::where('event_id', $eventId)
             ->where('programme_id', $programmeId)
             ->where('section', $section)
             ->where('batch', $batch)
             ->where('semester', $semester)
-            ->where(function ($q) use ($date) {
-                $q->whereDate('event_date', $date);
-            })
+//            ->where(function ($q) use ($date) {
+//                $q->whereDate('event_date', $date);
+//            })
             ->first();
     }
 }

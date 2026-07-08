@@ -29,135 +29,130 @@ class StudentHomeController extends Controller
             ->where('status', 2)
             ->whereNotNull('grade')
             ->count();
+        $today = Carbon::today()->toDateString();
         $configCredit = CreditPoint::where('semester', $student->semester)->first();
-        $upcomingEvents = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
-            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+
+        $upcomingEvents =  Event::whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
+                ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
-            ->with([
-                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
-                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
-                    $q->orderBy('event_date', 'asc');
-                },
-                'get_dep_events.registrations'
-            ])
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
+                    ->where('event_date', '>=', Carbon::now()->toDateString())
+                    ->orderBy('event_date', 'asc');
+            }, 'get_dep_events.registrations'])
             ->where([
                 'publish' => 1,
                 'is_active' => 'y'
             ])
             ->get()
-            ->map(function ($event) use ($student) {
-            $schedule = $event->get_dep_events->first();
-            if (!$schedule) {
-                return null;
-            }
-            [$startTime, $endTime] = $this->eventTimesForSchedule($event, $schedule);
-            $registeredCount = StudentEventRegistration::where(
-                'event_schedule_id',
-                $schedule->id
-            )->count();
+            ->flatMap(function ($event) use ($student, $now) {
+                return $event->get_dep_events->map(function ($schedule) use ($event, $student, $now) {
+                    $registeredCount = $this->registeredSeatsForSchedule($schedule, $student);
+                    $availableSeats = max(0, $schedule->seat_count - $registeredCount);
+                    [$startTime, $endTime] = $this->eventTimesForSchedule($event, $schedule);
+                    $deadline = Carbon::parse($event->end_registration);
+                    $lastRegistration = $event->registrations
+                        ->where('student_id', $student->id)
+                        ->where('event_schedule_id', $schedule->id)
+                        ->sortByDesc('registered_at')
+                        ->first();
 
-            $availableSeats = max(0, $schedule->seat_count - $registeredCount);
+                    $cooldownActive = false;
+                    $permanentBlock = false;
+                    $nextAllowedDate = null;
 
-            $deadline = Carbon::parse($event->end_registration);
+                    if ($lastRegistration) {
+                        if (empty($event->duration_months) || $event->duration_months == 0) {
+                            $permanentBlock = true;
+                        }
 
-            $lastRegistration = StudentEventRegistration::where([
-                'student_id' => $student->id,
-                'event_id' => $event->id,
-                'event_schedule_id' => $schedule->id,
-            ])
-                ->latest('registered_at')
-                ->first();
+                        if (!$permanentBlock && $event->duration_months) {
+                            $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
+                                ->addMonths($event->duration_months);
 
-            $cooldownActive = false;
-            $permanentBlock = false;
-            $nextAllowedDate = null;
-
-            if ($lastRegistration) {
-
-                if (empty($event->duration_months) || $event->duration_months == 0) {
-                    $permanentBlock = true;
-                }
-
-                if (!$permanentBlock && $event->duration_months) {
-
-                    $nextAllowedDate = Carbon::parse(
-                        $lastRegistration->registered_at
-                    )->addMonths($event->duration_months);
-
-                    if (now()->lt($nextAllowedDate)) {
-                        $cooldownActive = true;
+                            if ($now->lt($nextAllowedDate)) {
+                                $cooldownActive = true;
+                            }
+                        }
                     }
-                }
-            }
 
-            $paidEventConflict = StudentEventRegistration::where('student_id', $student->id)
-                ->whereHas('event', function ($q) {
-                    $q->where('event_type', 'paid');
-                })
-                ->whereHas('get_event_schedule', function ($q) use ($schedule) {
-                    $q->whereDate('event_date', $schedule->event_date);
-                })
-                ->exists();
+                    $paidEventConflict = StudentEventRegistration::where('student_id', $student->id)
+                        ->whereHas('event', function ($q) {
+                            $q->where('event_type', 'paid');
+                        })
+                        ->whereHas('get_event_schedule', function ($q) use ($schedule) {
+                            $q->whereDate('event_date', $schedule->event_date);
+                        })
+                        ->exists();
 
-            $canRegister =
-                !$permanentBlock &&
-                !$cooldownActive &&
-                $availableSeats > 0 &&
-                !$deadline->endOfDay()->isPast() &&
-                !$paidEventConflict;
+                    $canRegister =
+                        !$permanentBlock &&
+                        !$cooldownActive &&
+                        $availableSeats > 0 &&
+                        !$deadline->endOfDay()->isPast() &&
+                        !$paidEventConflict;
 
+                    return [
+                        'event_id' => $event->id,
+                        'schedule_id' => $schedule->id,
+                        'event_image' => $event->banner_image ? asset('storage/' . $event->banner_image) : null,
+                        'event_name' => $event->title,
+                        'event_start_time' => $startTime ? \Carbon\Carbon::parse($startTime)->format('h:iA') : '-',
+                        'event_end_time' =>  $endTime ? \Carbon\Carbon::parse($endTime)->format('h:iA') : '-',
+                        'event_location' => $event->location,
+                        'event_date' => Carbon::parse($schedule->event_date)->format('F d, Y'),
 
-            return [
-                'event_id' => $event->id,
-                'event_image' => $event->banner_image
-                    ? asset('storage/' . $event->banner_image)
-                    : null,
-                'event_name' => $event->title,
-                'event_start_time' => $startTime ? \Carbon\Carbon::parse($startTime)->format('h:iA') : '-',
-                'event_end_time' => $endTime ? \Carbon\Carbon::parse($endTime)->format('h:iA') : '-',
-                'event_location' => $schedule->location,
-                'event_date' => Carbon::parse($schedule->event_date)->format('F d, Y'),
+                        'total_seats' => $schedule->seat_count,
+                        'registered_seats' => $registeredCount,
+                        'available_seats' => $availableSeats,
 
-                'total_seats' => $schedule->seat_count,
-                'registered_seats' => $registeredCount,
-                'available_seats' => $availableSeats,
+                        'event_premium' => $event->event_type === 'paid' ? 'paid' : 'free',
+                        'event_register' => $canRegister,
 
-                'event_premium' => $event->event_type === 'paid' ? 'paid' : 'free',
+                        'registration_status' => match (true) {
+                            $permanentBlock => 'already_registered',
+                            $cooldownActive => 'cooldown_active',
+                            $availableSeats <= 0 => 'seats_full',
+                            $deadline->endOfDay()->isPast() => 'registration_closed',
+                            $paidEventConflict => 'paid_event_conflict',
+                            default => 'open',
+                        },
 
-                'event_register' => $canRegister,
+                        'next_allowed_date' => $nextAllowedDate
+                            ? $nextAllowedDate->format('Y-m-d')
+                            : null,
 
-                'registration_status' => match (true) {
-                    $permanentBlock => 'already_registered',
-                    $cooldownActive => 'cooldown_active',
-                    $availableSeats <= 0 => 'seats_full',
-                    $deadline->endOfDay()->isPast() => 'registration_closed',
-                    $paidEventConflict => 'paid_event_conflict',
-                    default => 'open',
-                },
-                'next_allowed_date' => $nextAllowedDate
-                    ? $nextAllowedDate->format('Y-m-d')
-                    : null,
-                'student_name' => $student->name,
-                'student_id' => $student->id,
-                'student_email' => $student->email,
-                'student_number' => $student->mobile_number,
-            ];
+                        'student_name' => $student->name,
+                        'student_id' => $student->id,
+                        'student_email' => $student->email,
+                        'student_number' => $student->mobile_number,
+                    ];
+                });
             })
             ->filter()
             ->values();
-        $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent) {
-            $q->whereDate('event_date', Carbon::now()->toDateString());
-            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+        $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
+                ->where('event_date', '=', Carbon::now()->toDateString()); // Only future dates
         })
-            ->with([
-                'registrations',
-                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent) {
-                    $q->whereDate('event_date', Carbon::now()->toDateString());
-                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
-                    $q->orderBy('event_date', 'asc');
-                },
-                'get_dep_events.registrations'
-            ])
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
+                    ->where('event_date', '=', Carbon::now()->toDateString())
+                    ->orderBy('event_date', 'asc');
+            }, 'get_dep_events.registrations'])
             ->where([
                 'publish' => 1,
                 'is_active' => 'y'
@@ -289,7 +284,7 @@ class StudentHomeController extends Controller
                     'available_seats' => $availableSeats,
 
                     'event_premium' => $event->event_type == 'paid' ? 'paid' : 'free',
-                    'event_register' => true,
+                    'event_register' => false,
                     'registration_status' => $registration->status,
                     'grade' => $registration->grade,
                     'registered_at' => $registration->registered_at
@@ -318,6 +313,7 @@ class StudentHomeController extends Controller
             'user_image' => $student->profile_pic
                 ? asset('storage/' . $student->profile_pic)
                 : null,
+            'user_name' => $student->name,
             'notification' => true,
             'total_events' => $totalEvents,
             'register_events' => $registeredCount,

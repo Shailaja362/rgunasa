@@ -5,9 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\StudentEventRegistration;
+use App\Models\StudentFeedback;
 use App\Models\StudentUploadProof;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use function PHPUnit\Framework\isEmpty;
 
 class OngoingEventController extends Controller
 {
@@ -58,19 +61,25 @@ class OngoingEventController extends Controller
             ->get();
 
         // Ongoing Events Only
-        $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student, $isFirstYearStudent, $now) {
-            $q->whereDate('event_date', $now->toDateString());
-            $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
+        $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
+            $q->where('programme_id', $student->programme_id)
+                ->where('section', $student->section)
+                ->where('batch', $student->batch)
+                ->where('semester', $student->semester)
+                ->where('event_date', '=', Carbon::now()->toDateString()); // Only future dates
         })
-            ->with([
-                'get_dep_events' => function ($q) use ($student, $isFirstYearStudent, $now) {
-                    $q->whereDate('event_date', $now->toDateString());
-                    $this->applyStudentScheduleFilter($q, $student, $isFirstYearStudent);
-                },
-                'get_dep_events.registrations'
+            ->with(['get_dep_events' => function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester)
+                    ->where('event_date', '=', Carbon::now()->toDateString())
+                    ->orderBy('event_date', 'asc');
+            }, 'get_dep_events.registrations'])
+            ->where([
+                'publish' => 1,
+                'is_active' => 'y'
             ])
-            ->where('publish', 1)
-            ->where('is_active', 'y')
             ->get();
 
         // Build ongoing event data
@@ -158,6 +167,7 @@ class OngoingEventController extends Controller
 
                 $eventData[] = [
                     'event_id'          => $event->id,
+                    'schedule_id'          => $dept->id,
                     'event_image'       => $event->banner_image ? asset('storage/' . $event->banner_image) : null,
                     'event_name'        => $event->title,
                     'event_description' => $event->description ?? null,
@@ -208,4 +218,272 @@ class OngoingEventController extends Controller
             }
         });
     }
+
+
+    public function registerEvent()
+    {
+        $student = auth('student-api')->user();
+
+        if (!$student) {
+            return response()->json([
+                'status'  => 401,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Active Registration Count
+        $activeCount = StudentEventRegistration::where('student_id', $student->id)
+            ->where('status', 1)
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+        // Attended Count
+        $attendedCount = StudentEventRegistration::where('student_id', $student->id)
+            ->where('status', 3)
+            ->whereHas('get_event_attendance', fn($q) => $q->whereNotNull('entry_time')->whereNotNull('exit_time'))
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+        // Pending Uploads
+        $totalRegistered = StudentEventRegistration::where('student_id', $student->id)
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+
+        $myUploads = StudentUploadProof::select('student_id', 'event_id')
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->where('student_id', $student->id)
+            ->groupBy('student_id', 'event_id')
+            ->get();
+
+        $pendingUploads = $totalRegistered - count($myUploads);
+
+        // Ongoing Events Only
+        $registered_event = StudentEventRegistration::with('event.get_dep_events.registrations','schedule.programme')->where('student_id', $student->id)
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->get();
+
+
+        // Build ongoing event data
+        $eventData = [];
+
+        foreach ($registered_event as $registration) {
+
+
+            $event = $registration->event;
+
+            if (!$event) {
+                continue;
+            }
+            $start_time = $end_time = null;
+
+            if (!empty($registration->schedule)) {
+                if ($registration->schedule->is_reserve_date === 'y') {
+                    $start_time = $event->reserve_start_time;
+                    $end_time   = $event->reserve_end_time;
+                } else {
+                    $start_time = $event->start_time;
+                    $end_time   = $event->end_time;
+                }
+            }
+
+            $registeredCountQuery = StudentEventRegistration::where('event_schedule_id', $registration->event_schedule_id);
+
+            $registeredCountQuery->whereHas('student', function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester);
+            });
+
+                $registeredCount = $registeredCountQuery->count();
+                $availableSeats = max(0, $registration->get_event_schedule?->seat_count - $registeredCount);
+
+
+                $eventData[] = [
+                    'event_id'          => $event->id,
+                    'event_image'       => $event->banner_image
+                        ? asset('storage/' . $event->banner_image)
+                        : null,
+                    'event_name'        => $event->title,
+                    'event_description' => $event->description,
+                    'event_start_time'  => $start_time
+                        ? Carbon::parse($start_time)->format('g:i A')
+                        : null,
+                    'event_end_time'    => $end_time
+                        ? Carbon::parse($end_time)->format('g:i A')
+                        : null,
+                    'event_seats'       => $availableSeats,
+                    'event_location'    => $event->location,
+                    'event_date'        => $registration->get_event_schedule?->event_date ? Carbon::parse($registration->get_event_schedule?->event_date)
+                        ->format('F j, Y') : null,
+                    'event_premium'     => $event->event_type === 'paid'
+                        ? 'paid'
+                        : 'free',
+                    'student_name'      => $student->name,
+                    'student_id'        => $student->id,
+                    'student_email'     => $student->email,
+                    'student_number'    => $student->mobile_number,
+                ];
+        }
+        return response()->json([
+            'status'                    => 200,
+            'mgs'                       => 'Registered Successful',
+            'active_registration_count' => $activeCount,
+            'attended_events'           => $attendedCount,
+            'pending_events'            => $pendingUploads,
+            'data'                      => $eventData,
+        ]);
+
+    }
+
+    public function completedEvent()
+    {
+
+
+        $student = auth('student-api')->user();
+
+        if (!$student) {
+            return response()->json([
+                'status'  => 401,
+
+                'message' => 'Unauthorized',
+            ], 401);
+        }
+
+        // Active Registration Count
+        $activeCount = StudentEventRegistration::where('student_id', $student->id)
+            ->where('status', 1)
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+        // Attended Count
+        $attendedCount = StudentEventRegistration::where('student_id', $student->id)
+            ->where('status', 3)
+            ->whereHas('get_event_attendance', fn($q) => $q->whereNotNull('entry_time')->whereNotNull('exit_time'))
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+        // Pending Uploads
+        $totalRegistered = StudentEventRegistration::where('student_id', $student->id)
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->count();
+
+
+        $myUploads = StudentUploadProof::select('student_id', 'event_id')
+            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
+            ->where('student_id', $student->id)
+            ->groupBy('student_id', 'event_id')
+            ->get();
+
+        $pendingUploads = $totalRegistered - count($myUploads);
+        $completed_event = StudentEventRegistration::with('get_event_attendance', 'event')->where('student_id', $student->id)
+            ->whereHas('get_event_attendance', function ($query){
+                $query->whereNotNull('entry_time')
+                    ->whereNotNull('exit_time');
+            })
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })
+            ->where('status', 3)
+            ->get();
+
+
+        // Build ongoing event data
+        $eventData = [];
+
+        foreach ($completed_event as $registration) {
+
+
+            $event = $registration->event;
+
+            if (!$event) {
+                continue;
+            }
+            $start_time = $end_time = null;
+
+            if (!empty($registration->schedule)) {
+                if ($registration->schedule->is_reserve_date === 'y') {
+                    $start_time = $event->reserve_start_time;
+                    $end_time   = $event->reserve_end_time;
+                } else {
+                    $start_time = $event->start_time;
+                    $end_time   = $event->end_time;
+                }
+            }
+
+            $registeredCountQuery = StudentEventRegistration::where('event_schedule_id', $registration->event_schedule_id);
+
+            $registeredCountQuery->whereHas('student', function ($q) use ($student) {
+                $q->where('programme_id', $student->programme_id)
+                    ->where('section', $student->section)
+                    ->where('batch', $student->batch)
+                    ->where('semester', $student->semester);
+            });
+
+            $registeredCount = $registeredCountQuery->count();
+            $availableSeats = max(0, $registration->get_event_schedule?->seat_count - $registeredCount);
+
+            $questions = getQuestions($event->is_technical_event == 'y' ? 'technical' : 'nonTechnical');
+            $feedback = StudentFeedback::where('event_id', $event->id)
+                ->where('event_schedule_id', $registration->get_event_schedule?->id)
+                ->where('student_id', $student->id)
+                ->first();
+            if (!empty($feedback)) {
+                $ratings = json_decode($feedback->ratings, true);
+                foreach ($questions as &$question) {
+                    if (isset($ratings[$question['key']])) {
+                        $question['rating'] = (int) $ratings[$question['key']];
+                    }
+                }
+            }
+            $eventData[] = [
+                'event_id'          => $event->id,
+                'schedule_id'          => $registration->get_event_schedule->id ?? null,
+                'event_image'       => $event->banner_image
+                    ? asset('storage/' . $event->banner_image)
+                    : null,
+                'event_name'        => $event->title,
+                'event_description' => $event->description,
+                'event_start_time'  => $start_time
+                    ? Carbon::parse($start_time)->format('g:i A')
+                    : null,
+                'event_end_time'    => $end_time
+                    ? Carbon::parse($end_time)->format('g:i A')
+                    : null,
+                'event_seats'       => $availableSeats,
+                'event_location'    => $event->location,
+                'event_date'        => $registration->get_event_schedule?->event_date ? Carbon::parse($registration->get_event_schedule?->event_date)
+                    ->format('F j, Y') : null,
+                'event_premium'     => $event->event_type === 'paid'
+                    ? 'paid'
+                    : 'free',
+                'student_name'      => $student->name,
+                'student_id'        => $student->id,
+                'student_email'     => $student->email,
+                'student_number'    => $student->mobile_number,
+                'event_type'        => $event->is_technical_event,
+                'question'         =>  $questions,
+                'upload_image_url'  => StudentUploadProof::where('event_id',$event->id)
+                    ->where('event_schedule_id', $registration->get_event_schedule?->id)
+                    ->where('student_id',$student->id)->get()->map(function($item){
+                        return url('storage/'.$item->file_path);
+                    }),
+                'feed_back' => !empty($feedback->comments) ? $feedback->comments : null,
+
+            ];
+        }
+        return response()->json([
+            'status'                    => 200,
+            'mgs'                       => 'Registered Successful',
+            'active_registration_count' => $activeCount,
+            'attended_events'           => $attendedCount,
+            'pending_events'            => $pendingUploads,
+            'data'                      => $eventData,
+        ]);
+
+    }
+
+
 }
