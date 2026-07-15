@@ -111,6 +111,19 @@
         <div class="bg-[#F2E8F5] rounded-full px-5 py-3 mt-8 flex justify-between items-center">
             <h3 class="font-semibold text-primary">Events</h3>
         </div>
+        @php
+            $paidRegisteredDates = \App\Models\StudentEventRegistration::where('student_id', $studentId)
+                 ->whereHas('event', function ($q) {
+                   $q->where('event_type', 'paid');
+                  })
+               ->join('event_schedules', 'student_event_registrations.event_schedule_id', '=', 'event_schedules.id')
+               ->pluck('event_schedules.event_date')
+               ->filter()
+               ->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())
+               ->unique()
+               ->values()
+               ->toArray();
+        @endphp
         <!-- Upcoming Event Section -->
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Upcoming Events</h4>
@@ -120,20 +133,6 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                            // $registeredCount = \App\Models\StudentEventRegistration::where(
-                            //     'event_schedule_id',
-                            //     $dept->id,
-                            // )
-                            //     // ->registrations()
-                            //     ->whereHas('student', function ($query) use ($student) {
-                            //         $query
-                            //             ->where('programme_id', $student->programme_id)
-                            //             ->where('section', $student->section)
-                            //             ->where('batch', $student->batch)
-                            //             ->where('semester', $student->semester);
-                            //     })
-                            //     ->count();
-
                             $isCommonFirstYearEvent =
                                 is_null($dept->programme_id) &&
                                 is_null($dept->section) &&
@@ -174,7 +173,7 @@
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
                                 ->where('student_id', $studentId)
-                                ->where('event_schedule_id', $dept->id)
+                                ->where('event_id', $dept->event_id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -195,10 +194,8 @@
                                     }
                                 }
                             }
-                            $paidEventConflict = $studentRegistrations
-                                ->where('event.event_type', 'paid')
-                                ->where('event.event_date', $eventDate)
-                                ->first();
+                            $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                            $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -212,12 +209,12 @@
                                     class="rounded-t-2xl w-full h-48 object-cover">
                                 @if ($event['event_type'] == 'paid')
                                     <span
-                                        class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
-                                        Premium
+                                        class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
+                                        Premium <br> ₹{{ number_format($event['price'], 2) }}
                                     </span>
                                 @endif
                                 <span
-                                    class="absolute @if ($event['event_type'] == 'paid') mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                    class="absolute @if ($event['event_type'] == 'paid') mt-2 top-3 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm rounded-full">
                                     <span class="text-2xl">{{ $availableSeats }} </span><span>Seats
                                         <pre> Available</span></pre>
                                     </span>
@@ -275,7 +272,7 @@
                                 @if ($event->event_type === 'paid')
                                     @if ($canRegister)
                                         <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
-                                            data-event-id="{{ $event->id }}"
+                                            data-event_id="{{ $event->id }}"
                                             data-amount="{{ (int) $event->amount }}"
                                             data-title="{{ e($event->title) }}"
                                             data-schedule_id="{{ $dept->id }}">
@@ -317,25 +314,11 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            // $registeredCount = \App\Models\StudentEventRegistration::where(
-                            //     'event_schedule_id',
-                            //     $department->id,
-                            // )
-                            //     ->whereHas('student', function ($query) use ($student) {
-                            //         $query
-                            //             ->where('programme_id', $student->programme_id)
-                            //             ->where('section', $student->section)
-                            //             ->where('batch', $student->batch)
-                            //             ->where('semester', $student->semester);
-                            //     })
-                            //     ->count();
-
                             $isCommonFirstYearEvent =
                                 is_null($department->programme_id) &&
                                 is_null($department->section) &&
                                 (is_null($department->batch) || $department->batch == $student->batch) &&
                                 is_null($department->semester);
-
                             $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $department->id,
@@ -371,7 +354,7 @@
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
-                                ->where('event_schedule_id', $department->id)
+                                ->where('event_id', $department->event_id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -391,10 +374,8 @@
                                     }
                                 }
                             }
-                            $paidEventConflict = $studentRegistrations
-                                ->where('event.event_type', 'paid')
-                                ->where('event.event_date', $eventDate)
-                                ->first();
+                            $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                            $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -408,12 +389,12 @@
                                     class="rounded-t-2xl w-full h-48 object-cover">
                                 @if ($ongoing_event['event_type'] == 'paid')
                                     <span
-                                        class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
-                                        Premium
+                                        class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
+                                        Premium <br> ₹{{ number_format($event['price'], 2) }}
                                     </span>
                                 @endif
                                 <span
-                                    class="absolute @if ($ongoing_event['event_type'] == 'paid') mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                    class="absolute @if ($ongoing_event['event_type'] == 'paid') mt-2 top-3 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm rounded-full">
                                     <span class="text-2xl">{{ $availableSeats }} </span><span>Seats
                                         <pre> Available</span></pre>
                                     </span>
@@ -472,7 +453,7 @@
                                 @if ($ongoing_event->event_type === 'paid')
                                     @if ($canRegister)
                                         <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
-                                            data-event-id="{{ $ongoing_event->id }}"
+                                            data-event_id="{{ $ongoing_event->id }}"
                                             data-amount="{{ (int) $ongoing_event->amount }}"
                                             data-title="{{ e($ongoing_event->title) }}"
                                             data-schedule_id="{{ $department->id }}">
@@ -512,20 +493,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($registeredEvents as $register_event)
                     @php
-                        // $registered = \App\Models\StudentEventRegistration::where(
-                        //     'event_schedule_id',
-                        //     $register_event->event_schedule_id,
-                        // )
-                        //     ->whereHas('student', function ($query) use ($student) {
-                        //         $query
-                        //             ->where('programme_id', $student->programme_id)
-                        //             ->where('section', $student->section)
-                        //             ->where('batch', $student->batch)
-                        //             ->where('semester', $student->semester);
-                        //     })
-                        //     ->count();
                         $schedule = $register_event->get_event_schedule;
-
                         $isCommonFirstYearEvent =
                             $schedule &&
                             is_null($schedule->programme_id) &&
@@ -537,7 +505,6 @@
                             'event_schedule_id',
                             $register_event->event_schedule_id,
                         );
-
                         if ($isCommonFirstYearEvent) {
                             $registeredQuery->whereHas('student', function ($query) {
                                 $query->whereIn('semester', [1, 2]);
@@ -572,13 +539,12 @@
                             <img src="{{ asset('storage/' . $register_event->event->banner_image) }}" alt="Event"
                                 class="rounded-t-2xl w-full h-48 object-cover">
                             @if ($register_event->event->event_type == 'paid')
-                                <span
-                                    class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
-                                    Premium
+                                <span class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
+                                    Premium <br> ₹{{ number_format($event['price'], 2) }}
                                 </span>
                             @endif
                             <span
-                                class="absolute @if ($register_event->event->event_type) mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                class="absolute @if ($register_event->event->event_type) mt-2 top-3 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm rounded-full">
                                 <span class="text-2xl">{{ $available }} </span><span>Seats
                                     <pre> Available</span></pre>
                                 </span>
@@ -618,6 +584,8 @@
 
     @include('components.register.register-modal')
 </x-layouts.app>
+<!-- add Cashfree SDK -->
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     window.RAZORPAY_KEY = "{{ config('services.razorpay.key') }}";

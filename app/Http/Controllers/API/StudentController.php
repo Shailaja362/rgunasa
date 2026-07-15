@@ -130,7 +130,7 @@ class StudentController extends Controller
             ]);
         }
 
-        $notification = Notification::where('user_id', auth('student-api')->id())->orderBy('created_at', 'desc')->get()->map(function ($list) {
+        $notification = Notification::where('student_id', auth('student-api')->id())->orderBy('created_at', 'desc')->get()->map(function ($list) {
             return [
                 'notification_id' => $list->id,
                 'notification_title' => $list->title,
@@ -168,7 +168,7 @@ class StudentController extends Controller
             ], 409);
         }
         foreach ($request['notification_id'] as $notification_id) {
-            Notification::where('user_id', auth('student-api')->id())->where('id', $notification_id)->delete();
+            Notification::where('student_id', auth('student-api')->id())->where('id', $notification_id)->delete();
         }
         return response()->json([
             'status' => 200,
@@ -197,7 +197,7 @@ class StudentController extends Controller
             ], 409);
         }
 
-        Notification::where('user_id', auth('student-api')->id())
+        Notification::where('student_id', auth('student-api')->id())
             ->whereIn('id', $request->notification_id)
             ->update(['status' => 1]);
 

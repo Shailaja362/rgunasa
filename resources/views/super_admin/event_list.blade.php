@@ -88,14 +88,11 @@
     <section class="bg-white rounded-xl shadow-md p-4 mt-3">
         <div class="w-full">
             <form method="GET" action="{{ route('event_list') }}" class="flex flex-wrap items-center gap-3">
-                {{-- Search Input --}}
                 <div class="w-full sm:w-auto flex-1 min-w-[250px]">
                     <input type="text" name="search" value="{{ request('search') }}"
                         placeholder="Search event name here"
                         class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
                 </div>
-
-                {{-- Department Filter --}}
                 <div class="w-full sm:w-auto">
                     <select name="programme_officer"
                         class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
@@ -166,8 +163,8 @@
                                         <span class="text-gray-400 italic">No Image</span>
                                     @endif
                                 </td>
-                                <td class="px-3 py-2">{{ $event->title }}</td>
-                                <td class="px-3 py-2">{{ $event->get_faculty->name ?? '-' }}</td>
+                                <td class="px-3 py-2 w-50">{{ $event->title }}</td>
+                                <td class="px-3 py-2 w-50">{{ $event->get_faculty->name ?? '-' }}</td>
                                 <td class="px-3 py-2">
                                     <div class="grid grid-cols-2 md:grid-cols-2 gap-2">
                                         @foreach ($event->schedules as $schedule)

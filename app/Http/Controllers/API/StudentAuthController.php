@@ -32,7 +32,6 @@ class StudentAuthController extends Controller
             'email'    => $request->email,
             'password' => $request->password,
         ];
-
         try {
             if (!auth('student-api')->attempt($credentials)) {
                 return response()->json([

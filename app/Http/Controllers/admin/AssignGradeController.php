@@ -99,8 +99,7 @@ class AssignGradeController extends Controller
                     'student_id' => $studentId,
                     'event_schedule_id' => $scheduleId
                 ])->update([
-                    'grade'  => $grade,
-                    'status' => 2
+                    'grade'  => $grade
                 ]);
 
                 if (!$updated) {

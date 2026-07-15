@@ -1,15 +1,16 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\admin\AdminAuthController;
-use App\Http\Controllers\Auth\StudentPasswordController;
 use App\Http\Controllers\Auth\StudentAuthController;
+use App\Http\Controllers\Auth\StudentPasswordController;
+use App\Http\Controllers\CashfreeController;
 use App\Http\Controllers\student\CertificatesController;
-use App\Http\Controllers\student\RegisterEventController;
 use App\Http\Controllers\student\MyRegisterEventsController;
 use App\Http\Controllers\student\RazorpayController;
+use App\Http\Controllers\student\RegisterEventController;
 use App\Http\Controllers\student\StudentDashboardController;
 use App\Http\Controllers\StudentController;
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('student')->group(function () {
 
@@ -45,5 +46,8 @@ Route::prefix('student')->group(function () {
         Route::post('/razorpay-success', [RazorpayController::class, 'paymentSuccess'])
             ->name('razorpay_success');
         Route::get('/uploaded-proof', [MyRegisterEventsController::class, 'getUploadedProof']);
+        Route::post('/cashfree-order', [CashfreeController::class, 'createOrder'])->name('cashfree.order');
+        Route::get('/cashfree-return/{cf_order_id}', [CashfreeController::class, 'handleReturn'])->name('cashfree.return');
+        Route::post('/cashfree-webhook', [CashfreeController::class, 'webhook'])->name('cashfree.webhook'); // exclude from CSRF
     });
 });

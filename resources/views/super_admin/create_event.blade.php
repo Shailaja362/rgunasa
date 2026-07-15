@@ -392,7 +392,8 @@
                         <div id="uploadText" @if (!empty($edit_event->banner_image)) style="display:none" @endif>
                             <img src="{{ asset('/images/upload.png') }}" id="banner" class="mx-auto w-14 mb-3" />
                             <p class="text-primary font-semibold">Upload event banner image</p>
-                            <p class="text-primary text-sm mt-2">PNG, JPG up to 5MB</p>
+                            <p class="text-red-500 text-sm mt-2">Only JPG,JPEG,PNG files are allowed and File size
+                                        must not exceed 2MB</p>
                         </div>
                         {{-- File Input --}}
                         <input type="file" id="fileInput" name="banner_image" accept="image/*" class="hidden" />

@@ -18,7 +18,7 @@ class OngoingEventController extends Controller
     {
         $now = Carbon::now();
         $student = auth('student-api')->user();
-
+        $today = Carbon::today()->toDateString();
         if (!$student) {
             return response()->json([
                 'status'  => 401,
@@ -27,40 +27,39 @@ class OngoingEventController extends Controller
         }
 
         $isFirstYearStudent = in_array((int) $student->semester, [1, 2]);
-
-        // Active Registration Count
         $activeCount = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 1)
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->count();
-
-        // Attended Count
-        $attendedCount = StudentEventRegistration::where('student_id', $student->id)
+         $attendedCount = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 3)
             ->whereHas('get_event_attendance', fn($q) => $q->whereNotNull('entry_time')->whereNotNull('exit_time'))
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->count();
-
-        // Pending Uploads
         $totalRegistered = StudentEventRegistration::where('student_id', $student->id)
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->count();
-
         $myUploads = StudentUploadProof::select('student_id', 'event_id')
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-
         $pendingUploads = $totalRegistered - count($myUploads);
-
-        // Student Registrations (for conflict check)
         $studentRegistrations = StudentEventRegistration::where('student_id', $student->id)
             ->with('event')
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->get();
-
-        // Ongoing Events Only
+        $paidRegisteredDates = \App\Models\StudentEventRegistration::where('student_id', $student->id)
+            ->whereHas('event', function ($q) {
+                $q->where('event_type', 'paid');
+            })
+            ->join('event_schedules', 'student_event_registrations.event_schedule_id', '=', 'event_schedules.id')
+            ->pluck('event_schedules.event_date')
+            ->filter()
+            ->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())
+            ->unique()
+            ->values()
+            ->toArray();
         $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
@@ -81,25 +80,16 @@ class OngoingEventController extends Controller
                 'is_active' => 'y'
             ])
             ->get();
-
-        // Build ongoing event data
         $eventData = [];
-
         foreach ($ongoingEvents as $event) {
             foreach ($event->get_dep_events as $dept) {
-
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
-
-                // Check common first year event
                 $isCommonFirstYearEvent =
                     is_null($dept->programme_id) &&
                     is_null($dept->section) &&
                     is_null($dept->semester) &&
                     (is_null($dept->batch) || $dept->batch == $student->batch);
-
-                // Seat count query
                 $registeredCountQuery = StudentEventRegistration::where('event_schedule_id', $dept->id);
-
                 if ($isCommonFirstYearEvent) {
                     $registeredCountQuery->whereHas('student', function ($q) use ($student) {
                         $q->whereIn('semester', [1, 2]);
@@ -132,10 +122,9 @@ class OngoingEventController extends Controller
                 $deadline         = Carbon::parse($event->end_registration);
                 $lastRegistration = $event->registrations
                     ->where('student_id', $student->id)
-                    ->where('event_schedule_id', $dept->id)
+                    ->where('event_id', $dept->event_id)
                     ->sortByDesc('registered_at')
                     ->first();
-
                 $cooldownActive  = false;
                 $permanentBlock  = false;
                 $nextAllowedDate = null;
@@ -153,10 +142,8 @@ class OngoingEventController extends Controller
                     }
                 }
 
-                $paidEventConflict = $studentRegistrations
-                    ->where('event.event_type', 'paid')
-                    ->where('event.event_date', $eventDate)
-                    ->first();
+                $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
 
                 $canRegister =
                     !$permanentBlock &&
@@ -164,6 +151,19 @@ class OngoingEventController extends Controller
                     $availableSeats > 0 &&
                     !$deadline->endOfDay()->isPast() &&
                     !$paidEventConflict;
+                $text = '';
+
+                if ($permanentBlock) {
+                    $text = 'You have already registered for this event and cannot register again.';
+                } elseif ($cooldownActive) {
+                    $text = 'You can register again after ' . $nextAllowedDate->format('F j, Y');
+                } elseif ($availableSeats <= 0) {
+                    $text = 'No available seats for this event.';
+                } elseif ($deadline->endOfDay()->isPast()) {
+                    $text = 'Registration deadline has passed.';
+                } elseif ($paidEventConflict) {
+                    $text = 'You have already registered for a paid event on this date.';
+                }
 
                 $eventData[] = [
                     'event_id'          => $event->id,
@@ -181,7 +181,10 @@ class OngoingEventController extends Controller
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,
-                    'student_number'    => $student->phone ?? null,
+                    'student_number'    => $student->mobile_number ?? null,
+                    'message'           => $text,
+                    'end_registration'  => $event->end_registration,
+                    'event_amount'      => $event->price
                 ];
             }
         }
@@ -339,8 +342,6 @@ class OngoingEventController extends Controller
 
     public function completedEvent()
     {
-
-
         $student = auth('student-api')->user();
 
         if (!$student) {
@@ -359,7 +360,6 @@ class OngoingEventController extends Controller
 
         // Attended Count
         $attendedCount = StudentEventRegistration::where('student_id', $student->id)
-            ->where('status', 3)
             ->whereHas('get_event_attendance', fn($q) => $q->whereNotNull('entry_time')->whereNotNull('exit_time'))
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
             ->count();
@@ -386,18 +386,12 @@ class OngoingEventController extends Controller
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->where('status', 3)
             ->get();
-
-
         // Build ongoing event data
         $eventData = [];
 
         foreach ($completed_event as $registration) {
-
-
             $event = $registration->event;
-
             if (!$event) {
                 continue;
             }
@@ -471,7 +465,6 @@ class OngoingEventController extends Controller
                         return url('storage/'.$item->file_path);
                     }),
                 'feed_back' => !empty($feedback->comments) ? $feedback->comments : null,
-
             ];
         }
         return response()->json([

@@ -72,7 +72,7 @@ $(function () {
                     showToast(
                         err?.message || "Unexpected error",
                         "error",
-                        2000
+                        2000,
                     );
                 }
             },
@@ -100,65 +100,98 @@ function showSection(type) {
         upcomingTab.classList.remove(
             "bg-white",
             "text-primary",
-            "rounded-full"
+            "rounded-full",
         );
     }
 }
 
+const cashfree = Cashfree({ mode: "sandbox" }); // "production" when live
+
 document.querySelectorAll(".pay-btn").forEach((btn) => {
     btn.addEventListener("click", function () {
-        payWithRazorpay(
-            this.dataset.eventId,
-            this.dataset.amount,
-            this.dataset.title,
-            this.dataset.schedule_id,
-        );
+        payWithCashfree(this.dataset.event_id, this.dataset.schedule_id);
     });
 });
 
-function payWithRazorpay(eventId, schedule_id,title) {
+function payWithCashfree(eventId, scheduleId) {
+    console.log(eventId);
+    console.log(scheduleId);
     $.ajax({
-        url: "razorpay-order",
+        url: "/student/cashfree-order",
         method: "POST",
-        data: { event_id: eventId, schedule_id: schedule_id },
-        success: function (order) {
-            var options = {
-                key: window.RAZORPAY_KEY,
-                amount: order.amount.toString(),
-                currency: "INR",
-                name: window.username,
-                description: "Event Registration",
-                order_id: order.id,
-                image: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/razorpay-icon.png",
-                handler: function (response) {
-                    $.ajax({
-                        url: "razorpay-success",
-                        method: "POST",
-                        data: {
-                            event_id: eventId,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_signature: response.razorpay_signature,
-                            schedule_id: schedule_id,
-                        },
-                        success: function (res) {
-                            window.location.reload();
-                        },
-                        error: function (err) {},
-                    });
-                },
-                prefill: {
-                    name: window.username,
-                    email: window.email,
-                },
-                theme: { color: "#7A1C73" },
-            };
-            var rzp = new Razorpay(options);
-            rzp.open();
+        data: {
+            event_id: eventId,
+            schedule_id: scheduleId,
+            _token: $('meta[name="csrf-token"]').attr("content"),
         },
-        error: function (err) {},
+        success: function (res) {
+            if (!res.success) {
+                showToast(res.message, "error");
+                return;
+            }
+            cashfree.checkout({
+                paymentSessionId: res.payment_session_id,
+                redirectTarget: "_self", // Cashfree will redirect to order_meta.return_url
+            });
+        },
+        error: function (xhr) {
+            const msg = xhr.responseJSON?.message || "Unable to start payment.";
+            showToast(msg, "error");
+        },
     });
 }
 
+// document.querySelectorAll(".pay-btn").forEach((btn) => {
+//     btn.addEventListener("click", function () {
+//         payWithRazorpay(
+//             this.dataset.eventId,
+//             this.dataset.amount,
+//             this.dataset.title,
+//             this.dataset.schedule_id,
+//         );
+//     });
+// });
 
-
+// function payWithRazorpay(eventId, schedule_id,title) {
+//     $.ajax({
+//         url: "razorpay-order",
+//         method: "POST",
+//         data: { event_id: eventId, schedule_id: schedule_id },
+//         success: function (order) {
+//             var options = {
+//                 key: window.RAZORPAY_KEY,
+//                 amount: order.amount.toString(),
+//                 currency: "INR",
+//                 name: window.username,
+//                 description: "Event Registration",
+//                 order_id: order.id,
+//                 image: "https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/razorpay-icon.png",
+//                 handler: function (response) {
+//                     $.ajax({
+//                         url: "razorpay-success",
+//                         method: "POST",
+//                         data: {
+//                             event_id: eventId,
+//                             razorpay_payment_id: response.razorpay_payment_id,
+//                             razorpay_order_id: response.razorpay_order_id,
+//                             razorpay_signature: response.razorpay_signature,
+//                             schedule_id: schedule_id,
+//                         },
+//                         success: function (res) {
+//                             window.location.reload();
+//                         },
+//                         error: function (err) {},
+//                     });
+//                 },
+//                 prefill: {
+//                     name: window.username,
+//                     email: window.email,
+//                 },
+//                 theme: { color: "#7A1C73" },
+//             };
+//             var rzp = new Razorpay(options);
+//             rzp.open();
+//         },
+//         error: function (err) {},
+//     });
+// }

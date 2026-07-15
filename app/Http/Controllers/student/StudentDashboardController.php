@@ -41,10 +41,8 @@ class StudentDashboardController extends Controller
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->where('status', 3)
             ->get();
         $this->data['certificate_earned'] = $studentRegistrations
-            ->where('status', 2)
             ->whereNotNull('grade');
         // Upcoming and ongoing department-wise events
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {

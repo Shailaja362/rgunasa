@@ -26,7 +26,7 @@ class StudentApprovalController extends Controller
             })->where('status', 1)->count();
             $this->data['present'] = StudentEventRegistration::with('event')->whereHas('event', function ($query) use ($adminId) {
                 $query->where('created_by', $adminId);
-            })->where('status', 2)->count();
+            })->whereNotNull('grade')->count();
             $this->data['absent'] = StudentEventRegistration::with('event')->whereHas('event', function ($query) use ($adminId) {
                 $query->where('created_by', $adminId);
             })->where('status', 4)->count();
@@ -36,7 +36,7 @@ class StudentApprovalController extends Controller
         } else if (!empty(session()->get('super_admin'))) {
             $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'student', 'get_student_proof')->get();
             $this->data['pending'] = StudentEventRegistration::where('status', 1)->count();
-            $this->data['present'] = StudentEventRegistration::where('status', 2)->count();
+            $this->data['present'] = StudentEventRegistration::whereNotNull('grade')->count();
             $this->data['absent'] = StudentEventRegistration::where('status', 4)->count();
             $this->data['total_applied_event'] = StudentEventRegistration::with('event', 'student', 'get_student_proof')->count();
         }

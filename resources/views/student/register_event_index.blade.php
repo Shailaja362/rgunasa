@@ -50,7 +50,19 @@
                     onclick="showSection('ongoing')">Ongoing</span>
             </div>
         </div>
-
+          @php
+            $paidRegisteredDates = \App\Models\StudentEventRegistration::where('student_id', $studentId)
+                 ->whereHas('event', function ($q) {
+                   $q->where('event_type', 'paid');
+                  })
+               ->join('event_schedules', 'student_event_registrations.event_schedule_id', '=', 'event_schedules.id')
+               ->pluck('event_schedules.event_date')
+               ->filter()
+               ->map(fn($date) => \Carbon\Carbon::parse($date)->toDateString())
+               ->unique()
+               ->values()
+               ->toArray();
+        @endphp
         <!-- Upcoming Events -->
         <div id="upcoming-section" class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Upcoming Events</h4>
@@ -100,7 +112,7 @@
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
                             $lastRegistration = $event->registrations
                                 ->where('student_id', $studentId)
-                                ->where('event_schedule_id', $department->id)
+                                ->where('event_id', $department->event_id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
@@ -124,11 +136,8 @@
                                 }
                             }
 
-                            $paidEventConflict = $studentRegistrations
-                                ->where('event.event_type', 'paid')
-                                ->where('event.event_date', $eventDate)
-                                ->first();
-
+                            $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
+                            $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -142,12 +151,12 @@
                                     class="w-full h-48 object-cover rounded-t-2xl">
                                 @if ($event['event_type'] == 'paid')
                                     <span
-                                        class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
-                                        Premium
+                                        class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
+                                        Premium <br>  ₹{{ number_format($event['price'], 2) }}
                                     </span>
                                 @endif
                                 <span
-                                    class="absolute @if ($event['event_type'] == 'paid') mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                    class="absolute @if ($event['event_type'] == 'paid') mt-2 top-3 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm rounded-full">
                                     <span class="text-2xl">{{ $availableSeats }} </span><span>Seats
                                         <pre> Available</span></pre>
                                     </span>
@@ -204,7 +213,7 @@
                                 @if ($event->event_type === 'paid')
                                     @if ($canRegister)
                                         <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
-                                            data-event-id="{{ $event->id }}"
+                                            data-event_id="{{ $event->id }}"
                                             data-amount="{{ (int) $event->amount }}"
                                             data-title="{{ e($event->title) }}"
                                             data-schedule_id={{ $department->id }}>
@@ -310,10 +319,8 @@
                                 }
                             }
 
-                            $paidEventConflict = $studentRegistrations
-                                ->where('event.event_type', 'paid')
-                                ->where('event.event_date', $eventDate)
-                                ->first();
+                           $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                           $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -327,12 +334,12 @@
                                     class="w-full h-48 object-cover rounded-t-2xl">
                                 @if ($ongoing_event['event_type'] == 'paid')
                                     <span
-                                        class= "absolute top-3 right-3 bg-[#FFC31F] text-white px-3 text-sm py-1 rounded-full">
-                                        Premium
+                                        class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
+                                        Premium <br> ₹{{ number_format($event['price'], 2) }}
                                     </span>
                                 @endif
                                 <span
-                                    class="absolute @if ($ongoing_event['event_type'] == 'paid') mt-2 top-10 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm py-1 rounded-full">
+                                    class="absolute @if ($ongoing_event['event_type'] == 'paid') mt-2 top-3 @else top-3 @endif  right-3 bg-gradient-to-r from-primary to-pink-600 text-white px-3 text-sm rounded-full">
                                     <span class="text-2xl">{{ $availableSeats }} </span><span>Seats
                                         <pre> Available</span></pre>
                                     </span>
@@ -389,7 +396,7 @@
                                 @if ($ongoing_event->event_type === 'paid')
                                     @if ($canRegister)
                                         <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
-                                            data-event-id="{{ $ongoing_event->id }}"
+                                            data-event_id="{{ $ongoing_event->id }}"
                                             data-schedule_id={{ $dept->id }}
                                             data-amount="{{ (int) $ongoing_event->amount }}"
                                             data-title="{{ e($ongoing_event->title) }}">
@@ -426,6 +433,7 @@
     </section>
     @include('components.register.register-modal')
 </x-layouts.app>
+<script src="https://sdk.cashfree.com/js/v3/cashfree.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     window.RAZORPAY_KEY = "{{ config('services.razorpay.key') }}";

@@ -161,7 +161,7 @@ class EventsController extends Controller
         }
 
         if ($request->filled('status')) {
-            $query->where('is_active', $request->department_id);
+            $query->where('is_active', $request->status);
         }
 
         if ($request->filled('programme_officer')) {
@@ -213,9 +213,9 @@ class EventsController extends Controller
             }
 
             if (empty($request['event_id']) && !$request->has('old_banner')) {
-                $rules['banner_image'] = 'required|image';
+                $rules['banner_image'] = 'required|image|mimes:jpg,jpeg,png,webp|max:2048';
             } else if ($request->hasFile('banner_image')) {
-                $rules['banner_image'] = 'image';
+                $rules['banner_image'] = 'image|mimes:jpg,jpeg,png,webp|max:2048';
             }
 
             $request->validate($rules);

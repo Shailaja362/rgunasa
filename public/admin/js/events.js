@@ -355,7 +355,7 @@ $("#confirmDelete").on("click", function () {
 });
 
 let programmeOfficerChoice = new Choices("#programme_officer", {
-    searchEnabled: true
+    searchEnabled: true,
 });
 
 $(document).on("change", "#club_id", function () {
@@ -564,17 +564,27 @@ document
         const file = event.target.files[0];
         const previewArea = document.getElementById("previewArea");
         const uploadText = document.getElementById("uploadText");
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                previewArea.innerHTML = `
-                    <img src="${e.target.result}"
-                         class="mx-auto rounded-2xl w-40 h-40 object-cover" />
-                `;
-            };
-            reader.readAsDataURL(file);
-            uploadText.style.display = "none";
+        if (!file) return;
+        // Maximum 2 MB
+        const maxSize = 2 * 1024 * 1024;
+        if (file.size > maxSize) {
+            showToast("Banner image size must not exceed 2 MB.", "error", 2000);
+            this.value = "";
+            previewArea.innerHTML = "";
+            uploadText.style.display = "block";
+            return;
         }
+
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewArea.innerHTML = `
+            <img src="${e.target.result}"
+                 class="mx-auto rounded-2xl w-40 h-40 object-cover" />
+        `;
+        };
+
+        reader.readAsDataURL(file);
+        uploadText.style.display = "none";
     });
 
 document.getElementById("dropArea").addEventListener("click", function () {
