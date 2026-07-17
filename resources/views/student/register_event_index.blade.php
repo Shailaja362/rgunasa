@@ -251,16 +251,15 @@
             <h4 class="font-semibold text-gray-800 mb-4">Ongoing Events</h4>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($ongoingEvents as $ongoing_event)
-                    @foreach ($ongoing_event->get_dep_events as $dept)
+                    @foreach ($ongoing_event->get_dep_events as $department)
                         @php
                             $today = \Carbon\Carbon::now();
-                            $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                            $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
                             $isCommonFirstYearEvent =
                                 is_null($department->programme_id) &&
                                 is_null($department->section) &&
                                 (is_null($department->batch) || $department->batch == $student->batch) &&
                                 is_null($department->semester);
-
                             $registeredCountQuery = \App\Models\StudentEventRegistration::where(
                                 'event_schedule_id',
                                 $department->id,
@@ -285,29 +284,27 @@
 
                             $registeredCount = $registeredCountQuery->count();
 
-                            if ($dept->is_reserve_date == 'y') {
+                            if ($department->is_reserve_date == 'y') {
                                 $start_time = $ongoing_event->reserve_start_time;
                                 $end_time = $ongoing_event->reserve_end_time;
                             } else {
                                 $start_time = $ongoing_event->start_time;
                                 $end_time = $ongoing_event->end_time;
                             }
-                            $availableSeats = max(0, $dept->seat_count - $registeredCount);
+                            $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
                             $lastRegistration = $ongoing_event->registrations
                                 ->where('student_id', $studentId)
-                                ->where('event_schedule_id', $dept->id)
+                                ->where('event_id', $department->event_id)
                                 ->sortByDesc('registered_at')
                                 ->first();
                             $cooldownActive = false;
                             $permanentBlock = false;
                             $nextAllowedDate = null;
-
                             if ($lastRegistration) {
                                 if (empty($ongoing_event->duration_months) || $ongoing_event->duration_months == 0) {
                                     $permanentBlock = true;
                                 }
-
                                 if (!$permanentBlock && $ongoing_event->duration_months) {
                                     $nextAllowedDate = \Carbon\Carbon::parse(
                                         $lastRegistration->registered_at,
@@ -318,9 +315,8 @@
                                     }
                                 }
                             }
-
-                           $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
-                           $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
+                            $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
+                            $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&
                                 !$cooldownActive &&
@@ -331,7 +327,7 @@
                         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
                             <div class="relative">
                                 <img src="{{ asset('storage/' . $ongoing_event['banner_image']) }}" alt="Event"
-                                    class="w-full h-48 object-cover rounded-t-2xl">
+                                    class="rounded-t-2xl w-full h-48 object-cover">
                                 @if ($ongoing_event['event_type'] == 'paid')
                                     <span
                                         class= "absolute top-3 left-3 bg-[#FFC31F] text-white px-3 text-sm rounded-full">
@@ -359,16 +355,18 @@
                                             {{ $end_time ? \Carbon\Carbon::parse($end_time)->format('h:iA') : '-' }}
                                         </p>
                                     </div>
-                                    <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-2 py-1">
+                                    <div class="col-span-2 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1">
                                         <i class="fa fa-calendar text-primary" aria-hidden="true"></i>
-                                        <p class="px-1">
-                                            {{ \Carbon\Carbon::parse($dept->event_date)->format('F j, Y') }}</p>
+                                        <p class="px-1 m-0 p-0 text-xs">
+                                            {{ \Carbon\Carbon::parse($department->event_date)->format('F j, Y') }}
+                                        </p>
                                     </div>
                                     <div class="col-span-4 flex items-center bg-[#F2E8F5] rounded-full px-1 py-1 mt-2">
                                         <i class="fa fa-map-marker text-primary" aria-hidden="true"></i>
                                         <p class="px-1">{{ $ongoing_event['location'] }}</p>
                                     </div>
                                 </div>
+                                {{-- Status Messages --}}
                                 @if ($permanentBlock)
                                     <div class="text-red-600 mt-2">
                                         You are already registered for this event.
@@ -397,9 +395,9 @@
                                     @if ($canRegister)
                                         <button class="mt-4 w-full bg-primary text-white py-2 rounded-full pay-btn"
                                             data-event_id="{{ $ongoing_event->id }}"
-                                            data-schedule_id={{ $dept->id }}
                                             data-amount="{{ (int) $ongoing_event->amount }}"
-                                            data-title="{{ e($ongoing_event->title) }}">
+                                            data-title="{{ e($ongoing_event->title) }}"
+                                            data-schedule_id="{{ $department->id }}">
                                             Pay & Register
                                         </button>
                                     @else
@@ -414,7 +412,7 @@
                                             onclick="document.querySelector('.registerModal').classList.remove('hidden')"
                                             class="student_register mt-4 w-full bg-primary text-white font-medium py-2 rounded-full"
                                             data-event_id={{ $ongoing_event->id }}
-                                            data-schedule_id={{ $dept->id }}>
+                                            data-schedule_id="{{ $department->id }}">
                                             Register Now
                                         </button>
                                     @else

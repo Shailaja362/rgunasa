@@ -40,8 +40,8 @@ Route::prefix('student')->group(function () {
         Route::get('/certificates', [CertificatesController::class, 'index'])->name('certificates');
         Route::get('/certificate_download', [CertificatesController::class, 'downloadCertificate'])->name('certificate_download');
 
-        Route::post('/razorpay-order', [RazorpayController::class, 'createOrder'])
-            ->name('razorpay_order');
+        // Route::post('/razorpay-order', [RazorpayController::class, 'createOrder'])
+        //     ->name('razorpay_order');
 
         Route::post('/razorpay-success', [RazorpayController::class, 'paymentSuccess'])
             ->name('razorpay_success');

@@ -374,7 +374,7 @@
                                     }
                                 }
                             }
-                            $eventDate = \Carbon\Carbon::parse($dept->event_date)->toDateString();
+                            $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
                             $paidEventConflict = in_array($eventDate, $paidRegisteredDates);
                             $canRegister =
                                 !$permanentBlock &&

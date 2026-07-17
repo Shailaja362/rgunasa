@@ -160,10 +160,12 @@ class StudentHomeController extends Controller
                     !$deadline->endOfDay()->isPast() &&
                     !$paidEventConflict;
                 $text = '';
-
+                $eventRegister = true;
                 if ($permanentBlock) {
+                    $eventRegister = false;
                     $text = 'You have already registered for this event and cannot register again.';
                 } elseif ($cooldownActive) {
+                    $eventRegister = false;
                     $text = 'You can register again after ' . $nextAllowedDate->format('F j, Y');
                 } elseif ($availableSeats <= 0) {
                     $text = 'No available seats for this event.';
@@ -185,7 +187,7 @@ class StudentHomeController extends Controller
                     'event_location'    => $event->location,
                     'event_date'        => Carbon::parse($dept->event_date)->format('F j, Y'),
                     'event_premium'     => $event->event_type == 'paid' ? 'paid' : 'free',
-                    'event_register'    => $canRegister,
+                    'event_register'    => $eventRegister,
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,
@@ -254,6 +256,7 @@ class StudentHomeController extends Controller
                 }
 
                 $registeredCount = $registeredCountQuery->count();
+                // Log::info(print_r($registeredCountQuery, true));
                 $availableSeats  = max(0, $dept->seat_count - $registeredCount);
 
                 // Time
@@ -298,9 +301,12 @@ class StudentHomeController extends Controller
                     !$deadline->endOfDay()->isPast() &&
                     !$paidEventConflict;
                 $text = '';
+                $eventRegister = true;
                 if ($permanentBlock) {
+                    $eventRegister = false;
                     $text = 'You have already registered for this event and cannot register again.';
                 } elseif ($cooldownActive) {
+                    $eventRegister = false;
                     $text = 'You can register again after ' . $nextAllowedDate->format('F j, Y');
                 } elseif ($availableSeats <= 0) {
                     $text = 'No available seats for this event.';
@@ -321,7 +327,7 @@ class StudentHomeController extends Controller
                     'event_location'    => $event->location,
                     'event_date'        => Carbon::parse($dept->event_date)->format('F j, Y'),
                     'event_premium'     => $event->event_type === 'paid' ? 'paid' : 'free',
-                    'event_register'    => $canRegister,
+                    'event_register'    => $eventRegister,
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,
@@ -400,7 +406,11 @@ class StudentHomeController extends Controller
             'role' => 2,
             'status' => 0
         ])->exists();
-
+        $registered_count = StudentEventRegistration::with('event')
+            ->whereHas('event', function ($query) {
+                $query->where('publish', 1)
+                    ->where('is_active', 'y');
+            })->where('student_id', $student->id)->get();
         return response()->json([
             'status' => 200,
             'msg' => 'Home data fetched Successful',
@@ -410,7 +420,7 @@ class StudentHomeController extends Controller
             'user_name' => $student->name,
             'notification' => $readStatus,
             'total_events' => $totalEvents,
-            'register_events' => $registeredCount,
+            'register_events' => count($registered_count),
             'completed' => $completedCount,
             'certification_earned' => $certificateEarned,
             'credit' => $configCredit?->credit_points ?? 0,

@@ -152,10 +152,12 @@ class OngoingEventController extends Controller
                     !$deadline->endOfDay()->isPast() &&
                     !$paidEventConflict;
                 $text = '';
-
+                $eventRegister = true;
                 if ($permanentBlock) {
+                    $eventRegister = false;
                     $text = 'You have already registered for this event and cannot register again.';
                 } elseif ($cooldownActive) {
+                    $eventRegister = false;
                     $text = 'You can register again after ' . $nextAllowedDate->format('F j, Y');
                 } elseif ($availableSeats <= 0) {
                     $text = 'No available seats for this event.';
@@ -177,7 +179,7 @@ class OngoingEventController extends Controller
                     'event_location'    => $event->location,
                     'event_date'        => Carbon::parse($dept->event_date)->format('F j, Y'),
                     'event_premium'     => $event->event_type === 'paid' ? 'paid' : 'free',
-                    'event_register'    => $canRegister,
+                    'event_register'    => $eventRegister,
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,

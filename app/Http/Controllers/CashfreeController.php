@@ -189,7 +189,7 @@ class CashfreeController extends Controller
             $payment->update([
                 'status'         => 'PAID',
                 'cf_payment_id'  => $cfPaymentId,
-                'payment_method' => $paymentMethod,
+                'payment_method' => 'web app',
             ]);
 
             return true;

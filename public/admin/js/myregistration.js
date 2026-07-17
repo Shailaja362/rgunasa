@@ -283,6 +283,7 @@ $(function () {
                 }
             });
     });
+    
     $(document).on("click", ".view-details-btn", function () {
         // Get data from clicked button
         let title = $(this).data("title");

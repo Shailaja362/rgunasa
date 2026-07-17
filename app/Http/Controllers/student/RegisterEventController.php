@@ -35,7 +35,7 @@ class RegisterEventController extends Controller
             ->where('student_id', $student->id)
             ->groupBy('student_id', 'event_id')
             ->get();
-        $this->data['ongoingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
+        $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
                 ->where('batch', $student->batch)
@@ -49,10 +49,7 @@ class RegisterEventController extends Controller
                     ->where('semester', $student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
-            ->where([
-                'publish' => 1,
-                'is_active' => 'y'
-            ])
+            ->where('publish', 1)
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
