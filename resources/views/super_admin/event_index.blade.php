@@ -1,12 +1,11 @@
 <x-layouts.app>
-
     {{-- ================= HEADER ================= --}}
     <div class="bg-[#F5E8F5] w-full rounded-full shadow-sm px-8 py-3">
         <h3 class="font-semibold text-primary">Events</h3>
     </div>
-
     {{-- ================= DATE FILTER ================= --}}
     <form method="GET" action="{{ route('events') }}" class="bg-white p-4 rounded-xl shadow mt-4 mx-5">
+        <input type="hidden" name="tab" id="tab-input" value="{{ request('tab') }}">
         <div class="flex flex-wrap gap-4 items-end">
             <div>
                 <label class="text-sm font-medium">From Date</label>
@@ -18,18 +17,18 @@
                 <input type="date" name="to_date" value="{{ request('to_date') }}"
                     class="border rounded-lg px-3 py-2">
             </div>
-              <div>
-                    <label class="block text-sm font-medium mb-1">Programme</label>
-                    <select name="programme_id" id="programme_id" class="choice-select border rounded-lg px-3 py-2 w-full">
-                        <option value="">-- Select Programme --</option>
-                        @foreach ($programmes as $programme)
-                            <option value="{{ $programme->id }}"
-                                {{ request('programme_id') == $programme->id ? 'selected' : '' }}>
-                                {{ $programme->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Programme</label>
+                <select name="programme_id" id="programme_id" class="choice-select border rounded-lg px-3 py-2 w-full">
+                    <option value="">-- Select Programme --</option>
+                    @foreach ($programmes as $programme)
+                        <option value="{{ $programme->id }}"
+                            {{ request('programme_id') == $programme->id ? 'selected' : '' }}>
+                            {{ $programme->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
             <input type="hidden" name="tab" value="{{ request('tab') }}">
             <div>
                 <button type="submit" class="bg-primary text-white px-4 py-2 rounded-lg">
@@ -43,8 +42,6 @@
             </div>
         </div>
     </form>
-
-
     {{-- ================= TABS ================= --}}
     <div class="px-5 py-3 mt-4">
         <div class="flex space-x-4 text-gray-700 font-medium">
@@ -236,14 +233,15 @@
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         let params = new URLSearchParams(window.location.search);
-        let activeTab = params.get('tab');
+        let activeTab = params.get('tab') || 'upcoming';;
         if (activeTab) {
             showSection(activeTab);
         }
     });
 
+    let currentTab = new URLSearchParams(window.location.search).get('tab') || 'upcoming';
 
-    function showSection(type) {
+    function showSection(type, updateUrl = true, isInitial = false) {
         ['upcoming', 'ongoing', 'registered', 'completed'].forEach(tab => {
             document.getElementById(tab + '-section').classList.add('hidden');
             document.getElementById(tab + '-tab')
@@ -255,7 +253,38 @@
 
         document.getElementById(type + '-tab')
             .classList.add('bg-primary', 'text-white');
+
+        currentTab = type;
+        document.getElementById('tab-input').value = type;
+
+        if (updateUrl) {
+            let params = new URLSearchParams(window.location.search);
+            params.set('tab', type);
+            let newUrl = window.location.pathname + '?' + params.toString();
+
+            if (isInitial) {
+                history.replaceState({
+                    tab: type
+                }, '', newUrl);
+            } else {
+                history.pushState({
+                    tab: type
+                }, '', newUrl);
+            }
+        }
     }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        let params = new URLSearchParams(window.location.search);
+        let activeTab = params.get('tab') || 'upcoming';
+        showSection(activeTab, true, true);
+    });
+
+    window.addEventListener('popstate', function() {
+        let params = new URLSearchParams(window.location.search);
+        let tab = params.get('tab') || 'upcoming';
+        showSection(tab, false);
+    });
 
     document.getElementById('from_date').addEventListener('change', fetchEvents);
     document.getElementById('to_date').addEventListener('change', fetchEvents);

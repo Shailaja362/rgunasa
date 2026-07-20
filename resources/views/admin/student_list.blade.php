@@ -138,42 +138,44 @@
         </div>
     </section>
 
-    <h4 class="font-semibold text-gray-800 mb-4 mt-4">Promote Student</h4>
-    <section class="p-4 bg-white rounded-xl shadow-md mt-3">
-        <div class="mt-4">
-            <form id="promoteForm" method="POST" action="{{ route('promote_student') }}"
-                class="flex flex-col sm:flex-row sm:items-center gap-3">
-                @csrf
-                <!-- Batch Select -->
-                <div class="w-full sm:w-auto sm:min-w-[350px]">
-                    <select id="batchSelect" name="batch" required
-                        class="w-full border border-gray-300
-                               focus:border-primary focus:ring-1 focus:ring-primary
-                               rounded-full px-4 py-2 text-sm choice-select">
-                        <option value="">Select Batch</option>
-                        @foreach ($batch as $b)
-                            <option value="{{ $b }}">{{ $b }}</option>
-                        @endforeach
-                    </select>
-                </div>
+    @if(!empty(session()->get('super_admin')))
+     <h4 class="font-semibold text-gray-800 mb-4 mt-4">Promote Student</h4>
+     <section class="p-4 bg-white rounded-xl shadow-md mt-3">
+         <div class="mt-4">
+             <form id="promoteForm" method="POST" action="{{ route('promote_student') }}"
+                 class="flex flex-col sm:flex-row sm:items-center gap-3">
+                 @csrf
+                 <!-- Batch Select -->
+                 <div class="w-full sm:w-auto sm:min-w-[350px]">
+                     <select id="batchSelect" name="batch" required
+                         class="w-full border border-gray-300
+                                focus:border-primary focus:ring-1 focus:ring-primary
+                                rounded-full px-4 py-2 text-sm choice-select">
+                         <option value="">Select Batch</option>
+                         @foreach ($batch as $b)
+                             <option value="{{ $b }}">{{ $b }}</option>
+                         @endforeach
+                     </select>
+                 </div>
 
-                <!-- Promote Button -->
-                <div>
-                    <button type="button" onclick="openModal()"
-                        class="px-6 py-2
-                               bg-gradient-to-r from-primary to-pink-600
-                               text-white rounded-full
-                               hover:opacity-90 transition
-                               flex items-center gap-2">
+                 <!-- Promote Button -->
+                 <div>
+                     <button type="button" onclick="openModal()"
+                         class="px-6 py-2
+                                bg-gradient-to-r from-primary to-pink-600
+                                text-white rounded-full
+                                hover:opacity-90 transition
+                                flex items-center gap-2">
 
-                        <i class="fa fa-rocket"></i>
-                        <span>Promote</span>
-                    </button>
-                </div>
+                         <i class="fa fa-rocket"></i>
+                         <span>Promote</span>
+                     </button>
+                 </div>
 
-            </form>
-        </div>
-    </section>
+             </form>
+         </div>
+     </section>
+    @endif
 
     <!-- Promotion Modal -->
     <div id="promotionModal" class="fixed inset-0 bg-black/50 bg-opacity-50 hidden items-center justify-center z-50">
