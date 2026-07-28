@@ -164,7 +164,7 @@
 
     <div class="container">
         <!-- LOGO -->
-        <img src="{{ public_path('images/rtc_logo.png') }}" style="width:100%; margin-bottom:10px;">
+        <img src="{{ public_path('images/rgu_logo.jpeg') }}" style="width:100%; margin-bottom:10px;">
         <!-- HEADER -->
         <div class="header">
             <table>

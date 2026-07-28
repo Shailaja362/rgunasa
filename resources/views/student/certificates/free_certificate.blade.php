@@ -205,7 +205,7 @@
 <body>
     <div class="certificate">
         <div class="top-logos">
-            <img src="{{ public_path('images/rtc_logo.png') }}">
+            <img src="{{ public_path('images/rgu_logo.jpeg') }}">
         </div>
         <div class="tag">
             <img src="{{ public_path('images/logos/non.png') }}">

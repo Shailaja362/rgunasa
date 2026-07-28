@@ -66,7 +66,7 @@
 </head>
 <body>
 
-<img src="{{ public_path('images/rtc_logo.png') }}" class="logo">
+<img src="{{ public_path('images/rgu_logo.jpeg') }}" class="logo">
 
 <h2>Event Registration Report</h2>
 

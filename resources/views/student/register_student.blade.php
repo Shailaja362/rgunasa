@@ -124,14 +124,30 @@
                         <select name="semester" id="semester"
                             class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
                             <option value="" selected disabled>Select Semester</option>
-                            <option value="1" {{ $edit_student?->semester == '1' ? 'selected' : '' }}>1</option>
-                            <option value="2" {{ $edit_student?->semester == '2' ? 'selected' : '' }}>2</option>
-                            <option value="3" {{ $edit_student?->semester == '3' ? 'selected' : '' }}>3</option>
-                            <option value="4" {{ $edit_student?->semester == '4' ? 'selected' : '' }}>4</option>
-                            <option value="5" {{ $edit_student?->semester == '5' ? 'selected' : '' }}>5</option>
-                            <option value="6" {{ $edit_student?->semester == '6' ? 'selected' : '' }}>6</option>
-                            <option value="7" {{ $edit_student?->semester == '7' ? 'selected' : '' }}>7</option>
-                            <option value="8" {{ $edit_student?->semester == '8' ? 'selected' : '' }}>8</option>
+                            <option value="1"
+                                {{ isset($edit_student) && $edit_student->semester == '1' ? 'selected' : '' }}>1
+                            </option>
+                            <option value="2"
+                                {{ isset($edit_student) && $edit_student->semester == '2' ? 'selected' : '' }}>2
+                            </option>
+                            <option value="3"
+                                {{ isset($edit_student) && $edit_student->semester == '3' ? 'selected' : '' }}>3
+                            </option>
+                            <option value="4"
+                                {{ isset($edit_student) && $edit_student->semester == '4' ? 'selected' : '' }}>4
+                            </option>
+                            <option value="5"
+                                {{ isset($edit_student) && $edit_student->semester == '5' ? 'selected' : '' }}>5
+                            </option>
+                            <option value="6"
+                                {{ isset($edit_student) && $edit_student->semester == '6' ? 'selected' : '' }}>6
+                            </option>
+                            <option value="7"
+                                {{ isset($edit_student) && $edit_student->semester == '7' ? 'selected' : '' }}>7
+                            </option>
+                            <option value="8"
+                                {{ isset($edit_student) && $edit_student->semester == '8' ? 'selected' : '' }}>8
+                            </option>
                         </select>
                     </div>
                     <div>

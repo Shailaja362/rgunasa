@@ -14,17 +14,14 @@
                 {{-- RIGHT COLUMN --}}
                 <div class="col-span-12 md:col-span-5">
                     <div class="bg-white p-10 rounded-3xl space-y-3">
-                        <img src="{{ asset('/images/rtc_logo.png') }}" alt="Logo" class="w-80 mx-auto">
-
+                        <img src="{{ asset('/images/rgu_logo.jpeg') }}" alt="Logo" class="w-80 mx-auto">
                         <p class="text-center text-2xl font-bold text-[#9F3895]">
                             Super Admin Access
                         </p>
-
                         {{-- Added bottom space below this text --}}
                         <p class="py-5 text-center text-sm font-medium text-[#3F003E] pb-8">
                             Mission Control Authentication Required
                         </p>
-
                         {{-- FORM SEGMENT --}}
                         <form method="POST" action="{{ route('security_check.login') }}" class="mt-3 space-y-3"
                             x-data="{ show: false, loading: false }" @submit="loading = true">

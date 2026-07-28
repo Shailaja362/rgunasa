@@ -15,7 +15,7 @@
                 {{-- RIGHT COLUMN --}}
                 <div class="col-span-12 md:col-span-5">
                     <div class="bg-white p-10 rounded-3xl space-y-3">
-                        <img src="{{ asset('/images/rtc_logo.png') }}" alt="Logo" class="w-80 mx-auto">
+                        <img src="{{ asset('/images/rgu_logo.jpeg') }}" alt="Logo" class="w-80 mx-auto">
                         <p class="text-center text-2xl font-medium text-[#9F3895]">
                             LOGIN
                         </p>

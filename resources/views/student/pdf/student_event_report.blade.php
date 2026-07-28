@@ -82,7 +82,7 @@
 </head>
 
 <body>
-    <img src="{{ public_path('images/rtc_logo.png') }}" style="width:100%; margin-bottom:10px;">
+    <img src="{{ public_path('images/rgu_logo.jpeg') }}" style="width:100%; margin-bottom:10px;">
     <div class="header">
         <h1>Event Participation Report</h1>
         <p>Attendance & Feedback Summary</p>

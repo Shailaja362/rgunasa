@@ -156,7 +156,7 @@ body {
 <div class="certificate">
 
   <div class="college-header">
-    <img src="{{ public_path('images/rtc_logo.png') }}" alt="College Logo">
+    <img src="{{ public_path('images/rgu_logo.jpeg') }}" alt="College Logo">
   </div>
 
   <div class="certificate-title">

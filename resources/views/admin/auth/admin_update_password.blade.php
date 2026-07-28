@@ -17,7 +17,7 @@
                 <div class="bg-white p-8 md:p-10 rounded-3xl shadow-xl space-y-5">
 
                     <div class="flex justify-center">
-                        <img src="{{ asset('/images/rtc_logo.png') }}" alt="Logo" class="w-60 md:w-72">
+                        <img src="{{ asset('/images/rgu_logo.jpeg') }}" alt="Logo" class="w-60 md:w-72">
                     </div>
 
                     <p class="text-center text-2xl font-semibold text-[#9F3895]">Update Password</p>
