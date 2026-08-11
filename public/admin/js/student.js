@@ -71,14 +71,14 @@ $(document).on("submit", "#studentForm", function (e) {
              .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
-        "/admin/save-student",
+       saveStudentUrl,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/student-list"; // Replace with your actual event list route
+                    window.location.href = studentListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);
@@ -204,22 +204,22 @@ $(document).on("submit", "#studentregisterForm", function (e) {
           .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
-        "/student/register-save",
+        registerSave,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/student/login"; // Replace with your actual event list route
+                    window.location.href = "nasa/student/login"; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);
             }
-             $saveBtn
-                 .prop("disabled", false)
-                 .removeClass("opacity-50 cursor-not-allowed")
-                 .text("Save");
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -231,10 +231,10 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
-             $saveBtn
-                 .prop("disabled", false)
-                 .removeClass("opacity-50 cursor-not-allowed")
-                 .text("Save");
-        }
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
+        },
     );
 });

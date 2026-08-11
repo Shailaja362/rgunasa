@@ -135,5 +135,9 @@
         </div>
     </form>
 </x-layouts.app>
+<script>
+    const saveAdminUrl = "{{ route('save_admin') }}";
+    const adminListUrl = "{{ route('admin_list') }}";
+</script>
 <script src="{{ asset('admin/js/admin.js') }}?v={{ time() }}"></script>
 

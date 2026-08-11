@@ -215,7 +215,7 @@
                                     @endphp
 
                                     @if ($canDelete)
-                                        <button type="button" class="text-red-600 hover:text-red-800 deleteEvent" id="deleteEvent" data-id="{{ $event->id }}">
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteEvent" id="deleteEvent" data-id="{{ $event->id }}"  data-url="{{ route('events_destroy', $event->id) }}">
                                             <i class="fa-solid fa-delete-left"></i>
                                         </button>
                                     @endif

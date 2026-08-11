@@ -47,14 +47,14 @@ $(document).on("submit", "#facultyForm", function (e) {
           .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
-        "/admin/save-faculty",
+        saveFacultyUrl,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/faculty-list"; // Replace with your actual event list route
+                    window.location.href = facultyListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);

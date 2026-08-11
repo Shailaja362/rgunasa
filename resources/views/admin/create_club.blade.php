@@ -65,4 +65,8 @@
 
     </form>
 </x-layouts.app>
+<script>
+    const saveClubUrl = "{{ route('save_club') }}";
+    const clubListUrl = "{{ route('club_list') }}";
+</script>
 <script src="{{ asset('admin/js/club.js') }}?v={{ time() }}"></script>

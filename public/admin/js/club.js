@@ -26,22 +26,22 @@ $(document).on("submit", "#clubForm", function (e) {
            .text("Saving...");
     let formData = new FormData(this);
     sendRequest(
-        "/admin/save-club",
+        saveClubUrl,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/club-list"; // Replace with your actual event list route
+                    window.location.href = clubListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast("Something went wrong!", "error", 2000);
             }
-              $saveBtn
-                  .prop("disabled", false)
-                  .removeClass("opacity-50 cursor-not-allowed")
-                  .text("Save");
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
         },
         function (err) {
             if (err.errors) {
@@ -53,10 +53,10 @@ $(document).on("submit", "#clubForm", function (e) {
             } else {
                 showToast(err.message || "Unexpected error", "error", 2000);
             }
-              $saveBtn
-                  .prop("disabled", false)
-                  .removeClass("opacity-50 cursor-not-allowed")
-                  .text("Save");
-        }
+            $saveBtn
+                .prop("disabled", false)
+                .removeClass("opacity-50 cursor-not-allowed")
+                .text("Save");
+        },
     );
 });

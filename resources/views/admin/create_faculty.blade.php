@@ -156,5 +156,9 @@
 
     </form>
 </x-layouts.app>
+<script>
+    const saveFacultyUrl = "{{ route('save_faculty') }}";
+    const facultyListUrl = "{{ route('faculty_list') }}";
+</script>
 <script src="{{ asset('admin/js/faculty.js') }}?v={{ time() }}"></script>
 <script src="{{ asset('admin/js/common.js') }}?v={{ time() }}"></script>

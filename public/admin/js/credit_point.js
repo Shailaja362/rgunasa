@@ -31,7 +31,7 @@ $(document).on("submit", "#creditPointForm", function (e) {
         .text("Saving....");
     let formData = new FormData(this);
     sendRequest(
-        "/admin/save-credit-point",
+        saveCreditPointUrl,
         formData,
         "POST",
         function (res) {
@@ -39,7 +39,7 @@ $(document).on("submit", "#creditPointForm", function (e) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/credit-point-assign"; // Replace with your actual event list route
+                    window.location.href = creditPointListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);

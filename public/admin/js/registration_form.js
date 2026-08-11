@@ -4,7 +4,7 @@ $(function () {
         var event_id = $(this).data("event_id");
         var schedule_id = $(this).data("schedule_id");
         $.ajax({
-            url: "get-student",
+            url: "nasa/student/get-student",
             type: "GET",
             data: {
                 event_id: event_id,

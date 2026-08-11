@@ -61,14 +61,14 @@ $(document).on("submit", "#adminForm", function (e) {
     if (!isValid) return;
     let formData = new FormData(this);
     sendRequest(
-        "/admin/save-admin",
+        saveAdminUrl,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/admin-list"; // Replace with your actual event list route
+                    window.location.href = adminListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);

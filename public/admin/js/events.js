@@ -281,14 +281,14 @@ $(document).on("submit", "#eventForm", function (e) {
     let formData = new FormData(this);
     let taskId = "request()->task_id";
     sendRequest(
-        "/admin/save-event",
+        saveEventUrl,
         formData,
         "POST",
         function (res) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "/admin/event-list"; // Replace with your actual event list route
+                    window.location.href = eventListUrl; // Replace with your actual event list route
                 }, 2000);
             } else {
                 showToast("Something went wrong!", "error", 2000);
@@ -320,6 +320,7 @@ let deleteButton = null;
 $(document).on("click", ".deleteEvent", function () {
     deleteEventId = $(this).data("id");
     deleteButton = $(this);
+     deleteUrl = $(this).data("url");
 
     $("#deleteModal").removeClass("hidden").addClass("flex");
 });
@@ -332,7 +333,7 @@ $("#cancelDelete").on("click", function () {
 // Confirm delete
 $("#confirmDelete").on("click", function () {
     $.ajax({
-        url: "/admin/events/" + deleteEventId,
+        url: deleteUrl,
         type: "POST",
         headers: {
             "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),

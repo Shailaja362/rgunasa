@@ -94,4 +94,8 @@
         </div>
     </div>
 </x-layouts.app>
+<script>
+    const saveCreditPointUrl = "{{ route('save_credit_point') }}";
+    const creditPointListUrl = "{{ route('credit_point_assign') }}";
+</script>
 <script src="{{ asset('admin/js/credit_point.js') }}?v={{ time() }}"></script>

@@ -4,7 +4,7 @@ $(document).on("click", ".btnAttendance", function () {
     let student_id = $(this).data("student_id");
     let event_id = $(this).data("event_id");
     $.ajax({
-        url: "/admin/attendance/mark",
+        url: "nasa/admin/attendance/mark",
         type: "POST",
         data: {
             id: id,

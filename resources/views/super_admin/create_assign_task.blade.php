@@ -116,4 +116,8 @@
     </section>
 
 </x-layouts.app>
+<script>
+    const saveTaskUrl = "{{ route('save_task') }}";
+    const taskListUrl = "{{ route('assign_tasks') }}";
+</script>
 <script src="{{ asset('admin/js/tasks.js') }}?v={{ time() }}"></script>

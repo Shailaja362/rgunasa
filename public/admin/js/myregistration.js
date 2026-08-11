@@ -169,7 +169,7 @@ $(function () {
             isTechnical ? technicalQuestions : nonTechnicalQuestions,
         );
         fetch(
-            `/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
+            `nasa/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
         )
             .then((res) => res.json())
             .then((data) => {
@@ -269,7 +269,7 @@ $(function () {
             formData.append($(this).attr("name"), $(this).val());
         });
 
-        fetch("/student/upload-proof", {
+        fetch("nasa/student/upload-proof", {
             method: "POST",
             body: formData,
         })
@@ -283,7 +283,7 @@ $(function () {
                 }
             });
     });
-    
+
     $(document).on("click", ".view-details-btn", function () {
         // Get data from clicked button
         let title = $(this).data("title");

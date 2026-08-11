@@ -124,5 +124,9 @@
         </div>
     </form>
 </x-layouts.app>
+<script>
+    const savereportUrl = "{{ route('save_report') }}";
+    const reports = "{{ route('reports') }}";
+</script>
 <script src="{{ asset('admin/js/report.js') }}?v={{ time() }}"></script>
 

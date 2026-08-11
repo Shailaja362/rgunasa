@@ -422,6 +422,8 @@
 </x-layouts.app>
 
 <script>
+    const saveEventUrl = "{{ route('save_event') }}";
+    const eventListUrl = "{{ route('event_list') }}";
     const deptOptions = @json(
         $programmes->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];
