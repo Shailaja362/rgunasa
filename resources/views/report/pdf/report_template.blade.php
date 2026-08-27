@@ -209,6 +209,22 @@
                 <td>{{ \Carbon\Carbon::parse(optional($data['report']->schedule)->event_date)->format('d M Y') }}</td>
             </tr>
             <tr>
+                <td class="label">Programme</td>
+                <td>{{ optional($data['report']->schedule->programme ?? null)->name ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Section</td>
+                <td>{{ optional($data['report']->schedule)->section ? strtoupper($data['report']->schedule->section) : '-' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Batch</td>
+                <td>{{ optional($data['report']->schedule)->batch ? str_replace(',', ', ', $data['report']->schedule->batch) : 'All Batches' }}</td>
+            </tr>
+            <tr>
+                <td class="label">Semester</td>
+                <td>{{ optional($data['report']->schedule)->semester ? str_replace(',', ', ', $data['report']->schedule->semester) : 'All Semesters' }}</td>
+            </tr>
+            <tr>
                 <td class="label">Report Created By</td>
                 <td>{{ $data['report']->creator->name ?? '' }}</td>
             </tr>

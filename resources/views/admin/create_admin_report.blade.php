@@ -47,23 +47,17 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
-                <input type="text" name="batch" id="batch" placeholder="e.g, 2025-2029"
+                <select name="batch[]" id="batch" multiple
                     class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                </select>
+                <p class="text-xs text-gray-500 mt-1">Select an Event and Programme to load available batches.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
-                <select name="semester" id="semester"
-                    class="choice-select bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
-                    <option value="" selected disabled>Select Semester</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
+                <select name="semester[]" id="semester" multiple
+                    class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
                 </select>
+                <p class="text-xs text-gray-500 mt-1">Select an Event and Programme to load available semesters.</p>
             </div>
             <div>
                 <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
@@ -87,7 +81,7 @@
                 <img src="{{ asset('/images/upload.png') }}" class="mx-auto w-14 mb-3" />
                 <p class="font-medium text-[#E54590]">Upload event banner Image</p>
                 <p class="text-sm text-[#E54590] mt-2 py-1 rounded-full bg-gray-100">
-                    PNG ,JPG up to 5MB
+                    PNG ,JPG up to 2MB
                 </p>
             </div>
         </div>
@@ -127,6 +121,65 @@
 <script>
     const savereportUrl = "{{ route('save_report') }}";
     const reports = "{{ route('reports') }}";
+    const createReportUrl = "{{ route('create_report') }}";
+
+    const reportBatchChoice = new Choices("#batch", {
+        removeItemButton: true,
+        searchEnabled: true,
+        shouldSort: false,
+        placeholderValue: "Select Batch",
+    });
+    const reportSemesterChoice = new Choices("#semester", {
+        removeItemButton: true,
+        searchEnabled: true,
+        shouldSort: false,
+        placeholderValue: "Select Semester",
+    });
+
+    function loadReportScheduleOptions() {
+        const eventId = $("#event_id").val();
+        const programmeId = $("#programme_id").val();
+
+        reportBatchChoice.clearStore();
+        reportBatchChoice.setChoices([], "value", "label", true);
+        reportSemesterChoice.clearStore();
+        reportSemesterChoice.setChoices([], "value", "label", true);
+
+        if (!eventId || !programmeId) {
+            return;
+        }
+
+        $.ajax({
+            url: createReportUrl,
+            type: "GET",
+            dataType: "json",
+            data: {
+                event_id: eventId,
+                programme_id: programmeId,
+                get_schedule_options: true,
+            },
+            success: function (response) {
+                if (!response.success) return;
+                reportBatchChoice.setChoices(
+                    response.batches.map((b) => ({ value: b, label: b })),
+                    "value",
+                    "label",
+                    true,
+                );
+                reportSemesterChoice.setChoices(
+                    response.semesters.map((s) => ({ value: s, label: s })),
+                    "value",
+                    "label",
+                    true,
+                );
+            },
+            error: function () {
+                showToast("Unable to fetch batches/semesters!", "error", 2000);
+            },
+        });
+    }
+
+    $(document).on("change", "#event_id, #programme_id", loadReportScheduleOptions);
 </script>
 <script src="{{ asset('admin/js/report.js') }}?v={{ time() }}"></script>
 

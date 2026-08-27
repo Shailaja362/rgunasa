@@ -147,8 +147,8 @@ class RegisterController extends Controller
             $subQ->where(function ($normalQ) use ($student) {
                 $normalQ->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester);
+                    ->openToBatch($student->batch)
+                    ->openToSemester($student->semester);
             });
 
             // Common first year events
@@ -157,10 +157,7 @@ class RegisterController extends Controller
                     $firstYearQ->whereNull('programme_id')
                         ->whereNull('section')
                         ->whereNull('semester')
-                        ->where(function ($batchQ) use ($student) {
-                            $batchQ->whereNull('batch')
-                                ->orWhere('batch', $student->batch);
-                        });
+                        ->openToBatch($student->batch);
                 });
             }
         });

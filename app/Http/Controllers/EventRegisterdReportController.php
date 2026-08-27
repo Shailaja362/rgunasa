@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\EventRegistrationExport;
+use App\Models\Batch;
 use App\Models\Event;
 use Illuminate\Http\Request;
 use App\Models\StudentEventRegistration;
@@ -47,6 +48,8 @@ class EventRegisterdReportController extends Controller
             3 => 'bg-green-100 text-green-700',
             4 => 'bg-red-100 text-red-700',
         ];
+
+        $this->data['batches'] = Batch::orderBy('name')->pluck('name');
 
         if (!empty($request->all())) {
             $query = StudentEventRegistration::with([
@@ -184,10 +187,10 @@ class EventRegisterdReportController extends Controller
                 $scheduleQ->where(function ($mainQ) use ($semester, $batch, $isFirstYearFilter) {
                     $mainQ->where(function ($normalQ) use ($semester, $batch) {
                         if (!empty($semester)) {
-                            $normalQ->where('semester', $semester);
+                            $normalQ->openToSemester($semester);
                         }
                         if (!empty($batch)) {
-                            $normalQ->where('batch', $batch);
+                            $normalQ->openToBatch($batch);
                         }
                     });
 
@@ -196,12 +199,7 @@ class EventRegisterdReportController extends Controller
                             $commonQ->whereNull('programme_id')
                                 ->whereNull('section')
                                 ->whereNull('semester')
-                                ->where(function ($batchQ) use ($batch) {
-                                    $batchQ->whereNull('batch');
-                                    if (!empty($batch)) {
-                                        $batchQ->orWhere('batch', $batch);
-                                    }
-                                });
+                                ->openToBatch($batch);
                         });
                     }
                 });

@@ -18,25 +18,23 @@ use App\Models\Programme;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StudentEventRegistration;
-use App\Traits\ResolvesEventSchedule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class AdminReportsController extends Controller
 {
-    use ResolvesEventSchedule;
 
     public function index(Request $request)
     {
         $adminId = Auth::guard('admin')->id();
         if (!empty(session()->get('super_admin'))) {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event')
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event', 'schedule')
                 ->whereHas('get_event', function ($query) {
                     $query->where('publish', 1)
                         ->where('is_active', 'y');
                 })->paginate(10);
         } else {
-            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event')
+            $this->data['reports'] = EventReport::with('get_event_image', 'get_event.get_task', 'get_programme','get_event', 'schedule')
                 ->whereHas('get_event', function ($query) {
                     $query->where('publish', 1)
                         ->where('is_active', 'y');
@@ -54,6 +52,31 @@ class AdminReportsController extends Controller
                 return response()->json([
                     'success' => true,
                     'event' => $get_event
+                ]);
+            }
+            if ($request->get_schedule_options) {
+                $schedules = EventSchedule::where('event_id', $request->event_id)
+                    ->where('programme_id', $request->programme_id)
+                    ->get();
+
+                $batches = $schedules->flatMap(fn($s) => explode(',', (string) $s->batch))
+                    ->map(fn($b) => trim($b))
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                $semesters = $schedules->flatMap(fn($s) => explode(',', (string) $s->semester))
+                    ->map(fn($s) => trim($s))
+                    ->filter()
+                    ->unique()
+                    ->sort()
+                    ->values();
+
+                return response()->json([
+                    'success' => true,
+                    'batches' => $batches,
+                    'semesters' => $semesters,
                 ]);
             }
         }
@@ -77,20 +100,21 @@ class AdminReportsController extends Controller
             'event_date'  => 'required|date',
             'outcome_results' => 'required',
             'feedback_summary' => 'required',
-            'batch'      => 'required',
-            'semester' => 'required',
+            'batch'      => 'required|array',
+            'batch.*'    => 'exists:batches,name',
+            'semester' => 'required|array',
+            'semester.*' => 'in:1,2,3,4,5,6,7,8',
+            'proof.*'    => 'image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         DB::beginTransaction();
         try {
-            $schedule = $this->resolveSchedule(
-                $request->event_id,
-                $request->programme_id,
-                $request->event_date,
-                $request->section,
-                $request->batch,
-                $request->semester
-            );
+            $schedule = EventSchedule::where('event_id', $request->event_id)
+                ->where('programme_id', $request->programme_id)
+                ->where('section', $request->section)
+                ->openToAnyBatch($request->batch)
+                ->openToAnySemester($request->semester)
+                ->first();
             if (!$schedule) {
                 throw new \Exception('Schedule not found');
             }
@@ -298,7 +322,7 @@ class AdminReportsController extends Controller
             'get_event_image',
             'creator',
             'student_uploads',
-            'schedule.department'
+            'schedule.programme'
         ])->findOrFail($id);
 
         $scheduleId = $report->event_schedule_id;

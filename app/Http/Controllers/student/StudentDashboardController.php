@@ -48,15 +48,15 @@ class StudentDashboardController extends Controller
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
+                ->openToBatch($student->batch)
+                ->openToSemester($student->semester)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester)
+                    ->openToBatch($student->batch)
+                    ->openToSemester($student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
             }, 'get_dep_events.registrations'])
             ->where('publish', 1)
@@ -72,15 +72,15 @@ class StudentDashboardController extends Controller
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
+                ->openToBatch($student->batch)
+                ->openToSemester($student->semester)
                 ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester)
+                    ->openToBatch($student->batch)
+                    ->openToSemester($student->semester)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
             }, 'get_dep_events.registrations'])
@@ -93,15 +93,15 @@ class StudentDashboardController extends Controller
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
+                ->openToBatch($student->batch)
+                ->openToSemester($student->semester)
                 ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['schedule' => function ($q) use ($student) {
                 $q->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester)
+                    ->openToBatch($student->batch)
+                    ->openToSemester($student->semester)
                     ->where('event_date', '>', Carbon::now()->toDateString())
                     ->orderBy('event_date', 'asc');
                 // ->orderBy('start_time', 'asc');
@@ -127,8 +127,8 @@ class StudentDashboardController extends Controller
             })
             ->where('grade', '!=', 'd')
             ->whereHas('get_event_schedule', function ($q) use ($student) {
-                $q->where('semester', $student->semester)
-                    ->where('batch', $student->batch)
+                $q->openToSemester($student->semester)
+                    ->openToBatch($student->batch)
                     ->where('programme_id', $student->programme_id);
             })
             ->with('get_event_schedule:id,credit_points')

@@ -15,13 +15,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
-use App\Traits\ResolvesEventSchedule;
 use App\Models\StudentEventRegistration;
 
 class AssignGradeController extends Controller
 {
-    use ResolvesEventSchedule;
-
     public function index()
     {
         $adminId = Auth::guard('admin')->id();
@@ -53,25 +50,56 @@ class AssignGradeController extends Controller
             ->where('event_id', $eventId)
             ->get()
             ->groupBy('programme_id');
+        $this->data['programmeScheduleOptions'] = $this->buildProgrammeScheduleOptions($this->data['schedule_department']);
+
+        $batches = array_filter((array) $request->batch);
+        $semesters = array_filter((array) $request->semester);
+
         if ($request->filled('programme_id') && $request->filled('event_date')) {
-            $schedule = $this->resolveSchedule(
-                $eventId,
-                $request->programme_id,
-                $request->event_date,
-                $request->section,
-                $request->batch,
-                $request->semester
-            );
+            $schedule = EventSchedule::where('event_id', $eventId)
+                ->where('programme_id', $request->programme_id)
+                ->where('section', $request->section)
+                ->openToAnyBatch($batches)
+                ->openToAnySemester($semesters)
+                ->first();
+
             if ($schedule) {
-                $this->data['registrations'] = StudentAttendance::with('student.get_department','student.get_programme')
+                $this->data['registrations'] = StudentAttendance::with('student.get_department', 'student.get_programme')
                     ->where('event_id', $eventId)
                     ->where('event_schedule_id', $schedule->id)
                     ->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
+                    ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
+                    ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();
             }
         }
         return view('admin.assign_grade_entry')->with($this->data);
+    }
+
+    /**
+     * Batch/semester values actually used per programme in this event's
+     * schedules, so the filter form only offers relevant choices.
+     */
+    private function buildProgrammeScheduleOptions($scheduleDepartment)
+    {
+        return $scheduleDepartment->map(function ($schedules) {
+            $batches = $schedules->flatMap(fn($s) => explode(',', (string) $s->batch))
+                ->map(fn($b) => trim($b))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+
+            $semesters = $schedules->flatMap(fn($s) => explode(',', (string) $s->semester))
+                ->map(fn($s) => trim($s))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+
+            return ['batches' => $batches, 'semesters' => $semesters];
+        });
     }
 
     public function saveGrades(Request $request)

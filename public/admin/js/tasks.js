@@ -108,7 +108,12 @@ document.addEventListener("DOMContentLoaded", function () {
     // HANDLE FILES (ADD + PREVIEW)
     // -----------------------------
     function handleFiles(files) {
+        const maxSize = 2 * 1024 * 1024;
         [...files].forEach(file => {
+            if (file.size > maxSize) {
+                showToast(`${file.name} exceeds 2MB and was skipped.`, "error", 2000);
+                return;
+            }
             filesArr.push(file);
             previewFile(file);
         });

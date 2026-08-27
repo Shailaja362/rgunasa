@@ -110,9 +110,9 @@ class AdminController extends Controller
             }
 
             if (empty($request['admin_id']) && !$request->has('old_banner')) {
-                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg|max:2048';
             } else if ($request->hasFile('banner_image')) {
-                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg|max:2048';
             }
 
             $request->validate($rules);

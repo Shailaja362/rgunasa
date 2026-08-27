@@ -79,7 +79,7 @@
                              <img src="{{ asset('/images/upload.png') }}" class="mx-auto w-14 mb-3" />
                             <p class="font-medium text-[#E54590]">Upload event banner Image</p>
                             <p class="text-sm text-[#E54590] mt-2 py-1 rounded-full bg-gray-100">
-                                 PNG ,JPG up to 5MB
+                                 PNG ,JPG up to 2MB
                             </p>
                         </div>
                     </div>

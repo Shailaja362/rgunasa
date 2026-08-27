@@ -72,16 +72,16 @@ class UpcomingEventController extends Controller
 
             $q->where('programme_id', $student->programme_id)
                 ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester)
+                ->openToBatch($student->batch)
+                ->openToSemester($student->semester)
                 ->whereDate('event_date', '>=', Carbon::today());
         })
             ->with([
                 'get_dep_events' => function ($q) use ($student) {
                     $q->where('programme_id', $student->programme_id)
                         ->where('section', $student->section)
-                        ->where('batch', $student->batch)
-                        ->where('semester', $student->semester)
+                        ->openToBatch($student->batch)
+                        ->openToSemester($student->semester)
                         ->whereDate('event_date', '>=', Carbon::today())
                         ->orderBy('event_date', 'asc');
                 },
@@ -101,36 +101,10 @@ class UpcomingEventController extends Controller
 
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
 
-                $isCommonFirstYearEvent =
-                    is_null($dept->programme_id) &&
-                    is_null($dept->section) &&
-                    is_null($dept->semester) &&
-                    (is_null($dept->batch) || $dept->batch == $student->batch);
-
-                $registeredCountQuery = StudentEventRegistration::where('event_schedule_id', $dept->id);
-
-                if ($isCommonFirstYearEvent) {
-
-                    $registeredCountQuery->whereHas('student', function ($q) use ($student) {
-
-                        $q->whereIn('semester', [1, 2]);
-
-                        if (!empty($student->batch)) {
-                            $q->where('batch', $student->batch);
-                        }
-                    });
-                } else {
-
-                    $registeredCountQuery->whereHas('student', function ($q) use ($student) {
-
-                        $q->where('programme_id', $student->programme_id)
-                            ->where('section', $student->section)
-                            ->where('batch', $student->batch)
-                            ->where('semester', $student->semester);
-                    });
-                }
-
-                $registeredCount = $registeredCountQuery->count();
+                // seat_count is one shared pool for the whole schedule row (across
+                // every batch/semester it's open to), so count every registration
+                // on this row, not just ones matching the viewing student's cohort.
+                $registeredCount = StudentEventRegistration::where('event_schedule_id', $dept->id)->count();
                 $availableSeats = max(0, $dept->seat_count - $registeredCount);
 
                 if ($dept->is_reserve_date == 'y') {
@@ -157,15 +131,15 @@ class UpcomingEventController extends Controller
 
                 if ($lastRegistration) {
 
-                    if (empty($event->duration_months) || $event->duration_months == 0) {
+                    if (empty($event->duration_days) || $event->duration_days == 0) {
 
                         $permanentBlock = true;
                     }
 
-                    if (!$permanentBlock && $event->duration_months) {
+                    if (!$permanentBlock && $event->duration_days) {
 
                         $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
-                            ->addMonths($event->duration_months);
+                            ->addDays($event->duration_days);
 
                         if ($now->lt($nextAllowedDate)) {
                             $cooldownActive = true;
@@ -234,35 +208,9 @@ class UpcomingEventController extends Controller
 
     public static function registeredSeatsForSchedule($schedule, $student)
     {
-        $query = StudentEventRegistration::where('event_schedule_id', $schedule->id);
-
-        if (self::isCommonFirstYearSchedule($schedule, $student)) {
-            $query->whereHas('student', function ($studentQuery) use ($student) {
-                $studentQuery->whereIn('semester', [1, 2]);
-
-                if (!empty($student->batch)) {
-                    $studentQuery->where('batch', $student->batch);
-                }
-            });
-
-            return $query->count();
-        }
-
-        return $query->whereHas('student', function ($studentQuery) use ($student) {
-            $studentQuery
-                ->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
-                ->where('batch', $student->batch)
-                ->where('semester', $student->semester);
-        })->count();
-    }
-
-    public static function isCommonFirstYearSchedule($schedule, $student)
-    {
-        return is_null($schedule->programme_id)
-            && is_null($schedule->section)
-            && is_null($schedule->semester)
-            && (is_null($schedule->batch) || $schedule->batch == $student->batch);
+        // seat_count is a shared pool for the whole schedule row, so count every
+        // registration on it, regardless of the viewing student's own cohort.
+        return StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
     }
 
     private function eventTimesForSchedule($event, $schedule)

@@ -35,6 +35,14 @@
                     Submitted :
                     {{ \Carbon\Carbon::parse($report->created_at)->format('F d, Y (h.iA)') }}
                 </p>
+                <p class="mt-2 text-xs">
+                    <i class="fa fa-layer-group text-primary" aria-hidden="true"></i>
+                    Batch : {{ $report->schedule->batch ? str_replace(',', ', ', $report->schedule->batch) : 'All Batches' }}
+                </p>
+                <p class="mt-2 text-xs">
+                    <i class="fa fa-graduation-cap text-primary" aria-hidden="true"></i>
+                    Semester : {{ $report->schedule->semester ? str_replace(',', ', ', $report->schedule->semester) : 'All Semesters' }}
+                </p>
                 <div class="flex items-center justify-between py-2">
                     <p class="mt-2 text-xs bg-[#F2E8F5] py-1 px-3 rounded-full text-primary">
                         {{ $report->get_event->title ?? '' }}</p>

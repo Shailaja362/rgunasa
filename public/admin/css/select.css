@@ -27,3 +27,29 @@
 .choices[data-type*="select-one"] .choices__inner {
     padding-bottom: 8px !important;
 }
+
+.choices__input {
+    background-color: transparent !important;
+}
+
+.choices[data-type*="select-multiple"] {
+    position: relative;
+}
+
+.choices[data-type*="select-multiple"] .choices__inner {
+    padding-right: 28px !important;
+}
+
+.choices[data-type*="select-multiple"]:after {
+    content: "";
+    height: 0;
+    width: 0;
+    border-style: solid;
+    border-color: #666 transparent transparent transparent;
+    border-width: 5px 5px 2.5px;
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    margin-top: -2.5px;
+    pointer-events: none;
+}

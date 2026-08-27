@@ -59,12 +59,12 @@ $(document).on("submit", "#eventReportForm", function (e) {
         },
         {
             id: "#batch",
-            condition: (val) => val === "",
+            condition: (val) => !val || val.length === 0,
             message: "Batch field is required",
         },
         {
             id: "#semester",
-            condition: (val) => val === "",
+            condition: (val) => !val || val.length === 0,
             message: "Semester field is required",
         },
         {
@@ -155,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function handleFiles(files) {
+        const maxSize = 2 * 1024 * 1024;
         let currentCount = document.querySelectorAll(
             "#previewArea .img-wrapper:not([data-existing])",
         ).length;
@@ -166,6 +167,10 @@ document.addEventListener("DOMContentLoaded", function () {
             let ext = file.name.split(".").pop().toLowerCase();
             if (!["jpg", "jpeg", "png"].includes(ext)) {
                 showToast("Only JPG/PNG images allowed!", "error", 2000);
+                return;
+            }
+            if (file.size > maxSize) {
+                showToast(`${file.name} exceeds 2MB.`, "error", 2000);
                 return;
             }
             filesArr.push(file);

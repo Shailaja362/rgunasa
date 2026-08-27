@@ -11,8 +11,8 @@ trait ResolvesEventSchedule
         return EventSchedule::where('event_id', $eventId)
             ->where('programme_id', $programmeId)
             ->where('section', $section)
-            ->where('batch', $batch)
-            ->where('semester', $semester)
+            ->openToBatch($batch)
+            ->openToSemester($semester)
 //            ->where(function ($q) use ($date) {
 //                $q->whereDate('event_date', $date);
 //            })

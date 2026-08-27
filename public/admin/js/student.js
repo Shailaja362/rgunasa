@@ -114,6 +114,15 @@ document
         const uploadText = document.getElementById("uploadText");
 
         if (file) {
+            const maxSize = 2 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast("Image size must not exceed 2 MB.", "error", 2000);
+                this.value = "";
+                previewArea.innerHTML = "";
+                uploadText.style.display = "block";
+                return;
+            }
+
             const reader = new FileReader();
 
             reader.onload = function (e) {

@@ -70,9 +70,15 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Batch</label>
-                    <input type="text" name="batch" id="batch" value="{{ request('batch') }}"
-                        placeholder="e.g, 2025-2029"
-                        class="w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
+                    <select name="batch" id="batch"
+                        class="batch w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                        <option value="">Select Batch</option>
+                        @foreach ($batches as $batchOption)
+                            <option value="{{ $batchOption }}" {{ request('batch') == $batchOption ? 'selected' : '' }}>
+                                {{ $batchOption }}
+                            </option>
+                        @endforeach
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium"> Semester</label>
@@ -166,7 +172,7 @@
         let toDate = $('input[name="to_date"]').val();
         let search = $('input[name="search"]').val();
         let semester = $('select[name="semester"]').val();
-        let batch = $('input[name="batch"]').val();
+        let batch = $('select[name="batch"]').val();
 
         // Check if all fields are empty
         if (

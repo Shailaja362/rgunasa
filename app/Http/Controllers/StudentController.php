@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Exception;
+use App\Models\Batch;
 use App\Models\Student;
 use App\Models\Programme;
 use App\Models\Department;
@@ -47,6 +48,7 @@ class StudentController extends Controller
     {
         $this->data['department'] = Department::all();
         $this->data['programme'] = Programme::all();
+        $this->data['batches'] = Batch::orderBy('name')->pluck('name');
         if ($request->student_id) {
             $studentId = decrypt($request->student_id);
             $this->data['edit_student'] = Student::where('id', $studentId)->first();
@@ -122,9 +124,9 @@ class StudentController extends Controller
             }
 
             if (empty($request['student_id']) && !$request->has('old_banner')) {
-                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'required|image|mimes:jpeg,png,jpg|max:2048';
             } else if ($request->hasFile('banner_image')) {
-                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg|max:2048';
             }
 
             $request->validate($rules);
@@ -182,6 +184,7 @@ class StudentController extends Controller
     {
         $this->data['department'] = Department::all();
         $this->data['programme'] = Programme::all();
+        $this->data['batches'] = Batch::orderBy('name')->pluck('name');
         if ($request->student_id) {
             $studentId = decrypt($request->student_id);
             $this->data['edit_student'] = Student::where('id', $studentId)->first();
@@ -239,7 +242,7 @@ class StudentController extends Controller
 
 
             if ($request->hasFile('banner_image')) {
-                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg';
+                $rules['banner_image'] = 'image|mimes:jpeg,png,jpg|max:2048';
             }
 
             $request->validate($rules);

@@ -118,7 +118,7 @@
                         <div id="uploadText" @if (!empty($edit_admin) && $edit_admin->profile_pic) style="display:none" @endif>
                             <img src="{{ asset('/images/upload.png') }}" class="mx-auto w-14 mb-3" />
                             <p class="text-primary font-semibold">Upload your profile image</p>
-                            <p class="text-primary text-sm mt-2">PNG, JPG up to 5MB</p>
+                            <p class="text-primary text-sm mt-2">PNG, JPG up to 2MB</p>
                         </div>
                         <!-- File Input -->
                         <input type="file" id="fileInput" name="banner_image" accept="image/*" class="hidden" />

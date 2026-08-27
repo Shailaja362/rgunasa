@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
             itemSelectText: "",
             shouldSort: false,
             allowHTML: true,
+            removeItemButton: true,
         });
     });
 });

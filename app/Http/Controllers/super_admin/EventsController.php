@@ -4,6 +4,7 @@ namespace App\Http\Controllers\super_admin;
 
 use App\Helpers\ActivityLog;
 use App\Http\Controllers\Controller;
+use App\Models\Batch;
 use App\Models\Club;
 use App\Models\Event;
 use App\Models\EventSchedule;
@@ -123,6 +124,7 @@ class EventsController extends Controller
         $this->data['faculty'] = Faculty::get();
         $this->data['club'] = Club::get();
         $this->data['programmes'] = Programme::get();
+        $this->data['batches'] = Batch::orderBy('name')->get(['id', 'name']);
         if ($request->event_id) {
             $eventId = decrypt($request->event_id);
             $this->data['edit_event'] = Event::where('id', $eventId)->first();
@@ -193,18 +195,17 @@ class EventsController extends Controller
                 'contact_person'   => 'required',
                 'contact_email'   => 'required',
                 'event_type'   => 'required',
-                'duration_months' => 'required',
+                'duration_days' => 'required',
                 'departments' => 'required|array|min:1',
                 'departments.*.programme_id' => 'nullable|exists:programmes,id',
                 'departments.*.section' => 'nullable|in:a,b,c,d,e,f,r',
                 'departments.*.event_date' => 'required|date_format:d/m/Y',
                 'departments.*.is_reserve_date' => 'nullable|in:y,n',
                 'departments.*.seat_count' => 'required|integer|min:1',
-                'departments.*.batch' => [
-                    'nullable',
-                    'regex:/^\d{4}-\d{4}$/'
-                ],
-                'departments.*.semester' => 'nullable|in:1,2,3,4,5,6,7,8',
+                'departments.*.batch' => 'nullable|array',
+                'departments.*.batch.*' => 'exists:batches,name',
+                'departments.*.semester' => 'nullable|array',
+                'departments.*.semester.*' => 'in:1,2,3,4,5,6,7,8',
                 'departments.*.credit_points' => 'required|numeric|min:0|max:4',
             ];
 
@@ -263,7 +264,7 @@ class EventsController extends Controller
                 ->format('Y/m/d');
             $event->contact_person = $request['contact_person']  ?? '';
             $event->contact_email = $request['contact_email']  ?? '';
-            $event->duration_months = $request['duration_months'];
+            $event->duration_days = $request['duration_days'];
             $event->is_technical_event = $request['is_technical_event'] ?? '';
             $event->is_active = $request['is_active'] ?? 'y';
             $event->save();
@@ -278,6 +279,12 @@ class EventsController extends Controller
                 ->delete();
 
             foreach ($request->departments as $schedule) {
+                // Multiple selected batches/semesters are stored as a comma-separated
+                // list on a single row, so seat_count is one shared quota for the
+                // whole department entry rather than being duplicated per combination.
+                $batches = !empty($schedule['batch']) ? array_values(array_unique((array) $schedule['batch'])) : [];
+                $semesters = !empty($schedule['semester']) ? array_values(array_unique((array) $schedule['semester'])) : [];
+
                 $data = [
                     'event_id'        => $event->id,
                     'programme_id'    => !empty($schedule['programme_id']) ? $schedule['programme_id'] : null,
@@ -285,8 +292,8 @@ class EventsController extends Controller
                     'event_date'      => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
                     'is_reserve_date' => $schedule['is_reserve_date'] ?? 'n',
                     'seat_count'      => $schedule['seat_count'],
-                    'batch'           => !empty($schedule['batch']) ? $schedule['batch'] : null,
-                    'semester'        => !empty($schedule['semester']) ? $schedule['semester'] : null,
+                    'batch'           => !empty($batches) ? implode(',', $batches) : null,
+                    'semester'        => !empty($semesters) ? implode(',', $semesters) : null,
                     'credit_points'   => $schedule['credit_points'],
                 ];
 

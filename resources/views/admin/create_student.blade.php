@@ -99,8 +99,15 @@
             </div>
             <div>
                 <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
-                <input type="text" name="batch" id="batch" value="{{ $edit_student->batch ?? '' }}" placeholder="e.g, 2025-2029"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
+                <select name="batch" id="batch"
+                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 mt-1 focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                    <option value="" selected disabled>Select Batch</option>
+                    @foreach ($batches as $batchOption)
+                        <option value="{{ $batchOption }}" {{ ($edit_student->batch ?? '') == $batchOption ? 'selected' : '' }}>
+                            {{ $batchOption }}
+                        </option>
+                    @endforeach
+                </select>
             </div>
             <div>
                 <label class="block text-sm font-medium"> Semester <span class="text-red-500">*</span></label>
@@ -136,7 +143,7 @@
                         <div id="uploadText" @if (!empty($edit_student) && $edit_student->profile_pic) style="display:none" @endif>
                             <img src="{{ asset('/images/upload.png') }}" class="mx-auto w-14 mb-3" />
                             <p class="text-primary font-semibold">Upload your profile image</p>
-                            <p class="text-primary text-sm mt-2">PNG, JPG up to 5MB</p>
+                            <p class="text-primary text-sm mt-2">PNG, JPG up to 2MB</p>
                         </div>
                         <!-- File Input -->
                         <input type="file" id="fileInput" name="banner_image" accept="image/*" class="hidden" />

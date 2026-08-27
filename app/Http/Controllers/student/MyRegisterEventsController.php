@@ -318,8 +318,8 @@ class MyRegisterEventsController extends Controller
             $subQ->where(function ($normalQ) use ($student) {
                 $normalQ->where('programme_id', $student->programme_id)
                     ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester);
+                    ->openToBatch($student->batch)
+                    ->openToSemester($student->semester);
             });
 
             // Common first year events
@@ -328,10 +328,7 @@ class MyRegisterEventsController extends Controller
                     $firstYearQ->whereNull('programme_id')
                         ->whereNull('section')
                         ->whereNull('semester')
-                        ->where(function ($batchQ) use ($student) {
-                            $batchQ->whereNull('batch')
-                                ->orWhere('batch', $student->batch);
-                        });
+                        ->openToBatch($student->batch);
                 });
             }
         });
@@ -343,31 +340,8 @@ class MyRegisterEventsController extends Controller
             return 0;
         }
 
-        $isCommonFirstYearEvent =
-            is_null($schedule->programme_id) &&
-            is_null($schedule->section) &&
-            is_null($schedule->semester) &&
-            in_array((int) $student->semester, [1, 2]);
-
-        $query = \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id);
-
-        if ($isCommonFirstYearEvent) {
-            $query->whereHas('student', function ($q) use ($student) {
-                $q->whereIn('semester', [1, 2]);
-
-                if (!empty($student->batch)) {
-                    $q->where('batch', $student->batch);
-                }
-            });
-        } else {
-            $query->whereHas('student', function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester);
-            });
-        }
-
-        return $query->count();
+        // seat_count is a shared pool for the whole schedule row, so count every
+        // registration on it, regardless of the viewing student's own cohort.
+        return \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
     }
 }

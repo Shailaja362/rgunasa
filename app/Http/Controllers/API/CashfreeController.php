@@ -314,24 +314,20 @@ class CashfreeController extends Controller
             'event_schedule_id' => $schedule->id,
         ])->orderBy('registered_at', 'desc')->first();
 
-        if ($lastRegistration && (empty($event->duration_months) || $event->duration_months == 0)) {
+        if ($lastRegistration && (empty($event->duration_days) || $event->duration_days == 0)) {
             return 'You are already registered for this event.';
         }
 
-        if ($lastRegistration && $event->duration_months > 0) {
-            $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)->addMonths($event->duration_months);
+        if ($lastRegistration && $event->duration_days > 0) {
+            $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)->addDays($event->duration_days);
             if (Carbon::now()->lt($nextAllowedDate)) {
                 return 'You can register again after ' . $nextAllowedDate->format('d M Y');
             }
         }
 
-        $registeredCount = StudentEventRegistration::where('event_schedule_id', $schedule->id)
-            ->whereHas('student', function ($query) use ($student) {
-                $query->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
-                    ->where('batch', $student->batch)
-                    ->where('semester', $student->semester);
-            })->count();
+        // seat_count is one shared pool for the whole schedule row (across every
+        // batch/semester it's open to), so count every registration on this row.
+        $registeredCount = StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
 
         if ($registeredCount >= $schedule->seat_count) {
             return 'This event seat is already full.';

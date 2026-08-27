@@ -72,7 +72,7 @@ class AssignTasksController extends Controller
             ];
             // Multiple proof images validation
             if ($request->hasFile('proof')) {
-                $rules['proof.*'] = 'image|mimes:jpeg,png,jpg|max:4096';
+                $rules['proof.*'] = 'image|mimes:jpeg,png,jpg|max:2048';
             }
             $request->validate($rules);
             // ---------- CREATE OR UPDATE ----------

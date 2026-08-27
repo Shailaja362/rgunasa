@@ -156,9 +156,9 @@ $(document).on("submit", "#eventForm", function (e) {
             message: "Please select Event Type",
         },
         {
-            id: "#duration_months",
+            id: "#duration_days",
             condition: (val) => val === "",
-            message: "Please Enter Duration Month",
+            message: "Please Enter Duration in Days",
         },
         // {
         //     id: ".department",
@@ -206,30 +206,6 @@ $(document).on("submit", "#eventForm", function (e) {
         const result = validateField(field);
         if (!result) isValid = false;
     }
-
-    $(".dept-card").each(function () {
-        let batch = $(this).find(".batch").val();
-
-        if (batch) {
-            const regex = /^\d{4}-\d{4}$/;
-            if (!regex.test(batch)) {
-                showToast("Batch must be in YYYY-YYYY format", "error", 2000);
-                isValid = false;
-                return false;
-            }
-
-            const [start, end] = batch.split("-").map(Number);
-            if (end <= start) {
-                showToast(
-                    "Batch end year must be greater than start year",
-                    "error",
-                    2000,
-                );
-                isValid = false;
-                return false;
-            }
-        }
-    });
 
     let eventType = $("#event_type").val();
     let price = $("#price").val();
@@ -458,6 +434,9 @@ document.addEventListener("DOMContentLoaded", function () {
             </option>`,
             )
             .join("");
+        const batchOptionsHtml = batchOptions
+            .map((b) => `<option value="${b.id}">${b.name}</option>`)
+            .join("");
 
         const card = document.createElement("div");
         card.className = "bg-[#F0F0F0] p-5 rounded-2xl relative dept-card";
@@ -514,17 +493,16 @@ document.addEventListener("DOMContentLoaded", function () {
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 seat_count">
                 </div>
                      <div>
-                            <label class="block text-sm font-medium">Batch<span class="text-red-500">*</span></label>
-                            <input type="text" name="departments[${deptIndex}][batch]" id="batch"
-                                placeholder="e.g, 2025-2029"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 batch">
+                            <label class="block text-sm font-medium">Batch</label>
+                            <select name="departments[${deptIndex}][batch][]" id="batch" multiple
+                                class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                                ${batchOptionsHtml}
+                            </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium"> Semester <span
-                                    class="text-red-500">*</span></label>
-                            <select name="departments[${deptIndex}][semester]" id="semester"
+                            <label class="block text-sm font-medium"> Semester </label>
+                            <select name="departments[${deptIndex}][semester][]" id="semester" multiple
                                 class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
-                                <option selected disabled>Select Semester</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>
@@ -622,32 +600,19 @@ $("#publishBtn").on("click", function () {
 
     // Loop through each department card
     $(".dept-card").each(function () {
-        let batch = $(this).find(".batch").val();
-        let semester = $(this).find(".semester").val();
+        let batch = $(this).find(".batch").val() || [];
+        let semester = $(this).find(".semester").val() || [];
         let creditPoints = $(this).find(".credit_points").val();
-        const regex = /^\d{4}-\d{4}$/;
 
         // Batch validation
-        if (!batch || !regex.test(batch)) {
-            showToast("Batch must be in YYYY-YYYY format", "error", 2000);
+        if (batch.length === 0) {
+            showToast("Please Select Batch", "error", 2000);
             isValid = false;
             return false; // break loop
         }
 
-        const [start, end] = batch.split("-").map(Number);
-
-        if (end <= start) {
-            showToast(
-                "Batch end year must be greater than start year",
-                "error",
-                2000,
-            );
-            isValid = false;
-            return false;
-        }
-
         // Semester validation
-        if (!semester) {
+        if (semester.length === 0) {
             showToast("Please Select Semester", "error", 2000);
             isValid = false;
             return false;

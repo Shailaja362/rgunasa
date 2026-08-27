@@ -92,6 +92,7 @@
                     <x-menu.item name="Programme" icon="fas fa-book" route="programme_list" />
                     <x-menu.item name="Faculty" icon="fas fa-chalkboard-teacher" route="faculty_list" />
                     <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
+                    <x-menu.item name="Batch" icon="fas fa-layer-group" route="batch_list" />
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Credit Point Assign" icon="fa-trophy" route="credit_point_assign" />
                 </x-slot:menus>
@@ -126,6 +127,7 @@
                     <x-menu.item name="Programme" icon="fas fa-book" route="programme_list" />
                     <x-menu.item name="Faculty" icon="fas fa-chalkboard-teacher" route="faculty_list" />
                     <x-menu.item name="Student" icon="fas fa-user-graduate" route="student_list" />
+                    <x-menu.item name="Batch" icon="fas fa-layer-group" route="batch_list" />
                     <x-menu.item name="Club" icon="fas fa-users" route="club_list" />
                     <x-menu.item name="Admin" icon="fas fa-chalkboard-teacher" route="admin_list" />
                     <x-menu.item name="Credit Point Assign" icon="fa-trophy" route="credit_point_assign" />

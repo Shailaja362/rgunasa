@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BatchController;
 use App\Http\Controllers\ClubsController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\StudentController;
@@ -80,6 +81,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/department-list', [DepartmentController::class, 'index'])->name('department_list');
         Route::get('/create-department', [DepartmentController::class, 'createDepartment'])->name('create_department');
         Route::post('/save-department', [DepartmentController::class, 'saveDepartment'])->name('save_department');
+
+        //batch
+        Route::get('/batch-list', [BatchController::class, 'index'])->name('batch_list');
+        Route::get('/create-batch', [BatchController::class, 'createBatch'])->name('create_batch');
+        Route::post('/save-batch', [BatchController::class, 'saveBatch'])->name('save_batch');
 
         //programme
         Route::get('/programme-list', [ProgrammeController::class, 'index'])->name('programme_list');

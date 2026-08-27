@@ -9,7 +9,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
-use App\Traits\ResolvesEventSchedule;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,9 +17,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class StudentAttendanceController extends Controller
 {
-
-    use ResolvesEventSchedule;
-
     public function index()
     {
         $adminId = Auth::guard('admin')->id();
@@ -50,33 +46,73 @@ class StudentAttendanceController extends Controller
         $this->data['event'] = Event::findOrFail($eventId);
         $this->data['registeredStudents'] = collect();
         $this->data['attendance_entry'] = collect();
+        $this->data['schedule'] = null;
         $this->data['get_schedule_event'] = EventSchedule::with('programme')
             ->where('event_id', $eventId)
             ->distinct('programme_id')
             ->get(['programme_id', 'event_id']);
-        if ($request->filled('programme_id') && $request->filled('event_date')) {
-            $schedules = $this->resolveSchedule(
-                $eventId,
-                $request->programme_id,
-                $request->event_date,
-                $request->section,
-                $request->batch,
-                $request->semester
-            );
 
-            if (!empty($schedules)) {
+        $scheduleDepartment = EventSchedule::with('programme')
+            ->where('event_id', $eventId)
+            ->get()
+            ->groupBy('programme_id');
+        $this->data['programmeScheduleOptions'] = $this->buildProgrammeScheduleOptions($scheduleDepartment);
+
+        $batches = array_filter((array) $request->batch);
+        $semesters = array_filter((array) $request->semester);
+
+        if ($request->filled('programme_id') && $request->filled('event_date')) {
+            $schedule = EventSchedule::where('event_id', $eventId)
+                ->where('programme_id', $request->programme_id)
+                ->where('section', $request->section)
+                ->openToAnyBatch($batches)
+                ->openToAnySemester($semesters)
+                ->first();
+
+            if ($schedule) {
+                $this->data['schedule'] = $schedule;
+
                 $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
-                    ->where('event_schedule_id', $schedules->id)
+                    ->where('event_schedule_id', $schedule->id)
+                    ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
+                    ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();
 
                 $this->data['registeredStudents'] =
                     StudentEventRegistration::with('student.get_department', 'student.get_programme')
                     ->where('event_id', $eventId)
-                    ->where('event_schedule_id', $schedules->id)
+                    ->where('event_schedule_id', $schedule->id)
+                    ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
+                    ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();
             }
         }
         return view('admin.student_attendance_entry')->with($this->data);
+    }
+
+    /**
+     * Batch/semester values actually used per programme in this event's
+     * schedules, so the filter form only offers relevant choices.
+     */
+    private function buildProgrammeScheduleOptions($scheduleDepartment)
+    {
+        return $scheduleDepartment->map(function ($schedules) {
+            $batches = $schedules->flatMap(fn($s) => explode(',', (string) $s->batch))
+                ->map(fn($b) => trim($b))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+
+            $semesters = $schedules->flatMap(fn($s) => explode(',', (string) $s->semester))
+                ->map(fn($s) => trim($s))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+
+            return ['batches' => $batches, 'semesters' => $semesters];
+        });
     }
 
     public function download(Request $request)
@@ -90,20 +126,12 @@ class StudentAttendanceController extends Controller
     {
         $request->validate([
             'event_id'      => 'required|exists:events,id',
-            'programme_id' => 'required',
-            'event_date'    => 'required|date',
+            'schedule_id'   => 'required|exists:event_schedules,id',
             'attendance'    => 'required|array'
         ]);
         DB::beginTransaction();
         try {
-            $schedule = $this->resolveSchedule(
-                $request->event_id,
-                $request->programme_id,
-                $request->event_date,
-                $request->section,
-                $request->batch,
-                $request->semester
-            );
+            $schedule = EventSchedule::find($request->schedule_id);
 
             if (empty($schedule)) {
                 throw new Exception('Schedule not found');
@@ -149,17 +177,4 @@ class StudentAttendanceController extends Controller
         }
     }
 
-    private function resolveSchedule($eventId, $programmeId, $date,$section,$batch,$semester)
-    {
-
-        return EventSchedule::where('event_id', $eventId)
-            ->where('programme_id', $programmeId)
-            ->where('section', $section)
-            ->where('batch', $batch)
-            ->where('semester', $semester)
-//            ->where(function ($q) use ($date) {
-//                $q->whereDate('event_date', $date);
-//            })
-            ->first();
-    }
 }
