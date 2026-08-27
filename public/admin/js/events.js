@@ -160,39 +160,31 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "",
             message: "Please Enter Duration in Days",
         },
-        // {
-        //     id: ".department",
-        //     condition: (val) => val === "",
-        //     message: "Please Select Programme",
-        // },
-        // {
-        //     id: ".section",
-        //     condition: (val) => val === "",
-        //     message: "Please Select Section",
-        // },
+        {
+            id: ".department",
+            condition: (val) => val === "",
+            message: "Please Select Programme",
+        },
+        {
+            id: ".section",
+            condition: (val) => val === "",
+            message: "Please Select Section",
+        },
         {
             id: ".event_date",
             condition: (val) => val === "",
             message: "Please Select Event Date",
         },
-        // {
-        //     id: ".batch",
-        //     condition: (val) => {
-        //         const regex = /^\d{4}-\d{4}$/;
-        //         if (val === "" || !regex.test(val)) {
-        //             return true;
-        //         }
-        //         const [start, end] = val.split("-").map(Number);
-        //         return end <= start;
-        //     },
-        //     message:
-        //         "Batch must be in YYYY-YYYY format and end year must be greater than start year",
-        // },
-        // {
-        //     id: ".semester",
-        //     condition: (val) => val === "",
-        //     message: "Semester is required",
-        // },
+        {
+            id: ".batch",
+            condition: (val) => val === "" || (Array.isArray(val) && val.length === 0),
+            message: "Please Select Batch",
+        },
+        {
+            id: ".semester",
+            condition: (val) => val === "" || (Array.isArray(val) && val.length === 0),
+            message: "Please Select Semester",
+        },
         {
             id: ".credit_points",
             condition: (val) => val === "",
@@ -448,7 +440,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     <label class="block text-sm font-medium">Programme <span class="text-red-600">*</span></label>
                     <select name="departments[${deptIndex}][programme_id]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department choice-select">
-                        <option value="">Select Programme</option>
+                        <option value="" selected disabled>Select Programme</option>
                         ${deptOptionsHtml}
                     </select>
                 </div>
@@ -465,13 +457,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Event Date <span class="text-red-600">*</span></label>
-                    <input type="date"
+                    <input type="text"
                         name="departments[${deptIndex}][event_date]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 event_date date_field">
                 </div>
                  <div>
                             <label class="block text-sm font-medium">
-                                Is Reserve Date <span class="text-red-600">*</span>
+                                Is Reserve Date
                             </label>
                             <div class="flex items-center gap-6 mt-2">
                                 <label class="inline-flex items-center">
@@ -493,14 +485,14 @@ document.addEventListener("DOMContentLoaded", function () {
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 seat_count">
                 </div>
                      <div>
-                            <label class="block text-sm font-medium">Batch</label>
+                            <label class="block text-sm font-medium">Batch <span class="text-red-500">*</span></label>
                             <select name="departments[${deptIndex}][batch][]" id="batch" multiple
                                 class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                                 ${batchOptionsHtml}
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium"> Semester </label>
+                            <label class="block text-sm font-medium">Semester <span class="text-red-500">*</span></label>
                             <select name="departments[${deptIndex}][semester][]" id="semester" multiple
                                 class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
                                 <option value="1">1</option>
@@ -526,6 +518,7 @@ document.addEventListener("DOMContentLoaded", function () {
         flatpickr(card.querySelectorAll(".date_field"), {
             dateFormat: "d/m/Y",
         });
+        initChoiceSelect(card.querySelectorAll(".choice-select"));
         deptIndex++; // critical
     }
 

@@ -197,14 +197,14 @@ class EventsController extends Controller
                 'event_type'   => 'required',
                 'duration_days' => 'required',
                 'departments' => 'required|array|min:1',
-                'departments.*.programme_id' => 'nullable|exists:programmes,id',
-                'departments.*.section' => 'nullable|in:a,b,c,d,e,f,r',
+                'departments.*.programme_id' => 'required|exists:programmes,id',
+                'departments.*.section' => 'required|in:a,b,c,d,e,f,r',
                 'departments.*.event_date' => 'required|date_format:d/m/Y',
                 'departments.*.is_reserve_date' => 'nullable|in:y,n',
                 'departments.*.seat_count' => 'required|integer|min:1',
-                'departments.*.batch' => 'nullable|array',
+                'departments.*.batch' => 'required|array|min:1',
                 'departments.*.batch.*' => 'exists:batches,name',
-                'departments.*.semester' => 'nullable|array',
+                'departments.*.semester' => 'required|array|min:1',
                 'departments.*.semester.*' => 'in:1,2,3,4,5,6,7,8',
                 'departments.*.credit_points' => 'required|numeric|min:0|max:4',
             ];
@@ -327,7 +327,11 @@ class EventsController extends Controller
                 'message' => $message,
                 'event' => $event,
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            throw $e;
         } catch (Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to save event: ' . $e->getMessage(), ['exception' => $e]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to save event',

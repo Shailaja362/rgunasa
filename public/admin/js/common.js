@@ -1,6 +1,6 @@
-document.addEventListener("DOMContentLoaded", function () {
-    const elements = document.querySelectorAll(".choice-select");
+function initChoiceSelect(elements) {
     elements.forEach(function (el) {
+        if (el.dataset.choicesInitialized) return;
         new Choices(el, {
             searchEnabled: true,
             itemSelectText: "",
@@ -8,5 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
             allowHTML: true,
             removeItemButton: true,
         });
+        el.dataset.choicesInitialized = "true";
     });
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    initChoiceSelect(document.querySelectorAll(".choice-select"));
 });
