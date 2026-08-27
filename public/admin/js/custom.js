@@ -54,7 +54,11 @@ function validateField(field) {
     $(field.id).each(function () {
         const element = $(this);
         const rawValue = element.val();
-        const value = Array.isArray(rawValue) ? rawValue : (rawValue?.trim() ?? "");
+        const value = Array.isArray(rawValue)
+            ? rawValue
+            : typeof rawValue === "string"
+                ? rawValue.trim()
+                : (rawValue ?? "");
         const errorEl = element.siblings(".error-message");
 
         if (field.condition(value)) {

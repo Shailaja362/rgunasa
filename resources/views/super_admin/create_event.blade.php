@@ -190,7 +190,7 @@
                             </label>
                             <select name="departments[{{ $index }}][programme_id]"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department choice-select">
-                                <option value="" disabled {{ empty($dept?->programme_id) ? 'selected' : '' }}>Select Programme</option>
+                                <option value="" {{ empty($dept?->programme_id) ? 'selected' : '' }}>Select Programme</option>
                                 @foreach ($programmes as $d)
                                     <option value="{{ $d->id }}"
                                         @if (!empty($dept) && $dept->programme_id == $d->id) selected @endif>
@@ -205,7 +205,7 @@
                                     class="text-red-500">*</span></label>
                             <select name="departments[{{ $index }}][section]" id="section"
                                 class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" disabled {{ empty($dept?->section) ? 'selected' : '' }}>Select Section</option>
+                                <option value="" {{ empty($dept?->section) ? 'selected' : '' }}>Select Section</option>
                                 <option value="a" {{ $dept?->section == 'a' ? 'selected' : '' }}>A</option>
                                 <option value="b" {{ $dept?->section == 'b' ? 'selected' : '' }}>B</option>
                                 <option value="c" {{ $dept?->section == 'c' ? 'selected' : '' }}>C</option>

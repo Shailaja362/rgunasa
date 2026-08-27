@@ -440,14 +440,14 @@ document.addEventListener("DOMContentLoaded", function () {
                     <label class="block text-sm font-medium">Programme <span class="text-red-600">*</span></label>
                     <select name="departments[${deptIndex}][programme_id]"
                         class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department choice-select">
-                        <option value="" selected disabled>Select Programme</option>
+                        <option value="" selected>Select Programme</option>
                         ${deptOptionsHtml}
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
                     <select  name="departments[${deptIndex}][section]" id="section" class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" selected disabled>Select Section</option>
+                                <option value="" selected>Select Section</option>
                                 <option value="a">A</option>
                                 <option value="b">B</option>
                                 <option value="c">C</option>
