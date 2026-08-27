@@ -364,7 +364,7 @@ $(document).on("change", "#club_id", function () {
 
     if (clubId) {
         $.ajax({
-            url: "/admin/create-event",
+            url: createEventUrl,
             type: "GET",
             dataType: "json",
             data: {
@@ -674,7 +674,7 @@ $("#publishBtn").on("click", function () {
     }).then((result) => {
         if (result.isConfirmed) {
             $.ajax({
-                url: "/admin/publish-event",
+                url: publishEventUrl,
                 type: "POST",
                 data: {
                     event_id: eventId,

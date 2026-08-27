@@ -424,6 +424,8 @@
 <script>
     const saveEventUrl = "{{ route('save_event') }}";
     const eventListUrl = "{{ route('event_list') }}";
+    const createEventUrl = "{{ route('create_event') }}";
+    const publishEventUrl = "{{ route('publish_event') }}";
     const deptOptions = @json(
         $programmes->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];

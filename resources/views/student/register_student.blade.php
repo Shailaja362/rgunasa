@@ -205,4 +205,7 @@
 </body>
 
 </html>
+<script>
+        const registerSave   = "{{ route('student.register_save') }}";
+</script>
 <script src="{{ asset('admin/js/student.js') }}?v={{ time() }}"></script>

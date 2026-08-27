@@ -158,6 +158,5 @@
 <script>
     const saveStudentUrl = "{{ route('save_student') }}";
     const studentListUrl = "{{ route('student_list') }}";
-    const registerSave   = "{{ route('register_save') }}";
 </script>
 <script src="{{ asset('admin/js/student.js') }}?v={{ time() }}"></script>
