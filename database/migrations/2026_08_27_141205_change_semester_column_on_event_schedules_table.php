@@ -11,9 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // semester now stores a comma-separated list (e.g. "1,2,3") since a
-        // schedule row can be open to multiple semesters at once, which an
-        // enum column can't hold.
         Schema::table('event_schedules', function (Blueprint $table) {
             $table->string('semester', 50)->nullable()->change();
         });

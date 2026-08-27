@@ -51,7 +51,7 @@ return new class extends Migration
             $table->time('reserve_start_time');
             $table->time('reserve_end_time');
             $table->enum('event_type', ['paid', 'free']);
-            $table->integer('duration_months')->nullable()->comment('Event validity duration in months');
+            $table->integer('duration_days')->nullable()->comment('Event validity duration in days');
             $table->string('location');
             $table->enum('session', ['1', '2'])
                 ->comment('1 FN, 2 AN');
