@@ -183,17 +183,21 @@
                             Remove
                         </button>
                     @endif
+                    @php
+                        $deptProgrammeIds = !empty($dept?->programme_id) ? explode(',', $dept->programme_id) : [];
+                        $deptSections = !empty($dept?->section) ? explode(',', $dept->section) : [];
+                    @endphp
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                         <div>
                             <label class="block text-sm font-medium">
                                 Programme <span class="text-red-500">*</span>
                             </label>
-                            <select name="departments[{{ $index }}][programme_id]"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department choice-select">
-                                <option value="" {{ empty($dept?->programme_id) ? 'selected' : '' }}>Select Programme</option>
+                            <select name="departments[{{ $index }}][programme_id][]" id="programme-select-{{ $index }}" multiple
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 department choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 @foreach ($programmes as $d)
                                     <option value="{{ $d->id }}"
-                                        @if (!empty($dept) && $dept->programme_id == $d->id) selected @endif>
+                                        {{ in_array((string) $d->id, $deptProgrammeIds) ? 'selected' : '' }}>
                                         {{ $d->name }}
                                     </option>
                                 @endforeach
@@ -203,14 +207,14 @@
                         <div>
                             <label class="block text-sm font-medium"> Section <span
                                     class="text-red-500">*</span></label>
-                            <select name="departments[{{ $index }}][section]" id="section"
-                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" {{ empty($dept?->section) ? 'selected' : '' }}>Select Section</option>
-                                <option value="a" {{ $dept?->section == 'a' ? 'selected' : '' }}>A</option>
-                                <option value="b" {{ $dept?->section == 'b' ? 'selected' : '' }}>B</option>
-                                <option value="c" {{ $dept?->section == 'c' ? 'selected' : '' }}>C</option>
-                                <option value="d" {{ $dept?->section == 'd' ? 'selected' : '' }}>D</option>
-                                <option value="r" {{ $dept?->section == 'r' ? 'selected' : '' }}>R</option>
+                            <select name="departments[{{ $index }}][section][]" id="section-select-{{ $index }}" multiple
+                                class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
+                                <option value="a" {{ in_array('a', $deptSections) ? 'selected' : '' }}>A</option>
+                                <option value="b" {{ in_array('b', $deptSections) ? 'selected' : '' }}>B</option>
+                                <option value="c" {{ in_array('c', $deptSections) ? 'selected' : '' }}>C</option>
+                                <option value="d" {{ in_array('d', $deptSections) ? 'selected' : '' }}>D</option>
+                                <option value="r" {{ in_array('r', $deptSections) ? 'selected' : '' }}>R</option>
                             </select>
                         </div>
                         {{-- Event Date --}}
@@ -260,8 +264,9 @@
                         @endphp
                         <div>
                             <label class="block text-sm font-medium">Batch <span class="text-red-500">*</span></label>
-                            <select name="departments[{{ $index }}][batch][]" id="batch" multiple
-                                class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                            <select name="departments[{{ $index }}][batch][]" id="batch-select-{{ $index }}" multiple
+                                class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 @foreach ($batches as $batchOption)
                                     <option value="{{ $batchOption->name }}"
                                         {{ in_array($batchOption->name, $deptBatches) ? 'selected' : '' }}>
@@ -272,8 +277,9 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Semester <span class="text-red-500">*</span></label>
-                            <select name="departments[{{ $index }}][semester][]" id="semester" multiple
-                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                            <select name="departments[{{ $index }}][semester][]" id="semester-select-{{ $index }}" multiple
+                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 <option value="1" {{ in_array('1', $deptSemesters) ? 'selected' : '' }}>1</option>
                                 <option value="2" {{ in_array('2', $deptSemesters) ? 'selected' : '' }}>2</option>
                                 <option value="3" {{ in_array('3', $deptSemesters) ? 'selected' : '' }}>3</option>

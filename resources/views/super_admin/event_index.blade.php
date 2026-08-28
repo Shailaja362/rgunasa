@@ -73,7 +73,7 @@
                                 class="rounded-t-2xl w-full h-48 object-cover">
                             <span
                                 class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
-                                {{ $schedule->programme->name ?? '' }}
+                                {{ $schedule->programme_names }}
                             </span>
                         </div>
                         <div class="p-3 text-sm">
@@ -101,7 +101,7 @@
                                 class="rounded-t-2xl w-full h-48 object-cover">
                             <span
                                 class="absolute bottom-3 left-3 bg-[rgba(128,128,128,0.4)] text-white text-xs px-3 py-1 rounded-full">
-                                {{ $schedule->programme->name ?? '' }}
+                                {{ $schedule->programme_names }}
                             </span>
                         </div>
                         <div class="p-3 text-sm">
@@ -136,7 +136,7 @@
                                     {{ $schedule->event->title ?? '-' }}
                                 </td>
                                 <td class="px-4 py-2">
-                                    {{ $schedule->programme->name ?? '-' }} - {{ $schedule->section ?? '' }}
+                                    {{ $schedule->programme_names }} - {{ $schedule->section_names }}
                                 </td>
                                 <td class="px-4 py-2">
                                     {{ \Carbon\Carbon::parse($schedule->event_date)->format('d M Y') }}
@@ -203,7 +203,7 @@
 
                                             <span
                                                 class="{{ $color[0] }} {{ $color[1] }} px-2 py-1 rounded-full text-xs mr-1">
-                                                {{ $dept }} - {{ $schedule->section ?? '' }}
+                                                {{ $dept }} - {{ $schedule->section_names }}
                                             </span>
                                         @endforeach
                                     @else

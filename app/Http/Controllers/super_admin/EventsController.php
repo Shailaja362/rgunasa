@@ -49,7 +49,7 @@ class EventsController extends Controller
     |--------------------------------------------------------------------------
     */
         if ($programmeId) {
-            $baseQuery->where('programme_id', $programmeId);
+            $baseQuery->openToProgramme($programmeId);
         }
 
         $this->data['upcomingEvents'] = (clone $baseQuery)
@@ -98,7 +98,7 @@ class EventsController extends Controller
                 }
             })
             ->when($programmeId, function ($query) use ($programmeId) {
-                $query->where('event_schedules.programme_id', $programmeId);
+                $query->openToProgramme($programmeId);
             })
             ->groupBy(
                 'event_schedules.id',
@@ -197,8 +197,10 @@ class EventsController extends Controller
                 'event_type'   => 'required',
                 'duration_days' => 'required',
                 'departments' => 'required|array|min:1',
-                'departments.*.programme_id' => 'required|exists:programmes,id',
-                'departments.*.section' => 'required|in:a,b,c,d,e,f,r',
+                'departments.*.programme_id' => 'required|array|min:1',
+                'departments.*.programme_id.*' => 'required|exists:programmes,id',
+                'departments.*.section' => 'required|array|min:1',
+                'departments.*.section.*' => 'required|in:a,b,c,d,e,f,r',
                 'departments.*.event_date' => 'required|date_format:d/m/Y',
                 'departments.*.is_reserve_date' => 'nullable|in:y,n',
                 'departments.*.seat_count' => 'required|integer|min:1',
@@ -284,11 +286,13 @@ class EventsController extends Controller
                 // whole department entry rather than being duplicated per combination.
                 $batches = !empty($schedule['batch']) ? array_values(array_unique((array) $schedule['batch'])) : [];
                 $semesters = !empty($schedule['semester']) ? array_values(array_unique((array) $schedule['semester'])) : [];
+                $programmeIds = !empty($schedule['programme_id']) ? array_values(array_unique((array) $schedule['programme_id'])) : [];
+                $sections = !empty($schedule['section']) ? array_values(array_unique((array) $schedule['section'])) : [];
 
                 $data = [
                     'event_id'        => $event->id,
-                    'programme_id'    => !empty($schedule['programme_id']) ? $schedule['programme_id'] : null,
-                    'section'         => !empty($schedule['section']) ? $schedule['section'] : null,
+                    'programme_id'    => !empty($programmeIds) ? implode(',', $programmeIds) : null,
+                    'section'         => !empty($sections) ? implode(',', $sections) : null,
                     'event_date'      => Carbon::createFromFormat('d/m/Y', $schedule['event_date'])->format('Y-m-d'),
                     'is_reserve_date' => $schedule['is_reserve_date'] ?? 'n',
                     'seat_count'      => $schedule['seat_count'],

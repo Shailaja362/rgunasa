@@ -162,12 +162,12 @@ $(document).on("submit", "#eventForm", function (e) {
         },
         {
             id: ".department",
-            condition: (val) => val === "",
+            condition: (val) => val === "" || (Array.isArray(val) && val.length === 0),
             message: "Please Select Programme",
         },
         {
             id: ".section",
-            condition: (val) => val === "",
+            condition: (val) => val === "" || (Array.isArray(val) && val.length === 0),
             message: "Please Select Section",
         },
         {
@@ -419,12 +419,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function addDepartmentCard(data = {}) {
         const deptOptionsHtml = deptOptions
-            .map(
-                (d) =>
-                    `<option value="${d.id}" ${data.programme_id == d.id ? "selected" : ""}>
-                ${d.name}
-            </option>`,
-            )
+            .map((d) => `<option value="${d.id}">${d.name}</option>`)
             .join("");
         const batchOptionsHtml = batchOptions
             .map((b) => `<option value="${b.id}">${b.name}</option>`)
@@ -438,16 +433,16 @@ document.addEventListener("DOMContentLoaded", function () {
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
                 <div>
                     <label class="block text-sm font-medium">Programme <span class="text-red-600">*</span></label>
-                    <select name="departments[${deptIndex}][programme_id]"
-                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department choice-select">
-                        <option value="" selected>Select Programme</option>
+                    <select name="departments[${deptIndex}][programme_id][]" id="programme-select-${deptIndex}" multiple
+                        class="w-full bg-[#D9D9D9] rounded-full px-4 py-3 department choice-select select-all-enabled">
+                        <option value="__select_all__">Select All</option>
                         ${deptOptionsHtml}
                     </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium">Section <span class="text-red-600">*</span></label>
-                    <select  name="departments[${deptIndex}][section]" id="section" class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section">
-                                <option value="" selected>Select Section</option>
+                    <select name="departments[${deptIndex}][section][]" id="section-select-${deptIndex}" multiple class="bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 section choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 <option value="a">A</option>
                                 <option value="b">B</option>
                                 <option value="c">C</option>
@@ -486,15 +481,17 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
                      <div>
                             <label class="block text-sm font-medium">Batch <span class="text-red-500">*</span></label>
-                            <select name="departments[${deptIndex}][batch][]" id="batch" multiple
-                                class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                            <select name="departments[${deptIndex}][batch][]" id="batch-select-${deptIndex}" multiple
+                                class="batch bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 ${batchOptionsHtml}
                             </select>
                         </div>
                         <div>
                             <label class="block text-sm font-medium">Semester <span class="text-red-500">*</span></label>
-                            <select name="departments[${deptIndex}][semester][]" id="semester" multiple
-                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                            <select name="departments[${deptIndex}][semester][]" id="semester-select-${deptIndex}" multiple
+                                class="semester bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select select-all-enabled">
+                                <option value="__select_all__">Select All</option>
                                 <option value="1">1</option>
                                 <option value="2">2</option>
                                 <option value="3">3</option>

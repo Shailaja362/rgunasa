@@ -61,15 +61,15 @@ class OngoingEventController extends Controller
             ->values()
             ->toArray();
         $ongoingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', '=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', '=', Carbon::now()->toDateString())
@@ -187,8 +187,8 @@ class OngoingEventController extends Controller
     {
         $q->where(function ($subQ) use ($student, $isFirstYearStudent) {
             $subQ->where(function ($normalQ) use ($student) {
-                $normalQ->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $normalQ->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester);
             });

@@ -39,4 +39,5 @@
     const saveBatchUrl = "{{ route('save_batch') }}";
     const batchListUrl = "{{ route('batch_list') }}";
 </script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ asset('admin/js/batch.js') }}?v={{ time() }}"></script>

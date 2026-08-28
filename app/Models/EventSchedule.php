@@ -23,9 +23,23 @@ class EventSchedule extends Model
         return $this->hasMany(StudentEventRegistration::class, 'event_id', 'event_id');
     }
 
-    public function programme()
+    public function getProgrammeNamesAttribute()
     {
-        return $this->belongsTo(Programme::class, 'programme_id');
+        if (empty($this->programme_id)) {
+            return 'All Programmes';
+        }
+        $ids = array_map('trim', explode(',', $this->programme_id));
+        return Programme::whereIn('id', $ids)->pluck('name')->implode(', ');
+    }
+
+    public function getSectionNamesAttribute()
+    {
+        if (empty($this->section)) {
+            return 'All Sections';
+        }
+        return collect(explode(',', $this->section))
+            ->map(fn($s) => strtoupper(trim($s)))
+            ->implode(', ');
     }
 
     public function get_report()
@@ -121,6 +135,52 @@ class EventSchedule extends Model
             $q->whereNull('semester')->orWhere('semester', '');
             foreach ($semesters as $semester) {
                 $q->orWhereRaw('FIND_IN_SET(?, semester)', [$semester]);
+            }
+        });
+    }
+
+    /**
+     * programme_id/section hold a comma-separated list of allowed values (or
+     * are null/empty, meaning "open to all"), same convention as batch/semester.
+     */
+    public function isOpenToProgramme($programmeId): bool
+    {
+        if (empty($this->programme_id)) {
+            return true;
+        }
+        if (empty($programmeId)) {
+            return false;
+        }
+        return in_array((string) $programmeId, array_map('trim', explode(',', $this->programme_id)), true);
+    }
+
+    public function isOpenToSection($section): bool
+    {
+        if (empty($this->section)) {
+            return true;
+        }
+        if (empty($section)) {
+            return false;
+        }
+        return in_array((string) $section, array_map('trim', explode(',', $this->section)), true);
+    }
+
+    public function scopeOpenToProgramme($query, $programmeId)
+    {
+        return $query->where(function ($q) use ($programmeId) {
+            $q->whereNull('programme_id')->orWhere('programme_id', '');
+            if (!empty($programmeId)) {
+                $q->orWhereRaw('FIND_IN_SET(?, programme_id)', [$programmeId]);
+            }
+        });
+    }
+
+    public function scopeOpenToSection($query, $section)
+    {
+        return $query->where(function ($q) use ($section) {
+            $q->whereNull('section')->orWhere('section', '');
+            if (!empty($section)) {
+                $q->orWhereRaw('FIND_IN_SET(?, section)', [$section]);
             }
         });
     }

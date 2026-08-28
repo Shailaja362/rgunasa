@@ -171,7 +171,7 @@
                                             <div
                                                 class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition">
                                                 <div class="text-xs font-bold text-gray-800 mb-1">
-                                                    {{ $schedule?->programme?->name  ?? 'All Programmes' }}
+                                                    {{ $schedule?->programme_names ?? 'All Programmes' }}
                                                 </div>
                                                 <div class="text-xs text-gray-600 mb-1">
                                                     <span class="font-medium">Event Date:</span>
@@ -186,7 +186,7 @@
                                                 </div>
                                                 <div class="text-xs text-gray-600">
                                                     <span class="font-medium">Section:</span>
-                                                   {{ $schedule->section ? strtoupper($schedule->section) : 'All Sections' }}
+                                                   {{ $schedule?->section_names ?? 'All Sections' }}
                                                     <span class="mx-2">|</span>
                                                     <span class="font-medium">Seats:</span>
                                                     {{ $schedule->seat_count }}

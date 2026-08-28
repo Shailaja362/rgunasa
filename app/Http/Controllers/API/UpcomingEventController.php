@@ -70,16 +70,16 @@ class UpcomingEventController extends Controller
 
         $upcomingEvents = Event::whereHas('get_dep_events', function ($q) use ($student) {
 
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->whereDate('event_date', '>=', Carbon::today());
         })
             ->with([
                 'get_dep_events' => function ($q) use ($student) {
-                    $q->where('programme_id', $student->programme_id)
-                        ->where('section', $student->section)
+                    $q->openToProgramme($student->programme_id)
+                        ->openToSection($student->section)
                         ->openToBatch($student->batch)
                         ->openToSemester($student->semester)
                         ->whereDate('event_date', '>=', Carbon::today())

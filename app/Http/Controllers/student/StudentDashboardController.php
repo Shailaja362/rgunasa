@@ -46,15 +46,15 @@ class StudentDashboardController extends Controller
             ->whereNotNull('grade');
         // Upcoming and ongoing department-wise events
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
@@ -70,15 +70,15 @@ class StudentDashboardController extends Controller
             ->where('student_id', $student->id)
             ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', '>=', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', '>=', Carbon::now()->toDateString())
@@ -91,15 +91,15 @@ class StudentDashboardController extends Controller
             ->get();
 
         $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
         })
             ->with(['schedule' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', '>', Carbon::now()->toDateString())
@@ -129,7 +129,7 @@ class StudentDashboardController extends Controller
             ->whereHas('get_event_schedule', function ($q) use ($student) {
                 $q->openToSemester($student->semester)
                     ->openToBatch($student->batch)
-                    ->where('programme_id', $student->programme_id);
+                    ->openToProgramme($student->programme_id);
             })
             ->with('get_event_schedule:id,credit_points')
             ->get()

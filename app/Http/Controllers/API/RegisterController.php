@@ -145,8 +145,8 @@ class RegisterController extends Controller
 
             // Student-specific events
             $subQ->where(function ($normalQ) use ($student) {
-                $normalQ->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $normalQ->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester);
             });

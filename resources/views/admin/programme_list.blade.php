@@ -7,6 +7,39 @@
                 class="px-2 w-40 mt-3 bg-gradient-to-r from-primary to-pink-600 text-white font-medium py-1 rounded-full">
                 <i class="fa fa-plus" aria-hidden="true"></i>ADD Programme</a>
     </div>
+    <section class="bg-white rounded-xl shadow-md p-4 mt-3">
+        <div class="w-full">
+            <form method="GET" action="{{ route('programme_list') }}" class="flex flex-wrap items-center gap-3">
+                <div class="w-full sm:w-auto flex-1 min-w-[250px]">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search name/code here"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                </div>
+                <div class="w-full sm:w-auto">
+                    <select name="department_id"
+                        class="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary choice-select">
+                        <option value="">All Departments</option>
+                        @foreach ($departments as $dept)
+                            <option value="{{ $dept->id }}"
+                                {{ request('department_id') == $dept->id ? 'selected' : '' }}>
+                                {{ $dept->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <button type="submit"
+                    class="px-6 py-2 bg-gradient-to-r from-primary to-pink-600 text-white text-sm rounded-full hover:opacity-90 transition">
+                    <i class="fa fa-search mr-1"></i> Search
+                </button>
+                @if (request()->hasAny(['search', 'department_id']))
+                    <a href="{{ route('programme_list') }}"
+                        class="px-6 py-2 bg-gray-400 text-white text-sm rounded-full hover:bg-gray-500 transition">
+                        Reset
+                    </a>
+                @endif
+            </form>
+        </div>
+    </section>
      <section class="p-2 mt-3">
         <div class="mt-6">
             <h4 class="font-semibold text-gray-800 mb-4">Programme List</h4>

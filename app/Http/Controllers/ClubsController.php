@@ -10,9 +10,24 @@ use Illuminate\Http\Request;
 
 class ClubsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->data['clubs'] = Club::with('get_faculty')->paginate(10);
+        $query = Club::with('get_faculty');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('description', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('faculty_id')) {
+            $query->where('faculty_id', $request->faculty_id);
+        }
+        $this->data['clubs'] = $query
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+        $this->data['faculties'] = Faculty::orderBy('name')->get();
         return view('admin/club_list')->with($this->data);
     }
 

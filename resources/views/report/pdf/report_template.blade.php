@@ -210,11 +210,11 @@
             </tr>
             <tr>
                 <td class="label">Programme</td>
-                <td>{{ optional($data['report']->schedule->programme ?? null)->name ?? '-' }}</td>
+                <td>{{ $data['report']->schedule?->programme_names ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="label">Section</td>
-                <td>{{ optional($data['report']->schedule)->section ? strtoupper($data['report']->schedule->section) : '-' }}</td>
+                <td>{{ $data['report']->schedule?->section_names ?? '-' }}</td>
             </tr>
             <tr>
                 <td class="label">Batch</td>

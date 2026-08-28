@@ -86,6 +86,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/batch-list', [BatchController::class, 'index'])->name('batch_list');
         Route::get('/create-batch', [BatchController::class, 'createBatch'])->name('create_batch');
         Route::post('/save-batch', [BatchController::class, 'saveBatch'])->name('save_batch');
+        Route::post('/batch-delete/{id}', [BatchController::class, 'destroy'])->name('batch_destroy');
 
         //programme
         Route::get('/programme-list', [ProgrammeController::class, 'index'])->name('programme_list');

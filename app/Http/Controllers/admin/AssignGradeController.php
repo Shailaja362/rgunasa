@@ -4,6 +4,7 @@ namespace App\Http\Controllers\admin;
 
 use ZipArchive;
 use App\Models\Event;
+use App\Models\Programme;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use App\Models\EventSchedule;
@@ -46,10 +47,7 @@ class AssignGradeController extends Controller
         $eventId = $request->event_id;
         $this->data['event'] = Event::findOrFail($eventId);
         $this->data['registrations'] = collect();
-        $this->data['schedule_department'] = EventSchedule::with('programme')
-            ->where('event_id', $eventId)
-            ->get()
-            ->groupBy('programme_id');
+        $this->data['schedule_department'] = $this->groupSchedulesByProgramme($eventId);
         $this->data['programmeScheduleOptions'] = $this->buildProgrammeScheduleOptions($this->data['schedule_department']);
 
         $batches = array_filter((array) $request->batch);
@@ -57,8 +55,8 @@ class AssignGradeController extends Controller
 
         if ($request->filled('programme_id') && $request->filled('event_date')) {
             $schedule = EventSchedule::where('event_id', $eventId)
-                ->where('programme_id', $request->programme_id)
-                ->where('section', $request->section)
+                ->openToProgramme($request->programme_id)
+                ->openToSection($request->section)
                 ->openToAnyBatch($batches)
                 ->openToAnySemester($semesters)
                 ->first();
@@ -75,6 +73,23 @@ class AssignGradeController extends Controller
             }
         }
         return view('admin.assign_grade_entry')->with($this->data);
+    }
+
+    /**
+     * programme_id is a comma-separated list of programme ids per schedule,
+     * so a schedule open to several programmes contributes to each of their
+     * groups rather than being grouped by the raw CSV string.
+     */
+    private function groupSchedulesByProgramme($eventId)
+    {
+        $scheduleDepartment = collect();
+        foreach (EventSchedule::where('event_id', $eventId)->get() as $schedule) {
+            $ids = !empty($schedule->programme_id) ? array_map('trim', explode(',', $schedule->programme_id)) : [];
+            foreach ($ids as $id) {
+                $scheduleDepartment->put($id, ($scheduleDepartment->get($id) ?? collect())->push($schedule));
+            }
+        }
+        return $scheduleDepartment;
     }
 
     /**

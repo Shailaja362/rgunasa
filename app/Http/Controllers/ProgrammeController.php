@@ -10,9 +10,24 @@ use Illuminate\Http\Request;
 
 class ProgrammeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $this->data['programmes'] = Programme::with('get_department')->paginate(10);
+        $query = Programme::with('get_department');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('code', 'LIKE', "%{$search}%");
+            });
+        }
+        if ($request->filled('department_id')) {
+            $query->where('department_id', $request->department_id);
+        }
+        $this->data['programmes'] = $query
+            ->orderBy('id', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+        $this->data['departments'] = Department::orderBy('name')->get();
         return view('admin/programme_list')->with($this->data);
     }
 

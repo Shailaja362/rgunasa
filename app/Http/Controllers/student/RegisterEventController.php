@@ -36,15 +36,15 @@ class RegisterEventController extends Controller
             ->groupBy('student_id', 'event_id')
             ->get();
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', Carbon::now()->toDateString());
@@ -53,15 +53,15 @@ class RegisterEventController extends Controller
             ->get();
         // Upcoming Events
         $this->data['upcomingEvents'] =  Event::whereHas('get_dep_events', function ($q) use ($student) {
-            $q->where('programme_id', $student->programme_id)
-                ->where('section', $student->section)
+            $q->openToProgramme($student->programme_id)
+                ->openToSection($student->section)
                 ->openToBatch($student->batch)
                 ->openToSemester($student->semester)
                 ->where('event_date', '>=', Carbon::now()->toDateString());
         })
             ->with(['get_dep_events' => function ($q) use ($student) {
-                $q->where('programme_id', $student->programme_id)
-                    ->where('section', $student->section)
+                $q->openToProgramme($student->programme_id)
+                    ->openToSection($student->section)
                     ->openToBatch($student->batch)
                     ->openToSemester($student->semester)
                     ->where('event_date', '>=', Carbon::now()->toDateString())

@@ -50,11 +50,11 @@
                         <option value="">-- Select Programme --</option>
                         @foreach ($schedule_department as $departmentId => $schedules)
                             @php
-                                $schedule = $schedules->first(); // get one EventSchedule model
+                                $programmeName = \App\Models\Programme::find($departmentId)?->name;
                             @endphp
-                            <option value="{{ $schedule->programme->id }}"
-                                {{ request('programme_id') == $schedule->programme->id ? 'selected' : '' }}>
-                                {{ $schedule->programme->name }}
+                            <option value="{{ $departmentId }}"
+                                {{ request('programme_id') == $departmentId ? 'selected' : '' }}>
+                                {{ $programmeName }}
                             </option>
                         @endforeach
                     </select>

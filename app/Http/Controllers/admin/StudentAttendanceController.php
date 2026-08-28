@@ -8,6 +8,7 @@ use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\EventSchedule;
+use App\Models\Programme;
 use App\Models\StudentEventRegistration;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -47,15 +48,8 @@ class StudentAttendanceController extends Controller
         $this->data['registeredStudents'] = collect();
         $this->data['attendance_entry'] = collect();
         $this->data['schedule'] = null;
-        $this->data['get_schedule_event'] = EventSchedule::with('programme')
-            ->where('event_id', $eventId)
-            ->distinct('programme_id')
-            ->get(['programme_id', 'event_id']);
-
-        $scheduleDepartment = EventSchedule::with('programme')
-            ->where('event_id', $eventId)
-            ->get()
-            ->groupBy('programme_id');
+        $scheduleDepartment = $this->groupSchedulesByProgramme($eventId);
+        $this->data['get_schedule_event'] = Programme::whereIn('id', $scheduleDepartment->keys())->get();
         $this->data['programmeScheduleOptions'] = $this->buildProgrammeScheduleOptions($scheduleDepartment);
 
         $batches = array_filter((array) $request->batch);
@@ -63,8 +57,8 @@ class StudentAttendanceController extends Controller
 
         if ($request->filled('programme_id') && $request->filled('event_date')) {
             $schedule = EventSchedule::where('event_id', $eventId)
-                ->where('programme_id', $request->programme_id)
-                ->where('section', $request->section)
+                ->openToProgramme($request->programme_id)
+                ->openToSection($request->section)
                 ->openToAnyBatch($batches)
                 ->openToAnySemester($semesters)
                 ->first();
@@ -88,6 +82,23 @@ class StudentAttendanceController extends Controller
             }
         }
         return view('admin.student_attendance_entry')->with($this->data);
+    }
+
+    /**
+     * programme_id is a comma-separated list of programme ids per schedule,
+     * so a schedule open to several programmes contributes to each of their
+     * groups rather than being grouped by the raw CSV string.
+     */
+    private function groupSchedulesByProgramme($eventId)
+    {
+        $scheduleDepartment = collect();
+        foreach (EventSchedule::where('event_id', $eventId)->get() as $schedule) {
+            $ids = !empty($schedule->programme_id) ? array_map('trim', explode(',', $schedule->programme_id)) : [];
+            foreach ($ids as $id) {
+                $scheduleDepartment->put($id, ($scheduleDepartment->get($id) ?? collect())->push($schedule));
+            }
+        }
+        return $scheduleDepartment;
     }
 
     /**

@@ -43,7 +43,5 @@
 <script>
     const saveDepartmentUrl = "{{ route('save_department') }}";
     const departmentListUrl = "{{ route('department_list') }}";
-    const saveProgrammeUrl = "{{ route('save_programme') }}";
-    const programmeListUrl = "{{ route('programme_list') }}";
 </script>
 <script src="{{ asset('admin/js/department.js') }}?v={{ time() }}"></script>

@@ -56,7 +56,7 @@ class AdminReportsController extends Controller
             }
             if ($request->get_schedule_options) {
                 $schedules = EventSchedule::where('event_id', $request->event_id)
-                    ->where('programme_id', $request->programme_id)
+                    ->openToProgramme($request->programme_id)
                     ->get();
 
                 $batches = $schedules->flatMap(fn($s) => explode(',', (string) $s->batch))
@@ -110,8 +110,8 @@ class AdminReportsController extends Controller
         DB::beginTransaction();
         try {
             $schedule = EventSchedule::where('event_id', $request->event_id)
-                ->where('programme_id', $request->programme_id)
-                ->where('section', $request->section)
+                ->openToProgramme($request->programme_id)
+                ->openToSection($request->section)
                 ->openToAnyBatch($request->batch)
                 ->openToAnySemester($request->semester)
                 ->first();
