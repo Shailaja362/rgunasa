@@ -79,7 +79,7 @@ $(function () {
                      data-type="existing" data-idx="${index}">
                     ${
                         isImage
-                            ? `<img src="/storage/${img.file_path}" class="w-24 h-24 object-cover rounded-lg">`
+                            ? `<img src="${storageBaseUrl}/${img.file_path}" class="w-24 h-24 object-cover rounded-lg">`
                             : `<div class="w-24 h-24 flex items-center justify-center bg-gray-200 text-white text-sm rounded-lg">${fileLabel(img.file_type)}</div>`
                     }
                     <button type="button" class="remove-img absolute -top-2 -right-2
@@ -169,7 +169,7 @@ $(function () {
             isTechnical ? technicalQuestions : nonTechnicalQuestions,
         );
         fetch(
-            `nasa/student/uploaded-proof?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
+            `${getUploadedProof}?event_id=${eventId}&student_id=${studentId}&schedule_id=${scheduleId}`,
         )
             .then((res) => res.json())
             .then((data) => {

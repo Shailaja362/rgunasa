@@ -327,7 +327,7 @@
 
             container.innerHTML += `
         <div class="bg-white rounded-2xl shadow hover:shadow-lg transition">
-            <img src="/storage/${event.banner_image}"
+            <img src="{{ asset('storage') }}/${event.banner_image}"
                  class="rounded-t-2xl w-full h-48 object-cover">
             <div class="p-3 text-sm">
                 <div class="font-semibold">${event.title}</div>

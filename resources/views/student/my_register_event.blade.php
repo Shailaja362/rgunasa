@@ -284,5 +284,7 @@
 </x-layouts.app>
 <script>
     const uploadProofUrl = "{{ route('upload_proof') }}";
+    const getUploadedProof = "{{ route('get_uploaded_proof') }}";
+    const storageBaseUrl = "{{ asset('storage') }}";
 </script>
 <script src="{{ asset('admin/js/myregistration.js') }}?v={{ time() }}"></script>

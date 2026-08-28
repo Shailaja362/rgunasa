@@ -45,7 +45,7 @@ Route::prefix('student')->group(function () {
 
         Route::post('/razorpay-success', [RazorpayController::class, 'paymentSuccess'])
             ->name('razorpay_success');
-        Route::get('/uploaded-proof', [MyRegisterEventsController::class, 'getUploadedProof']);
+        Route::get('/uploaded-proof', [MyRegisterEventsController::class, 'getUploadedProof'])->name('get_uploaded_proof');
         Route::post('/cashfree-order', [CashfreeController::class, 'createOrder'])->name('cashfree.order');
         Route::get('/cashfree-return/{cf_order_id}', [CashfreeController::class, 'handleReturn'])->name('cashfree.return');
         Route::post('/cashfree-webhook', [CashfreeController::class, 'webhook'])->name('cashfree.webhook'); // exclude from CSRF
