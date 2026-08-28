@@ -17,7 +17,7 @@
             <div class="bg-[#FFEBE4] rounded-xl shadow p-4 flex flex-col justify-between">
                 <p class="font-semibold">Ongoing</p>
                 <div class="flex items-center justify-between py-2">
-                    <h3 class="text-3xl font-bold text-[#F9C539]">{{ $ongoing_tasks  }}</h3>
+                    <h3 class="text-3xl font-bold text-[#F9C539]">{{ $ongoing_tasks }}</h3>
                     <img src="{{ asset('/images/task_ongoing.png') }}" alt="Ongoing" class="w-14 h-14">
                 </div>
             </div>
@@ -100,10 +100,10 @@
                                     @if ($task->status == 'pending')
                                         <i class="fa fa-hourglass-half text-primary"></i>Pending
                                     @elseif($task->status == 'accepted')
-                                    <div
-                                class="flex items-center bg-gradient-to-r from-primary to-pink-600 rounded-full px-4 py-1 text-white">
-                                Accepted
-                            </div>
+                                        <div
+                                            class="flex items-center bg-gradient-to-r from-primary to-pink-600 rounded-full px-4 py-1 text-white">
+                                            Accepted
+                                        </div>
                                     @else
                                         In progress
                                     @endif
@@ -135,5 +135,8 @@
         </div>
     </section>
 </x-layouts.app>
-
+<script>
+    const saveTaskUrl = "{{ route('save_task') }}";
+    const taskListUrl = "{{ route('assign_tasks') }}";
+</script>
 <script src="{{ asset('admin/js/tasks.js') }}?v={{ time() }}"></script>

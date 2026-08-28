@@ -52,7 +52,5 @@
             </table>
         </div>
     </section>
-
 </x-layouts.app>
 
-<script src="{{ asset('admin/js/student_attendance.js') }}?v={{ time() }}"></script>

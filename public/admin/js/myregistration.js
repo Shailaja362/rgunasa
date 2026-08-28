@@ -269,7 +269,7 @@ $(function () {
             formData.append($(this).attr("name"), $(this).val());
         });
 
-        fetch("nasa/student/upload-proof", {
+        fetch(uploadProofUrl, {
             method: "POST",
             body: formData,
         })

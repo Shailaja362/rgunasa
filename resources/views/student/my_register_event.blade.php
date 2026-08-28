@@ -282,4 +282,7 @@
         </div>
     </div>
 </x-layouts.app>
+<script>
+    const uploadProofUrl = "{{ route('upload_proof') }}";
+</script>
 <script src="{{ asset('admin/js/myregistration.js') }}?v={{ time() }}"></script>

@@ -394,5 +394,7 @@
     window.RAZORPAY_KEY = "{{ config('services.razorpay.key') }}";
     window.username = "{{ Auth::user()->name ?? 'Student' }}";
     window.email = "{{ Auth::user()->email ?? '' }}";
+    const registerEventUrl = "{{ route('student_register_event') }}";
+    const getStudentDetailsUrl = "{{ route('get_student') }}";
 </script>
 <script src="{{ asset('admin/js/registration_form.js') }}?v={{ time() }}"></script>

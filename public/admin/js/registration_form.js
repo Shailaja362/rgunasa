@@ -4,7 +4,7 @@ $(function () {
         var event_id = $(this).data("event_id");
         var schedule_id = $(this).data("schedule_id");
         $.ajax({
-            url: "/student/get-student",
+            url: getStudentDetailsUrl,
             type: "GET",
             data: {
                 event_id: event_id,
@@ -38,7 +38,7 @@ $(function () {
         disabledInputs.forEach((input) => (input.disabled = false));
         let formData = new FormData(this);
         $.ajax({
-            url: "/student/student-register-event",
+            url: registerEventUrl,
             type: "POST",
             data: formData,
             contentType: false,

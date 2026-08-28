@@ -228,22 +228,22 @@ $(document).on("click", ".remove-img", function (e) {
    $(document).on("click", ".accept", function () {
        let id = $(this).data("id");
         $.ajax({
-           url: "/admin/assign-tasks",
-           type: "POST",
-           data: {
-               id: id,
-               task_status_change: true
+            url: taskListUrl,
+            type: "POST",
+            data: {
+                id: id,
+                task_status_change: true,
             },
-           success: function (response) {
-               if (response.success) {
-                   showToast(response.message, "success", 2000);
-                   setTimeout(() => location.reload(), 800);
-               }
-           },
-           error: function () {
-               // showToast(response.message, "error", 2000);
-           },
-       });
+            success: function (response) {
+                if (response.success) {
+                    showToast(response.message, "success", 2000);
+                    setTimeout(() => location.reload(), 800);
+                }
+            },
+            error: function () {
+                // showToast(response.message, "error", 2000);
+            },
+        });
    });
 
 

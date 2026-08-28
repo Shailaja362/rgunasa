@@ -53,5 +53,7 @@
     </section>
 
 </x-layouts.app>
-
+<script>
+    const attendanceMarkUrl = "{{ route('attendance.mark') }}";
+</script>
 <script src="{{ asset('admin/js/student_attendance.js') }}?v={{ time() }}"></script>
