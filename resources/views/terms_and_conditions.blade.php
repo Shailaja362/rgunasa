@@ -17,7 +17,7 @@
             <li>
                 <strong>Eligibility</strong>
                 <ul class="list-disc list-inside ml-5 mt-2 space-y-1">
-                    <li>Only authorized students of Rathinam College may use this portal.</li>
+                    <li>Only authorized students of Rathinam Global Deemed to be University  may use this portal.</li>
                     <li>Students must provide accurate and complete information during registration.</li>
                 </ul>
             </li>
@@ -90,7 +90,7 @@
                 <p class="mt-2">For questions regarding these Terms:</p>
                 <ul class="list-disc list-inside ml-5 mt-1 space-y-1">
                     <li>Email: <a href="mailto:dmm@rathinam.in" class="text-blue-600 underline">dmm@rathinam.in</a></li>
-                    <li>Institution: Rathinam College</li>
+                    <li>Institution: Rathinam Global Deemed to be University</li>
                 </ul>
             </li>
         </ol>
