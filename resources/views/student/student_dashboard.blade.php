@@ -527,5 +527,6 @@
     window.email = "{{ Auth::user()->email ?? '' }}";
     const registerEventUrl = "{{ route('student_register_event') }}";
     const getStudentDetailsUrl = "{{ route('get_student') }}";
+    const getcashfreeUrl = "{{ route('cashfree.order') }}";
 </script>
 <script src="{{ asset('admin/js/registration_form.js') }}?v={{ time() }}"></script>

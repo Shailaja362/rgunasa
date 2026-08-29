@@ -117,7 +117,7 @@ function payWithCashfree(eventId, scheduleId) {
     console.log(eventId);
     console.log(scheduleId);
     $.ajax({
-        url: "/student/cashfree-order",
+        url: getcashfreeUrl,
         method: "POST",
         data: {
             event_id: eventId,
