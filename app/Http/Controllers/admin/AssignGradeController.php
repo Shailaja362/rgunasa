@@ -47,8 +47,11 @@ class AssignGradeController extends Controller
         $eventId = $request->event_id;
         $this->data['event'] = Event::findOrFail($eventId);
         $this->data['registrations'] = collect();
+        $this->data['gradesByStudent'] = collect();
         $this->data['schedule_department'] = $this->groupSchedulesByProgramme($eventId);
         $this->data['programmeScheduleOptions'] = $this->buildProgrammeScheduleOptions($this->data['schedule_department']);
+        $this->data['programmeNames'] = Programme::whereIn('id', $this->data['schedule_department']->keys())
+            ->pluck('name', 'id');
 
         $batches = array_filter((array) $request->batch);
         $semesters = array_filter((array) $request->semester);
@@ -70,6 +73,10 @@ class AssignGradeController extends Controller
                     ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
                     ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();
+
+                $this->data['gradesByStudent'] = StudentEventRegistration::where('event_schedule_id', $schedule->id)
+                    ->whereIn('student_id', $this->data['registrations']->pluck('student_id'))
+                    ->pluck('grade', 'student_id');
             }
         }
         return view('admin.assign_grade_entry')->with($this->data);

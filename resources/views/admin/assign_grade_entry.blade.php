@@ -50,7 +50,7 @@
                         <option value="">-- Select Programme --</option>
                         @foreach ($schedule_department as $departmentId => $schedules)
                             @php
-                                $programmeName = \App\Models\Programme::find($departmentId)?->name;
+                                $programmeName = $programmeNames[$departmentId] ?? null;
                             @endphp
                             <option value="{{ $departmentId }}"
                                 {{ request('programme_id') == $departmentId ? 'selected' : '' }}>
@@ -147,10 +147,7 @@
                                 @php
                                     $feedback = $registration->get_feedback?->first();
                                     $proofs = $registration->get_student_upload_proof ?? collect();
-                                    $grade = \App\Models\StudentEventRegistration::where([
-                                        'event_schedule_id' => $registration->event_schedule_id,
-                                        'student_id' => $registration->student_id,
-                                    ])->first();
+                                    $grade = $gradesByStudent[$registration->student_id] ?? null;
                                 @endphp
                                 <tr class="hover:bg-gray-50 transition">
                                     <input type="hidden" name="grades[schedule][{{ $registration->student_id }}]"
@@ -190,13 +187,13 @@
                                     <td class="px-2 py-3">
                                         <select name="grades[student][{{ $registration->student_id }}]">
                                             <option value="">Select Grade</option>
-                                            <option value="a" {{ $grade?->grade === 'a' ? 'selected' : '' }}>A -
+                                            <option value="a" {{ $grade === 'a' ? 'selected' : '' }}>A -
                                                 Winner</option>
-                                            <option value="b" {{ $grade?->grade === 'b' ? 'selected' : '' }}>B -
+                                            <option value="b" {{ $grade === 'b' ? 'selected' : '' }}>B -
                                                 Runner Up</option>
-                                            <option value="c" {{ $grade?->grade === 'c' ? 'selected' : '' }}>C -
+                                            <option value="c" {{ $grade === 'c' ? 'selected' : '' }}>C -
                                                 Completed</option>
-                                            <option value="d" {{ $grade?->grade === 'd' ? 'selected' : '' }}>D -
+                                            <option value="d" {{ $grade === 'd' ? 'selected' : '' }}>D -
                                                 Disqualified</option>
                                         </select>
                                     </td>

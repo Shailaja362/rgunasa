@@ -22,8 +22,6 @@ class StudentHomeController extends Controller
             'publish' => 1,
             'is_active' => 'y'
         ])->count();
-        $registeredCount = StudentEventRegistration::where('student_id', $student->id)
-            ->count();
         $completedCount = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 3)
             ->count();
@@ -32,10 +30,6 @@ class StudentHomeController extends Controller
             ->count();
         $today = Carbon::today()->toDateString();
         $configCredit = CreditPoint::where('semester', $student->semester)->first();
-        $studentRegistrations = StudentEventRegistration::where('student_id', $student->id)
-            ->with('event')
-            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
-            ->get();
         $paidRegisteredDates = StudentEventRegistration::where('student_id', $student->id)
             ->whereHas('event', function ($q) {
                 $q->where('event_type', 'paid');
@@ -74,16 +68,22 @@ class StudentHomeController extends Controller
 
         $upcomingEventData = [];
 
+        // seat_count is one shared pool for the whole schedule row (across every
+        // batch/semester it's open to), so counts are fetched once for every
+        // schedule shown here instead of per row in the loop below.
+        $upcomingScheduleIds = $upcomingEvents->pluck('get_dep_events')->flatten()->pluck('id')->unique()->values();
+        $upcomingRegisteredCounts = StudentEventRegistration::whereIn('event_schedule_id', $upcomingScheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
         foreach ($upcomingEvents as $event) {
 
             foreach ($event->get_dep_events as $dept) {
 
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
 
-                // seat_count is one shared pool for the whole schedule row (across
-                // every batch/semester it's open to), so count every registration
-                // on this row, not just ones matching the viewing student's cohort.
-                $registeredCount = StudentEventRegistration::where('event_schedule_id', $dept->id)->count();
+                $registeredCount = $upcomingRegisteredCounts[$dept->id] ?? 0;
                 $availableSeats = max(0, $dept->seat_count - $registeredCount);
 
                 if ($dept->is_reserve_date == 'y') {
@@ -198,15 +198,18 @@ class StudentHomeController extends Controller
         // Build ongoing event data
         $eventData = [];
 
+        $ongoingScheduleIds = $ongoingEvents->pluck('get_dep_events')->flatten()->pluck('id')->unique()->values();
+        $ongoingRegisteredCounts = StudentEventRegistration::whereIn('event_schedule_id', $ongoingScheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
         foreach ($ongoingEvents as $event) {
             foreach ($event->get_dep_events as $dept) {
 
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
 
-                // seat_count is one shared pool for the whole schedule row (across
-                // every batch/semester it's open to), so count every registration
-                // on this row, not just ones matching the viewing student's cohort.
-                $registeredCount = StudentEventRegistration::where('event_schedule_id', $dept->id)->count();
+                $registeredCount = $ongoingRegisteredCounts[$dept->id] ?? 0;
                 $availableSeats  = max(0, $dept->seat_count - $registeredCount);
 
                 // Time
@@ -297,8 +300,18 @@ class StudentHomeController extends Controller
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->get()
-            ->map(function ($registration) use ($student) {
+            ->get();
+
+        // Same shared-pool seat count as above, batched once for every schedule
+        // in this student's registrations instead of one query per row in map().
+        $registeredEventScheduleIds = $registeredEvents->pluck('get_event_schedule.id')->filter()->unique()->values();
+        $registeredEventSeatCounts = StudentEventRegistration::whereIn('event_schedule_id', $registeredEventScheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
+        $registeredEvents = $registeredEvents
+            ->map(function ($registration) use ($student, $registeredEventSeatCounts) {
                 $event = $registration->event;
                 $schedule = $registration->get_event_schedule;
 
@@ -306,7 +319,7 @@ class StudentHomeController extends Controller
                     return null;
                 }
 
-                $registeredSeats = $this->registeredSeatsForSchedule($schedule, $student);
+                $registeredSeats = $registeredEventSeatCounts[$schedule->id] ?? 0;
                 $availableSeats = max(0, $schedule->seat_count - $registeredSeats);
                 [$startTime, $endTime] = $this->eventTimesForSchedule($event, $schedule);
 
@@ -356,11 +369,10 @@ class StudentHomeController extends Controller
             'role' => 2,
             'status' => 0
         ])->exists();
-        $registered_count = StudentEventRegistration::with('event')
-            ->whereHas('event', function ($query) {
+        $registered_count = StudentEventRegistration::whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
-            })->where('student_id', $student->id)->get();
+            })->where('student_id', $student->id)->count();
         return response()->json([
             'status' => 200,
             'msg' => 'Home data fetched Successful',
@@ -370,7 +382,7 @@ class StudentHomeController extends Controller
             'user_name' => $student->name,
             'notification' => $readStatus,
             'total_events' => $totalEvents,
-            'register_events' => count($registered_count),
+            'register_events' => $registered_count,
             'completed' => $completedCount,
             'certification_earned' => $certificateEarned,
             'credit' => $configCredit?->credit_points ?? 0,
@@ -402,13 +414,6 @@ class StudentHomeController extends Controller
                 });
             }
         });
-    }
-
-    private function registeredSeatsForSchedule($schedule, $student)
-    {
-        // seat_count is a shared pool for the whole schedule row, so count every
-        // registration on it, regardless of the viewing student's own cohort.
-        return StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
     }
 
     private function eventTimesForSchedule($event, $schedule)

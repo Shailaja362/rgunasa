@@ -20,10 +20,6 @@ class RegisterEventController extends Controller
     public function index(Request $request)
     {
         $now = Carbon::now();
-        $this->data['events'] = Event::where([
-            'publish' => 1,
-            'is_active' => 'y'
-        ])->get();
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
@@ -98,13 +94,6 @@ class RegisterEventController extends Controller
             })
             ->where('status', 3)
             ->count();
-        $this->data['studentRegistrations'] = StudentEventRegistration::where('student_id', $student->id)
-            ->with('event')
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
-            ->get();
         return view('student.register_event_index')->with($this->data);
     }
 

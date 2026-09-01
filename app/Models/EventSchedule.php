@@ -22,14 +22,29 @@ class EventSchedule extends Model
     {
         return $this->hasMany(StudentEventRegistration::class, 'event_id', 'event_id');
     }
+    public function programme()
+    {
+        return $this->belongsTo(Programme::class, 'programme_id');
+    }
+    /**
+     * Cached per unique programme_id string for the life of the request, so
+     * schedules sharing the same programme list (common within one event)
+     * don't re-run the same lookup query for every row rendered.
+     */
+    private static array $programmeNamesCache = [];
 
     public function getProgrammeNamesAttribute()
     {
         if (empty($this->programme_id)) {
             return 'All Programmes';
         }
+        if (array_key_exists($this->programme_id, self::$programmeNamesCache)) {
+            return self::$programmeNamesCache[$this->programme_id];
+        }
         $ids = array_map('trim', explode(',', $this->programme_id));
-        return Programme::whereIn('id', $ids)->pluck('name')->implode(', ');
+        $names = Programme::whereIn('id', $ids)->pluck('name')->implode(', ');
+        self::$programmeNamesCache[$this->programme_id] = $names;
+        return $names;
     }
 
     public function getSectionNamesAttribute()

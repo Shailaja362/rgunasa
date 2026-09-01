@@ -15,7 +15,6 @@ class StudentDashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $now = Carbon::now();
         $student = session()->get('student');
         $this->data['student'] = $student;
         $this->data['studentId'] = $student->id;
@@ -23,27 +22,25 @@ class StudentDashboardController extends Controller
             'publish' => 1,
             'is_active' => 'y'
         ])->get();
-        // Student's registrations
-        $studentRegistrations = StudentEventRegistration::with('event', 'schedule')
+
+        // Single base fetch of the student's registrations for published/active events,
+        // reused below instead of re-querying the same rows multiple times.
+        $registrations = StudentEventRegistration::with('event', 'get_event_schedule', 'student', 'get_event_attendance')
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
             ->where('student_id', $student->id)
             ->get();
-        $this->data['studentRegistrations'] = $studentRegistrations;
-        $this->data['completed_events'] = StudentEventRegistration::with('get_event_attendance', 'event')->where('student_id', $student->id)
-            ->whereHas('get_event_attendance', function ($query) use ($now) {
-                $query->whereNotNull('entry_time')
-                    ->whereNotNull('exit_time');
-            })
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
-            ->get();
-        $this->data['certificate_earned'] = $studentRegistrations
-            ->whereNotNull('grade');
+
+        $this->data['registeredEvents'] = $registrations;
+        $this->data['registered_count'] = $registrations->count();
+        $this->data['certificate_earned'] = $registrations->whereNotNull('grade');
+        $this->data['completed_events'] = $registrations->filter(function ($registration) {
+            return $registration->get_event_attendance->contains(function ($attendance) {
+                return !is_null($attendance->entry_time) && !is_null($attendance->exit_time);
+            });
+        })->values();
         // Upcoming and ongoing department-wise events
         $this->data['ongoingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->openToProgramme($student->programme_id)
@@ -62,13 +59,6 @@ class StudentDashboardController extends Controller
             ->where('publish', 1)
             ->get();
 
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
-            ->where('student_id', $student->id)
-            ->get();
         $this->data['upcomingEvents'] = Event::whereHas('get_dep_events', function ($q) use ($student) {
             $q->openToProgramme($student->programme_id)
                 ->openToSection($student->section)
@@ -90,33 +80,6 @@ class StudentDashboardController extends Controller
             ])
             ->get();
 
-        $this->data['studentRegistrations'] = StudentEventRegistration::whereHas('schedule', function ($q) use ($student) {
-            $q->openToProgramme($student->programme_id)
-                ->openToSection($student->section)
-                ->openToBatch($student->batch)
-                ->openToSemester($student->semester)
-                ->where('event_date', '>', Carbon::now()->toDateString()); // Only future dates
-        })
-            ->with(['schedule' => function ($q) use ($student) {
-                $q->openToProgramme($student->programme_id)
-                    ->openToSection($student->section)
-                    ->openToBatch($student->batch)
-                    ->openToSemester($student->semester)
-                    ->where('event_date', '>', Carbon::now()->toDateString())
-                    ->orderBy('event_date', 'asc');
-                // ->orderBy('start_time', 'asc');
-            }, 'schedule.registrations'])->where('student_id', $student->id)
-            ->with('event')
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })
-            ->get();
-        $this->data['registered_count'] = StudentEventRegistration::with('event')
-            ->whereHas('event', function ($query) {
-                $query->where('publish', 1)
-                    ->where('is_active', 'y');
-            })->where('student_id', $student->id)->get();
         $this->data['config_credit'] = CreditPoint::where('semester', $student->semester)->first();
 
         $earnedCredits = StudentEventRegistration::with('event')->where('student_id', $student->id)

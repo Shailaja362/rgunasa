@@ -62,6 +62,21 @@
                ->unique()
                ->values()
                ->toArray();
+
+            // seat_count is one shared pool for the whole schedule row (across every
+            // batch/semester it's open to), so counts are fetched once for every
+            // schedule shown on this page instead of per row in the loops below.
+            $registeredScheduleIds = collect($upcomingEvents)
+                ->pluck('get_dep_events')
+                ->concat(collect($ongoingEvents)->pluck('get_dep_events'))
+                ->flatten()
+                ->pluck('id')
+                ->unique()
+                ->values();
+            $registeredCounts = \App\Models\StudentEventRegistration::whereIn('event_schedule_id', $registeredScheduleIds)
+                ->selectRaw('event_schedule_id, count(*) as aggregate')
+                ->groupBy('event_schedule_id')
+                ->pluck('aggregate', 'event_schedule_id');
         @endphp
         <!-- Upcoming Events -->
         <div id="upcoming-section" class="mt-6">
@@ -72,13 +87,7 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            // seat_count is one shared pool for the whole schedule row (across
-                            // every batch/semester it's open to), so count every registration
-                            // on this row, not just ones matching the viewing student's cohort.
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
-                                'event_schedule_id',
-                                $department->id,
-                            )->count();
+                            $registeredCount = $registeredCounts[$department->id] ?? 0;
                             if ($department->is_reserve_date == 'y') {
                                 $start_time = $event->reserve_start_time;
                                 $end_time = $event->reserve_end_time;
@@ -233,13 +242,7 @@
                         @php
                             $today = \Carbon\Carbon::now();
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
-                            // seat_count is one shared pool for the whole schedule row (across
-                            // every batch/semester it's open to), so count every registration
-                            // on this row, not just ones matching the viewing student's cohort.
-                            $registeredCount = \App\Models\StudentEventRegistration::where(
-                                'event_schedule_id',
-                                $department->id,
-                            )->count();
+                            $registeredCount = $registeredCounts[$department->id] ?? 0;
 
                             if ($department->is_reserve_date == 'y') {
                                 $start_time = $ongoing_event->reserve_start_time;

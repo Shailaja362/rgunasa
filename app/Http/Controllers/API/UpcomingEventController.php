@@ -46,16 +46,6 @@ class UpcomingEventController extends Controller
 
         $pendingUploads = max(0, $registeredCount - $myUploads->count());
 
-        $studentRegistrations = StudentEventRegistration::where('student_id', $student->id)
-            ->with(['event', 'get_event_schedule'])
-            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
-            ->get();
-
-        $studentRegistrations = StudentEventRegistration::where('student_id', $student->id)
-            ->with('event')
-            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
-            ->get();
-
         $paidRegisteredDates = \App\Models\StudentEventRegistration::where('student_id', $student->id)
             ->whereHas('event', function ($q) {
                 $q->where('event_type', 'paid');
@@ -95,16 +85,22 @@ class UpcomingEventController extends Controller
 
         $upcomingEventData = [];
 
+        // seat_count is one shared pool for the whole schedule row (across every
+        // batch/semester it's open to), so counts are fetched once for every
+        // schedule shown here instead of per row in the loop below.
+        $scheduleIds = $upcomingEvents->pluck('get_dep_events')->flatten()->pluck('id')->unique()->values();
+        $scheduleRegisteredCounts = StudentEventRegistration::whereIn('event_schedule_id', $scheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
         foreach ($upcomingEvents as $event) {
 
             foreach ($event->get_dep_events as $dept) {
 
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
 
-                // seat_count is one shared pool for the whole schedule row (across
-                // every batch/semester it's open to), so count every registration
-                // on this row, not just ones matching the viewing student's cohort.
-                $registeredCount = StudentEventRegistration::where('event_schedule_id', $dept->id)->count();
+                $registeredCount = $scheduleRegisteredCounts[$dept->id] ?? 0;
                 $availableSeats = max(0, $dept->seat_count - $registeredCount);
 
                 if ($dept->is_reserve_date == 'y') {

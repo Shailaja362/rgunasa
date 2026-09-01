@@ -12,26 +12,21 @@
                 $student = session()->get('student');
                 $name = $student->name ?? '';
                 $id = $student->register_number ?? '';
-                $get_department = \App\Models\Department::where('id', $student->department_id)->first();
-                $dept_name = $get_department->name ?? '';
+                $dept_name = $student->get_department->name ?? '';
                 $route = route('student.logout');
             } elseif (!empty(session()->get('admin'))) {
                 $admin = session()->get('admin');
                 $name = $admin->name;
                 $id = $admin->emp_code;
-                $get_department = \App\Models\Department::where('id', $admin->department_id)->first();
-                $get_designation = \App\Models\Designation::where('id', $admin->designation_id)->first();
-                $dept_name = $get_department->name ?? '';
-                $desig_name = $get_designation->name ?? '';
+                $dept_name = $admin->get_department->name ?? '';
+                $desig_name = $admin->get_designation->name ?? '';
                 $route = route('admin.logout');
             } elseif (!empty(session()->get('super_admin'))) {
                 $admin = session()->get('super_admin');
                 $name = $admin->name;
                 $id = $admin->emp_code;
-                $get_department = \App\Models\Department::where('id', $admin->department_id)->first();
-                $get_designation = \App\Models\Designation::where('id', $admin->designation_id)->first();
-                $dept_name = $get_department->name ?? '';
-                $desig_name = $get_designation->name ?? '';
+                $dept_name = $admin->get_department->name ?? '';
+                $desig_name = $admin->get_designation->name ?? '';
                 $route = route('admin.logout');
             }
         @endphp

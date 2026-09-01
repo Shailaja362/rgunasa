@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\student;
 
 use App\Http\Controllers\Controller;
-use App\Models\Event;
 use App\Models\EventSchedule;
 use App\Models\StudentEventRegistration;
 use App\Models\StudentFeedback;
@@ -23,7 +22,7 @@ class MyRegisterEventsController extends Controller
         $student = session()->get('student');
         $this->data['student'] =  $student;
         $now = Carbon::now();
-        $this->data['registeredEvents'] = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
+        $registeredEventsBase = StudentEventRegistration::with('event', 'get_event_schedule', 'student')
             ->where('student_id', $student->id)
             ->whereHas('get_event_schedule', function ($q) use ($student) {
                 $this->applyStudentScheduleFilter($q, $student);
@@ -32,11 +31,13 @@ class MyRegisterEventsController extends Controller
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->get()
-            ->map(function ($event) use ($student) {
+            ->get();
+        $registeredScheduleCounts = $this->getRegisteredCountsForSchedules($registeredEventsBase);
+        $this->data['registeredEvents'] = $registeredEventsBase
+            ->map(function ($event) use ($registeredScheduleCounts) {
                 $schedule = $event->get_event_schedule;
 
-                $registered = $this->getRegisteredCountForSchedule($schedule, $student);
+                $registered = $schedule ? ($registeredScheduleCounts[$schedule->id] ?? 0) : 0;
                 $seatCount = $schedule->seat_count ?? 0;
                 $availableSeats = max($seatCount - $registered, 0);
 
@@ -72,11 +73,7 @@ class MyRegisterEventsController extends Controller
             })
             ->where('status', 3)
             ->count();
-        $events = Event::where([
-            'publish' => 1,
-            'is_active' => 'y'
-        ])->get();
-        $this->data['completedEvents'] = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
+        $completedEventsBase = StudentEventRegistration::with('event', 'get_event_attendance', 'get_event_schedule', 'student')
             ->where('student_id', $student->id)
             ->whereHas('get_event_attendance', function ($query) use ($student) {
                 $query->whereNotNull('entry_time')
@@ -90,11 +87,13 @@ class MyRegisterEventsController extends Controller
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
             })
-            ->get()
-            ->map(function ($event) use ($student) {
+            ->get();
+        $completedScheduleCounts = $this->getRegisteredCountsForSchedules($completedEventsBase);
+        $this->data['completedEvents'] = $completedEventsBase
+            ->map(function ($event) use ($completedScheduleCounts) {
                 $schedule = $event->get_event_schedule;
 
-                $registered = $this->getRegisteredCountForSchedule($schedule, $student);
+                $registered = $schedule ? ($completedScheduleCounts[$schedule->id] ?? 0) : 0;
                 $seatCount = $schedule->seat_count ?? 0;
                 $availableSeats = max($seatCount - $registered, 0);
 
@@ -121,6 +120,10 @@ class MyRegisterEventsController extends Controller
                     ->where('is_active', 'y');
             })
             ->count();
+        // echo '<pre>';
+        // print_r($activecount);
+        // echo '</pre>';
+        // exit;
         $this->data['pending_uploads'] =  $activecount - count($myuploads);
         return view('student.my_register_event')->with($this->data);
     }
@@ -334,14 +337,20 @@ class MyRegisterEventsController extends Controller
         });
     }
 
-    private function getRegisteredCountForSchedule($schedule, $student)
+    private function getRegisteredCountsForSchedules($registrations)
     {
-        if (!$schedule) {
-            return 0;
-        }
-
         // seat_count is a shared pool for the whole schedule row, so count every
         // registration on it, regardless of the viewing student's own cohort.
-        return \App\Models\StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
+        // Batched once per schedule id instead of one query per row.
+        $scheduleIds = $registrations->pluck('get_event_schedule.id')->filter()->unique()->values();
+
+        if ($scheduleIds->isEmpty()) {
+            return collect();
+        }
+
+        return \App\Models\StudentEventRegistration::whereIn('event_schedule_id', $scheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
     }
 }

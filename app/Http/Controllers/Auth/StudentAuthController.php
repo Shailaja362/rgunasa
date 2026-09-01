@@ -38,7 +38,7 @@ class StudentAuthController extends Controller
         session()->forget('admin');
         session()->forget('super_admin');
         $student = Auth::guard('student')->id();
-        $studentdetail = Student::where('id', $student)->first();
+        $studentdetail = Student::with('get_department')->where('id', $student)->first();
         session()->put('student', $studentdetail);
         ActivityLog::add($studentdetail->name . " - Student Login", auth('student')->user());
         return redirect()->route('student_dashboard');

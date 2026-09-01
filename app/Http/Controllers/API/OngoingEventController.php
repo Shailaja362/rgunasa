@@ -45,10 +45,6 @@ class OngoingEventController extends Controller
             ->groupBy('student_id', 'event_id')
             ->get();
         $pendingUploads = $totalRegistered - count($myUploads);
-        $studentRegistrations = StudentEventRegistration::where('student_id', $student->id)
-            ->with('event')
-            ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
-            ->get();
         $paidRegisteredDates = \App\Models\StudentEventRegistration::where('student_id', $student->id)
             ->whereHas('event', function ($q) {
                 $q->where('event_type', 'paid');
@@ -80,15 +76,22 @@ class OngoingEventController extends Controller
                 'is_active' => 'y'
             ])
             ->get();
+
+        // seat_count is one shared pool for the whole schedule row (across every
+        // batch/semester it's open to), so counts are fetched once for every
+        // schedule shown here instead of per row in the loop below.
+        $scheduleIds = $ongoingEvents->pluck('get_dep_events')->flatten()->pluck('id')->unique()->values();
+        $registeredCounts = StudentEventRegistration::whereIn('event_schedule_id', $scheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
         $eventData = [];
         foreach ($ongoingEvents as $event) {
             foreach ($event->get_dep_events as $dept) {
                 $eventDate = Carbon::parse($dept->event_date)->toDateString();
 
-                // seat_count is one shared pool for the whole schedule row (across
-                // every batch/semester it's open to), so count every registration
-                // on this row, not just ones matching the viewing student's cohort.
-                $registeredCount = StudentEventRegistration::where('event_schedule_id', $dept->id)->count();
+                $registeredCount = $registeredCounts[$dept->id] ?? 0;
                 $availableSeats  = max(0, $dept->seat_count - $registeredCount);
 
                 // Time
@@ -249,6 +252,12 @@ class OngoingEventController extends Controller
 
 
         // Build ongoing event data
+        $scheduleIds = $registered_event->pluck('event_schedule_id')->filter()->unique()->values();
+        $registeredCounts = StudentEventRegistration::whereIn('event_schedule_id', $scheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
         $eventData = [];
 
         foreach ($registered_event as $registration) {
@@ -271,7 +280,7 @@ class OngoingEventController extends Controller
                 }
             }
 
-            $registeredCount = StudentEventRegistration::where('event_schedule_id', $registration->event_schedule_id)->count();
+            $registeredCount = $registeredCounts[$registration->event_schedule_id] ?? 0;
             $availableSeats = max(0, $registration->get_event_schedule?->seat_count - $registeredCount);
 
 
@@ -360,6 +369,22 @@ class OngoingEventController extends Controller
             })
             ->get();
         // Build ongoing event data
+        $scheduleIds = $completed_event->pluck('event_schedule_id')->filter()->unique()->values();
+        $registeredCounts = StudentEventRegistration::whereIn('event_schedule_id', $scheduleIds)
+            ->selectRaw('event_schedule_id, count(*) as aggregate')
+            ->groupBy('event_schedule_id')
+            ->pluck('aggregate', 'event_schedule_id');
+
+        $eventIds = $completed_event->pluck('event_id')->unique()->values();
+        $feedbacksByKey = StudentFeedback::where('student_id', $student->id)
+            ->whereIn('event_id', $eventIds)
+            ->get()
+            ->keyBy(fn($f) => $f->event_id . '-' . $f->event_schedule_id);
+        $uploadsByKey = StudentUploadProof::where('student_id', $student->id)
+            ->whereIn('event_id', $eventIds)
+            ->get()
+            ->groupBy(fn($u) => $u->event_id . '-' . $u->event_schedule_id);
+
         $eventData = [];
 
         foreach ($completed_event as $registration) {
@@ -379,14 +404,12 @@ class OngoingEventController extends Controller
                 }
             }
 
-            $registeredCount = StudentEventRegistration::where('event_schedule_id', $registration->event_schedule_id)->count();
+            $registeredCount = $registeredCounts[$registration->event_schedule_id] ?? 0;
             $availableSeats = max(0, $registration->get_event_schedule?->seat_count - $registeredCount);
 
             $questions = getQuestions($event->is_technical_event == 'y' ? 'technical' : 'nonTechnical');
-            $feedback = StudentFeedback::where('event_id', $event->id)
-                ->where('event_schedule_id', $registration->get_event_schedule?->id)
-                ->where('student_id', $student->id)
-                ->first();
+            $feedbackKey = $event->id . '-' . $registration->get_event_schedule?->id;
+            $feedback = $feedbacksByKey->get($feedbackKey);
             if (!empty($feedback)) {
                 $ratings = json_decode($feedback->ratings, true);
                 foreach ($questions as &$question) {
@@ -422,11 +445,10 @@ class OngoingEventController extends Controller
                 'student_number'    => $student->mobile_number,
                 'event_type'        => $event->is_technical_event,
                 'question'         =>  $questions,
-                'upload_image_url'  => StudentUploadProof::where('event_id',$event->id)
-                    ->where('event_schedule_id', $registration->get_event_schedule?->id)
-                    ->where('student_id',$student->id)->get()->map(function($item){
+                'upload_image_url'  => ($uploadsByKey->get($event->id . '-' . $registration->get_event_schedule?->id) ?? collect())
+                    ->map(function($item){
                         return url('storage/'.$item->file_path);
-                    }),
+                    })->values(),
                 'feed_back' => !empty($feedback->comments) ? $feedback->comments : null,
             ];
         }

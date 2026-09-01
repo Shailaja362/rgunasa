@@ -45,7 +45,7 @@ class AssignTasksController extends Controller
             ->count();
         $this->data['completed_tasks'] = Tasks::where(['created_by' => $adminId, 'status' => 'accepted'])->count();
         $this->data['admins'] = Admin::where('role_id', 2)->get();
-        $this->data['event'] = Tasks::where('created_by', $adminId)->get();
+        $this->data['event'] = $this->data['tasks'];
         return view('super_admin.assign_task_index')->with($this->data);
     }
 

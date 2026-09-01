@@ -37,7 +37,7 @@ class AdminAuthController extends Controller
         }
 
         $admin = Auth::guard('admin')->id();
-        $admin_details = Admin::where('id', $admin)->first();
+        $admin_details = Admin::with('get_department', 'get_designation')->where('id', $admin)->first();
 
 
         if($admin_details->role_id == 1){

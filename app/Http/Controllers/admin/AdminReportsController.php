@@ -246,38 +246,14 @@ class AdminReportsController extends Controller
         ])->count();
 
         $attendedCount = $attendedStudents->count();
-        $male_count = StudentAttendance::with([
-            'student.get_programme',
-            'grades' => function ($q) use ($eventId) {
-                $q->where('event_id', $eventId);
-            }
-        ])->whereHas('student', function ($query) {
-            $query->where('gender', 'm');
-        })
-            ->where('event_id', $eventId)
-            ->where('event_schedule_id', $scheduleId)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->get();
-        $female_count = StudentAttendance::with([
-            'student.get_programme',
-            'grades' => function ($q) use ($eventId) {
-                $q->where('event_id', $eventId);
-            }
-        ])->whereHas('student', function ($query) {
-            $query->where('gender', 'f');
-        })
-            ->where('event_id', $eventId)
-            ->where('event_schedule_id', $scheduleId)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->get();
+        $male_count = $attendedStudents->filter(fn($a) => optional($a->student)->gender === 'm')->count();
+        $female_count = $attendedStudents->filter(fn($a) => optional($a->student)->gender === 'f')->count();
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
             'data' => [
                 'labels' => ['Male', 'Female'],
                 'datasets' => [[
-                    'data' => [$male_count->count(), $female_count->count()],
+                    'data' => [$male_count, $female_count],
                     'backgroundColor' => ['#7A1C73', '#C36BCB']
                 ]]
             ]
@@ -382,40 +358,14 @@ class AdminReportsController extends Controller
         ])->count();
 
         $attendedCount = $attendedStudents->count();
-        $male_count = StudentAttendance::with([
-            'student.get_department',
-            'student.get_programme',
-            'grades' => function ($q) use ($eventId) {
-                $q->where('event_id', $eventId);
-            }
-        ])->whereHas('student', function ($query) {
-            $query->where('gender', 'm');
-        })
-            ->where('event_id', $eventId)
-            ->where('event_schedule_id', $scheduleId)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->get();
-        $female_count = StudentAttendance::with([
-            'student.get_department',
-            'student.get_programme',
-            'grades' => function ($q) use ($eventId) {
-                $q->where('event_id', $eventId);
-            }
-        ])->whereHas('student', function ($query) {
-            $query->where('gender', 'f');
-        })
-            ->where('event_id', $eventId)
-            ->where('event_schedule_id', $scheduleId)
-            ->whereNotNull('entry_time')
-            ->whereNotNull('exit_time')
-            ->get();
+        $male_count = $attendedStudents->filter(fn($a) => optional($a->student)->gender === 'm')->count();
+        $female_count = $attendedStudents->filter(fn($a) => optional($a->student)->gender === 'f')->count();
         $genderChartUrl = 'https://quickchart.io/chart?c=' . urlencode(json_encode([
             'type' => 'pie',
             'data' => [
                 'labels' => ['Male', 'Female'],
                 'datasets' => [[
-                    'data' => [$male_count->count(), $female_count->count()],
+                    'data' => [$male_count, $female_count],
                     'backgroundColor' => ['#7A1C73', '#C36BCB']
                 ]]
             ]

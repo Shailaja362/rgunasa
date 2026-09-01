@@ -33,7 +33,7 @@
                 <p class="text-[#992B07] font-medium">Register Events</p>
                 <div class="flex items-center justify-between mt-2">
                     <h3 class="text-3xl font-bold text-[#992B07]">
-                        {{ isset($registered_count) ? count($registered_count) : 0 }}</h3>
+                        {{ isset($registered_count) ? $registered_count : 0 }}</h3>
                     <img src="{{ asset('/images/register_event.png') }}" alt="" class="mx-auto">
                 </div>
                 <div class="relative">

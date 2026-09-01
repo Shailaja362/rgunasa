@@ -223,6 +223,8 @@ class EventsController extends Controller
 
             $request->validate($rules);
 
+            DB::beginTransaction();
+
             if (!empty($request['event_id'])) {
                 $message = 'Event Updated successfully';
                 $event = Event::find($request['event_id']);
@@ -326,6 +328,8 @@ class EventsController extends Controller
                 ActivityLog::add($event->title . ' - New Event Created', auth('admin')->user());
             }
 
+            DB::commit();
+
             return response()->json([
                 'success' => true,
                 'message' => $message,
@@ -334,6 +338,7 @@ class EventsController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             throw $e;
         } catch (Exception $e) {
+            DB::rollBack();
             \Illuminate\Support\Facades\Log::error('Failed to save event: ' . $e->getMessage(), ['exception' => $e]);
 
             return response()->json([
