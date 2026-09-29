@@ -106,24 +106,9 @@ $(document).on("submit", "#eventForm", function (e) {
             message: "Please enter Description",
         },
         {
-            id: "#start_time",
-            condition: (val) => val === "",
-            message: "Please select Start Time",
-        },
-        {
-            id: "#end_time",
-            condition: (val) => val === "",
-            message: "Please select End Time",
-        },
-        {
             id: "#location",
             condition: (val) => val === "",
             message: "Please enter Location",
-        },
-        {
-            id: "#session",
-            condition: (val) => val === "",
-            message: "Please enter session",
         },
         {
             id: "#eligibility",
@@ -189,6 +174,21 @@ $(document).on("submit", "#eventForm", function (e) {
             id: ".credit_points",
             condition: (val) => val === "",
             message: "Credit Point is required",
+        },
+        {
+            id: ".dept_session",
+            condition: (val) => val === "",
+            message: "Please select Session",
+        },
+        {
+            id: ".dept_start_time",
+            condition: (val) => val === "",
+            message: "Please select Start Time",
+        },
+        {
+            id: ".dept_end_time",
+            condition: (val) => val === "",
+            message: "Please select End Time",
         },
     ];
 
@@ -279,48 +279,6 @@ $(document).on("submit", "#eventForm", function (e) {
             }
         },
     );
-});
-
-let deleteEventId = null;
-let deleteButton = null;
-
-// Open modal
-$(document).on("click", ".deleteEvent", function () {
-    deleteEventId = $(this).data("id");
-    deleteButton = $(this);
-     deleteUrl = $(this).data("url");
-
-    $("#deleteModal").removeClass("hidden").addClass("flex");
-});
-
-// Cancel button
-$("#cancelDelete").on("click", function () {
-    $("#deleteModal").addClass("hidden").removeClass("flex");
-});
-
-// Confirm delete
-$("#confirmDelete").on("click", function () {
-    $.ajax({
-        url: deleteUrl,
-        type: "POST",
-        headers: {
-            "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr("content"),
-        },
-        success: function (response) {
-            if (response.success) {
-                deleteButton.closest("tr").remove();
-                showToast(response.message, "success", 2000);
-            } else {
-                showToast(response.message, "error", 2000);
-            }
-
-            $("#deleteModal").addClass("hidden").removeClass("flex");
-        },
-        error: function () {
-            showToast("Delete failed", "error", 2000);
-            $("#deleteModal").addClass("hidden").removeClass("flex");
-        },
-    });
 });
 
 let programmeOfficerChoice = new Choices("#programme_officer", {
@@ -507,6 +465,35 @@ document.addEventListener("DOMContentLoaded", function () {
                             <input type="number" name="departments[${deptIndex}][credit_points]" id="credit_points"
                              placeholder="Enter Event Credit Points"
                                 class="credit_points points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Session <span class="text-red-500">*</span></label>
+                            <select name="departments[${deptIndex}][session]"
+                                class="dept_session bg-[#D9D9D9] w-full rounded-full py-2 px-3 focus:outline-none focus:ring focus:ring-primary/40">
+                                <option value="">Select Session</option>
+                                <option value="1">FN</option>
+                                <option value="2">AN</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Start Time <span class="text-red-500">*</span></label>
+                            <input type="time" name="departments[${deptIndex}][start_time]"
+                                class="dept_start_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">End Time <span class="text-red-500">*</span></label>
+                            <input type="time" name="departments[${deptIndex}][end_time]"
+                                class="dept_end_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Reserve Start Time</label>
+                            <input type="time" name="departments[${deptIndex}][reserve_start_time]"
+                                class="dept_reserve_start_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Reserve End Time</label>
+                            <input type="time" name="departments[${deptIndex}][reserve_end_time]"
+                                class="dept_reserve_end_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
                         </div>
             </div>
         `;

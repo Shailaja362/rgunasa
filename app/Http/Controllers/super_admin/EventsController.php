@@ -11,6 +11,7 @@ use App\Models\EventSchedule;
 use App\Models\Faculty;
 use App\Models\Programme;
 use App\Models\Tasks;
+use App\Support\RelatedRecordChecker;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -186,10 +187,7 @@ class EventsController extends Controller
                 'club_id'   => 'required',
                 'programme_officer'   => 'required',
                 'description'   => 'required',
-                'start_time'   => 'required',
-                'end_time'   => 'required',
                 'location'   => 'required',
-                'session'   => 'required',
                 'eligibility'   => 'required',
                 'registration_deadline'   => 'required',
                 'contact_person'   => 'required',
@@ -209,6 +207,11 @@ class EventsController extends Controller
                 'departments.*.semester' => 'required|array|min:1',
                 'departments.*.semester.*' => 'in:1,2,3,4,5,6,7,8',
                 'departments.*.credit_points' => 'required|numeric|min:0|max:4',
+                'departments.*.session' => 'required|in:1,2',
+                'departments.*.start_time' => 'required',
+                'departments.*.end_time' => 'required',
+                'departments.*.reserve_start_time' => 'nullable',
+                'departments.*.reserve_end_time' => 'nullable',
             ];
 
             if ($request['event_type'] == 'paid') {
@@ -256,13 +259,8 @@ class EventsController extends Controller
             $event->faculty_id = $request['programme_officer'] ?? '';
             $event->title  = $request['event_title'] ?? '';
             $event->description = $request['description'] ?? '';
-            $event->start_time  = $request['start_time'] ?? '';
-            $event->end_time = $request['end_time']  ?? '';
-            $event->reserve_start_time  = $request['reserve_start_time'] ?? null;
-            $event->reserve_end_time = $request['reserve_end_time']  ?? null;
             $event->event_type = $request['event_type'] ?? '';
             $event->location  = $request['location'] ?? '';
-            $event->session = $request['session']  ?? '';
             $event->eligibility_criteria = $request['eligibility']  ?? '';
             $event->end_registration = Carbon::createFromFormat('d/m/Y', $request['registration_deadline'])
                 ->format('Y/m/d');
@@ -301,6 +299,11 @@ class EventsController extends Controller
                     'batch'           => !empty($batches) ? implode(',', $batches) : null,
                     'semester'        => !empty($semesters) ? implode(',', $semesters) : null,
                     'credit_points'   => $schedule['credit_points'],
+                    'session'             => $schedule['session'],
+                    'start_time'          => $schedule['start_time'],
+                    'end_time'            => $schedule['end_time'],
+                    'reserve_start_time'  => $schedule['reserve_start_time'] ?? null,
+                    'reserve_end_time'    => $schedule['reserve_end_time'] ?? null,
                 ];
 
                 if (!empty($schedule['schedule_id'])) {
@@ -349,19 +352,55 @@ class EventsController extends Controller
         }
     }
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
-        $event = Event::with('schedules.registrations')->findOrFail($id);
-        foreach ($event->schedules as $schedule) {
-            if ($schedule->registrations->isNotEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Cannot delete. Students already registered.'
-                ]);
-            }
+        $event = Event::findOrFail($id);
+
+        // Payment records are never auto-deleted, regardless of confirmation.
+        $paymentCounts = RelatedRecordChecker::counts([
+            ['table' => 'payments', 'column' => 'event_id', 'value' => $event->id, 'label' => 'payment record(s)'],
+            ['table' => 'event_payments', 'column' => 'event_id', 'value' => $event->id, 'label' => 'event payment record(s)'],
+        ]);
+
+        if (!empty($paymentCounts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('event', $paymentCounts),
+            ], 422);
         }
-        $delete_schedule = EventSchedule::where('event_id', $id)->delete();
-        $event->delete();
+
+        $cascadeCounts = RelatedRecordChecker::counts([
+            ['table' => 'event_schedules', 'column' => 'event_id', 'value' => $event->id, 'label' => 'schedule(s)'],
+            ['table' => 'student_event_registrations', 'column' => 'event_id', 'value' => $event->id, 'label' => 'student registration(s)'],
+            ['table' => 'student_attendances', 'column' => 'event_id', 'value' => $event->id, 'label' => 'attendance record(s)'],
+            ['table' => 'student_upload_proofs', 'column' => 'event_id', 'value' => $event->id, 'label' => 'uploaded proof(s)'],
+            ['table' => 'student_feedbacks', 'column' => 'event_id', 'value' => $event->id, 'label' => 'feedback submission(s)'],
+            ['table' => 'event_reports', 'column' => 'event_id', 'value' => $event->id, 'label' => 'event report(s)'],
+        ]);
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('event', $cascadeCounts),
+            ]);
+        }
+
+        DB::transaction(function () use ($event, $id) {
+            $reportIds = DB::table('event_reports')->where('event_id', $id)->pluck('id');
+            if ($reportIds->isNotEmpty()) {
+                DB::table('event_report_images')->whereIn('report_id', $reportIds)->delete();
+            }
+            DB::table('event_reports')->where('event_id', $id)->delete();
+            DB::table('student_feedbacks')->where('event_id', $id)->delete();
+            DB::table('student_upload_proofs')->where('event_id', $id)->delete();
+            DB::table('student_attendances')->where('event_id', $id)->delete();
+            DB::table('student_event_registrations')->where('event_id', $id)->delete();
+            EventSchedule::where('event_id', $id)->delete();
+            $event->delete();
+        });
+        ActivityLog::add($event->title . ' - Event Deleted', auth('admin')->user());
         return response()->json([
             'success' => true,
             'message' => 'Event deleted successfully'

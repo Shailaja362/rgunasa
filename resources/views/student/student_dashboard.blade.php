@@ -141,11 +141,11 @@
                                 $dept->id,
                             )->count();
                             if ($dept->is_reserve_date == 'y') {
-                                $start_time = $event->reserve_start_time;
-                                $end_time = $event->reserve_end_time;
+                                $start_time = $dept->reserve_start_time;
+                                $end_time = $dept->reserve_end_time;
                             } else {
-                                $start_time = $event->start_time;
-                                $end_time = $event->end_time;
+                                $start_time = $dept->start_time;
+                                $end_time = $dept->end_time;
                             }
                             $availableSeats = max(0, $dept->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
@@ -301,11 +301,11 @@
                             )->count();
 
                             if ($department->is_reserve_date == 'y') {
-                                $start_time = $ongoing_event->reserve_start_time;
-                                $end_time = $ongoing_event->reserve_end_time;
+                                $start_time = $department->reserve_start_time;
+                                $end_time = $department->reserve_end_time;
                             } else {
-                                $start_time = $ongoing_event->start_time;
-                                $end_time = $ongoing_event->end_time;
+                                $start_time = $department->start_time;
+                                $end_time = $department->end_time;
                             }
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);
@@ -458,11 +458,11 @@
                             $register_event->event_schedule_id,
                         )->count();
                         if ($register_event->get_event_schedule->is_reserve_date == 'y') {
-                            $start_time = $register_event->event->reserve_start_time;
-                            $end_time = $register_event->event->reserve_end_time;
+                            $start_time = $register_event->get_event_schedule->reserve_start_time;
+                            $end_time = $register_event->get_event_schedule->reserve_end_time;
                         } else {
-                            $start_time = $register_event->event->start_time;
-                            $end_time = $register_event->event->end_time;
+                            $start_time = $register_event->get_event_schedule->start_time;
+                            $end_time = $register_event->get_event_schedule->end_time;
                         }
                         $available = $register_event->get_event_schedule
                             ? $register_event->get_event_schedule->seat_count - $registered

@@ -53,6 +53,12 @@
                                         href="{{ route('create_department', ['department_id' => encrypt($department->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @if (!empty(session()->get('super_admin')))
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                            data-url="{{ route('department_destroy', $department->id) }}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -64,22 +70,7 @@
             </div>
         </div>
     </section>
-    <div id="deleteModal" class="fixed inset-0 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">
-                Confirm Delete
-            </h2>
-            <p class="text-gray-600 mb-5">
-                Are you sure you want to delete this event?
-            </p>
-            <div class="flex justify-end gap-3">
-                <button id="cancelDelete" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">
-                    Cancel
-                </button>
-                <button id="confirmDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
-                    Delete
-                </button>
-            </div>
-        </div>
-    </div>
+    @if (!empty(session()->get('super_admin')))
+        <x-partials.delete-modal label="department" />
+    @endif
 </x-layouts.app>

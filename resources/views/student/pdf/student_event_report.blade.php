@@ -106,11 +106,11 @@
     </div>
     @php
         if ($event_schedule->is_reserve_date == 'y') {
-            $start_time = $event->reserve_start_time;
-            $end_time = $event->reserve_end_time;
+            $start_time = $event_schedule->reserve_start_time;
+            $end_time = $event_schedule->reserve_end_time;
         } else {
-            $start_time = $event->start_time;
-            $end_time = $event->end_time;
+            $start_time = $event_schedule->start_time;
+            $end_time = $event_schedule->end_time;
         }
     @endphp
     <!-- ================= EVENT INFO ================= -->

@@ -49,11 +49,11 @@
                 @foreach ($registeredEvents as $event)
                     @php
                         if ($event->get_event_schedule && $event->get_event_schedule->is_reserve_date == 'y') {
-                            $start_time = $event->event->reserve_start_time;
-                            $end_time = $event->event->reserve_end_time;
+                            $start_time = $event->get_event_schedule->reserve_start_time;
+                            $end_time = $event->get_event_schedule->reserve_end_time;
                         } else {
-                            $start_time = $event->event->start_time;
-                            $end_time = $event->event->end_time;
+                            $start_time = $event->get_event_schedule?->start_time;
+                            $end_time = $event->get_event_schedule?->end_time;
                         }
 
                         $available = $event->available_seats ?? 0;
@@ -118,11 +118,11 @@
                 @foreach ($completedEvents as $event)
                     @php
                         if ($event->get_event_schedule && $event->get_event_schedule->is_reserve_date == 'y') {
-                            $start_time = $event->event->reserve_start_time;
-                            $end_time = $event->event->reserve_end_time;
+                            $start_time = $event->get_event_schedule->reserve_start_time;
+                            $end_time = $event->get_event_schedule->reserve_end_time;
                         } else {
-                            $start_time = $event->event->start_time;
-                            $end_time = $event->event->end_time;
+                            $start_time = $event->get_event_schedule?->start_time;
+                            $end_time = $event->get_event_schedule?->end_time;
                         }
 
                         $available = $event->available_seats ?? 0;

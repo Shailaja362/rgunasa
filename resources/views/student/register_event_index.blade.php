@@ -89,11 +89,11 @@
                             $eventDate = \Carbon\Carbon::parse($department->event_date)->toDateString();
                             $registeredCount = $registeredCounts[$department->id] ?? 0;
                             if ($department->is_reserve_date == 'y') {
-                                $start_time = $event->reserve_start_time;
-                                $end_time = $event->reserve_end_time;
+                                $start_time = $department->reserve_start_time;
+                                $end_time = $department->reserve_end_time;
                             } else {
-                                $start_time = $event->start_time;
-                                $end_time = $event->end_time;
+                                $start_time = $department->start_time;
+                                $end_time = $department->end_time;
                             }
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($event->end_registration);
@@ -245,11 +245,11 @@
                             $registeredCount = $registeredCounts[$department->id] ?? 0;
 
                             if ($department->is_reserve_date == 'y') {
-                                $start_time = $ongoing_event->reserve_start_time;
-                                $end_time = $ongoing_event->reserve_end_time;
+                                $start_time = $department->reserve_start_time;
+                                $end_time = $department->reserve_end_time;
                             } else {
-                                $start_time = $ongoing_event->start_time;
-                                $end_time = $ongoing_event->end_time;
+                                $start_time = $department->start_time;
+                                $end_time = $department->end_time;
                             }
                             $availableSeats = max(0, $department->seat_count - $registeredCount);
                             $deadline = \Carbon\Carbon::parse($ongoing_event->end_registration);

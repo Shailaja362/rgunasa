@@ -128,9 +128,14 @@ class StudentAttendanceController extends Controller
 
     public function download(Request $request)
     {
-        $event_id = Event::where('id', $request->event_id)->first();
-        $fileName = $event_id->title . '_' . 'student_attendance_' . date('Y-m-d') . '.xlsx';
-        return Excel::download(new AttendanceExport($event_id->id), $fileName);
+        $event = Event::where('id', $request->event_id)->firstOrFail();
+
+        $filters = $request->only(['programme_id', 'section', 'event_date']);
+        $filters['batch'] = array_filter((array) $request->batch);
+        $filters['semester'] = array_filter((array) $request->semester);
+
+        $fileName = $event->title . '_' . 'student_attendance_' . date('Y-m-d') . '.xlsx';
+        return Excel::download(new AttendanceExport($event->id, $filters), $fileName);
     }
 
     public function markAttendance(Request $request)

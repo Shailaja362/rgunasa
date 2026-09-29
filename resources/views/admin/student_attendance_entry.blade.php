@@ -85,14 +85,18 @@
                     <p class="text-xs text-gray-500 mt-1">Select a Programme to load available semesters.</p>
                 </div>
             </div>
-            <div class="text-center mt-4">
-                <button class="bg-primary text-white px-6 py-2 rounded-full shadow">
+            <div class="mt-4 flex flex-wrap items-center justify-center gap-3">
+                <button class="bg-primary text-white px-6 py-2 rounded-full shadow text-sm font-medium">
                     <i class="fa fa-search mr-1"></i> Search
                 </button>
                 <a href="{{ route('student_attendance_entry', ['event_id' => $event->id]) }}"
-                    class="px-6 py-2 text-sm border rounded-md bg-gray-600 text-white hover:bg-gray-600 transition">
+                    class="bg-gray-600 text-white px-6 py-2 rounded-full shadow text-sm font-medium hover:bg-gray-700 transition">
                     Reset
                 </a>
+                <button type="button" id="downloadAttendanceReport"
+                    class="bg-[#ff7f50] text-white px-6 py-2 rounded-full shadow text-sm font-medium transition">
+                    <i class="fa fa-download mr-1"></i> Download Report
+                </button>
             </div>
         </div>
     </form>
@@ -280,5 +284,33 @@ $(document).ready(function () {
             e.preventDefault();
         }
     });
+});
+
+const attendanceDownloadUrl = "{{ route('attendance.download') }}";
+const attendanceDownloadEventId = "{{ $event->id }}";
+
+$("#downloadAttendanceReport").on("click", function () {
+    const hasAllFilters = Boolean(
+        $("#programme_id").val() &&
+        $("#event_date").val() &&
+        $("#section").val() &&
+        ($("#batch").val() || []).length &&
+        ($("#semester").val() || []).length
+    );
+
+    if (!hasAllFilters) {
+        showToast("Please choose Programme, Event Date, Section, Batch and Semester before downloading.", "error", 3000);
+        return;
+    }
+
+    const params = new URLSearchParams();
+    params.append("event_id", attendanceDownloadEventId);
+    if ($("#programme_id").val()) params.append("programme_id", $("#programme_id").val());
+    if ($("#event_date").val()) params.append("event_date", $("#event_date").val());
+    if ($("#section").val()) params.append("section", $("#section").val());
+    ($("#batch").val() || []).forEach((b) => params.append("batch[]", b));
+    ($("#semester").val() || []).forEach((s) => params.append("semester[]", s));
+
+    window.location.href = attendanceDownloadUrl + "?" + params.toString();
 });
 </script>

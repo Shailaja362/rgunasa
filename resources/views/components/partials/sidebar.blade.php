@@ -99,6 +99,7 @@
                 <x-slot:menus>
                     <x-menu.item name="Create Event" icon="fas fa-pencil-alt" route="event_list" />
                     <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
+                    <x-menu.item name="Dept. Students" icon="fa-building" route="department_student_report" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
                     <x-menu.item name="Reports" icon="fa-book" route="reports" />
@@ -136,6 +137,7 @@
                     <x-menu.item name="Events" icon="fa-calendar-minus" route="events" />
                     <x-menu.item name="Create Event" icon="fa-pencil-square" route="event_list" />
                     <x-menu.item name="Registered Students" icon="fa-graduation-cap" route="registered_report_index" />
+                     <x-menu.item name="Dept. Students" icon="fa-building" route="department_student_report" />
                     <x-menu.item name="Assign Tasks" icon="fa-check-circle" route="assign_tasks" />
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />

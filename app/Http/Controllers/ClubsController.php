@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Club;
 use App\Models\Faculty;
 use App\Helpers\ActivityLog;
+use App\Support\RelatedRecordChecker;
 use Illuminate\Http\Request;
 
 class ClubsController extends Controller
@@ -81,5 +82,39 @@ class ClubsController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $club = Club::findOrFail($id);
+
+        $counts = RelatedRecordChecker::counts([
+            ['table' => 'events', 'column' => 'club_id', 'value' => $club->id, 'label' => 'event(s)'],
+        ]);
+
+        if (!empty($counts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('club', $counts),
+            ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('club', []),
+            ]);
+        }
+
+        $club->delete();
+
+        ActivityLog::add($club->name . ' - Club Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Club deleted successfully',
+        ]);
     }
 }

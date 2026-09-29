@@ -13,11 +13,11 @@
         @foreach ($reports as $report)
             @php
                 if ($report->schedule->is_reserve_date == 'y') {
-                    $start_time = $report->get_event->reserve_start_time;
-                    $end_time = $report->get_event->reserve_end_time;
+                    $start_time = $report->schedule->reserve_start_time;
+                    $end_time = $report->schedule->reserve_end_time;
                 } else {
-                    $start_time = $report->get_event->start_time;
-                    $end_time = $report->get_event->end_time;
+                    $start_time = $report->schedule->start_time;
+                    $end_time = $report->schedule->end_time;
                 }
             @endphp
             <div class="bg-white rounded-2xl shadow hover:shadow-lg transition p-5">

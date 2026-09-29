@@ -85,6 +85,12 @@
                                     <a href="{{ route('create_faculty', ['faculty_id' => encrypt($fac->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @if (!empty(session()->get('super_admin')))
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                            data-url="{{ route('faculty_destroy', $fac->id) }}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -96,4 +102,7 @@
             </div>
         </div>
     </section>
+    @if (!empty(session()->get('super_admin')))
+        <x-partials.delete-modal label="faculty member" />
+    @endif
 </x-layouts.app>

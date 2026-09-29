@@ -298,6 +298,39 @@
                                 placeholder="Enter Event Credit Points"
                                 class="credit_points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium">Session <span class="text-red-500">*</span></label>
+                            <select name="departments[{{ $index }}][session]"
+                                class="dept_session bg-[#D9D9D9] w-full rounded-full py-2 px-3 focus:outline-none focus:ring focus:ring-primary/40">
+                                <option value="">Select Session</option>
+                                <option value="1" {{ old("departments.$index.session", optional($dept)->session) == '1' ? 'selected' : '' }}>FN</option>
+                                <option value="2" {{ old("departments.$index.session", optional($dept)->session) == '2' ? 'selected' : '' }}>AN</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Start Time <span class="text-red-500">*</span></label>
+                            <input type="time" name="departments[{{ $index }}][start_time]"
+                                value="{{ old("departments.$index.start_time", optional($dept)->start_time) }}"
+                                class="dept_start_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">End Time <span class="text-red-500">*</span></label>
+                            <input type="time" name="departments[{{ $index }}][end_time]"
+                                value="{{ old("departments.$index.end_time", optional($dept)->end_time) }}"
+                                class="dept_end_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Reserve Start Time</label>
+                            <input type="time" name="departments[{{ $index }}][reserve_start_time]"
+                                value="{{ old("departments.$index.reserve_start_time", optional($dept)->reserve_start_time) }}"
+                                class="dept_reserve_start_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium">Reserve End Time</label>
+                            <input type="time" name="departments[{{ $index }}][reserve_end_time]"
+                                value="{{ old("departments.$index.reserve_end_time", optional($dept)->reserve_end_time) }}"
+                                class="dept_reserve_end_time bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
+                        </div>
                     </div>
                 </div>
             @endforeach
@@ -306,47 +339,16 @@
             + Add Department
         </button>
         <!-- Schedule Section -->
-        <h1 class="text-primary font-semibold mt-10 px-3">Schedule & Location</h1>
-        <p class="px-3">When and where the event will take place</p>
+        <h1 class="text-primary font-semibold mt-10 px-3">Location</h1>
+        <p class="px-3">Where the event will take place (session and timing are set per department schedule above)</p>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 px-3">
+        <div class="grid grid-cols-1 px-3">
             <div>
-                <label class="block text-sm font-medium">Start Time<span class="text-red-600">*</span></label>
-                <input type="time" name="start_time" id="start_time" value="{{ $edit_event->start_time ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-            <div>
-                <label class="block text-sm font-medium">End Time<span class="text-red-600">*</span></label>
-                <input type="time" name="end_time" id="end_time" value="{{ $edit_event->end_time ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-            <div>
-                <label class="block text-sm font-medium">Reserve Start Time</label>
-                <input type="time" name="reserve_start_time" id="reserve_start_time"
-                    value="{{ $edit_event->reserve_start_time ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-            <div>
-                <label class="block text-sm font-medium">Reserve End Time</label>
-                <input type="time" name="reserve_end_time" id="reserve_end_time"
-                    value="{{ $edit_event->reserve_end_time ?? '' }}"
-                    class="w-full bg-[#D9D9D9] rounded-full px-4 py-2 mt-1 focus:outline-none focus:ring focus:ring-primary/40">
-            </div>
-            <div class="col-span-2">
                 <label class="block text-sm font-medium">Location / Virtual Link<span
                         class="text-red-600">*</span></label>
                 <textarea name="location" id="location"
                     class="bg-[#D9D9D9] w-full p-3 border border-gray-300 rounded-2xl focus:outline-none focus:ring focus:ring-primary/40"
                     rows="3" placeholder="Enter the event venue or virtual meeting link">{{ $edit_event->location ?? '' }}</textarea>
-            </div>
-            <div>
-                <label class="block text-sm font-medium">Session<span class="text-red-600">*</span></label>
-                <select name="session" id="session"
-                    class="bg-[#D9D9D9] w-full rounded-full py-3 px-3 focus:outline-none focus:ring focus:ring-primary/40">
-                    <option value="">Select Session</option>
-                    <option value="1" @if (!empty($edit_event) && $edit_event->session == 1) selected @endif>FN</option>
-                    <option value="2" @if (!empty($edit_event) && $edit_event->session == 2) selected @endif>AN</option>
-                </select>
             </div>
         </div>
 

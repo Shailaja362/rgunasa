@@ -6,6 +6,7 @@ use Exception;
 use App\Models\Programme;
 use App\Models\Department;
 use App\Helpers\ActivityLog;
+use App\Support\RelatedRecordChecker;
 use Illuminate\Http\Request;
 
 class ProgrammeController extends Controller
@@ -84,5 +85,41 @@ class ProgrammeController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $programme = Programme::findOrFail($id);
+
+        $counts = RelatedRecordChecker::counts([
+            ['table' => 'students', 'column' => 'programme_id', 'value' => $programme->id, 'label' => 'student(s)'],
+            ['table' => 'event_schedules', 'column' => 'programme_id', 'value' => $programme->id, 'label' => 'event schedule(s)'],
+            ['table' => 'event_reports', 'column' => 'programme_id', 'value' => $programme->id, 'label' => 'event report(s)'],
+        ]);
+
+        if (!empty($counts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('programme', $counts),
+            ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('programme', []),
+            ]);
+        }
+
+        $programme->delete();
+
+        ActivityLog::add($programme->name . ' - Programme Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Programme deleted successfully',
+        ]);
     }
 }

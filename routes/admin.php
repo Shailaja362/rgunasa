@@ -20,6 +20,7 @@ use App\Http\Controllers\Auth\SuperAdminAuthController;
 use App\Http\Controllers\admin\StudentAttendanceController;
 use App\Http\Controllers\AdminImportExportController;
 use App\Http\Controllers\EventRegisterdReportController;
+use App\Http\Controllers\DepartmentStudentReportController;
 use App\Http\Controllers\super_admin\AssignTasksController;
 use App\Http\Controllers\super_admin\ReviewReportsController;
 use App\Http\Controllers\super_admin\SuperAdminHomeController;
@@ -76,32 +77,49 @@ Route::prefix('admin')->group(function () {
         Route::get('/club-list', [ClubsController::class, 'index'])->name('club_list');
         Route::get('/create-club', [ClubsController::class, 'createClub'])->name('create_club');
         Route::post('/save-club', [ClubsController::class, 'saveClub'])->name('save_club');
+        Route::post('/club-delete/{id}', [ClubsController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('club_destroy');
 
         //department
         Route::get('/department-list', [DepartmentController::class, 'index'])->name('department_list');
         Route::get('/create-department', [DepartmentController::class, 'createDepartment'])->name('create_department');
         Route::post('/save-department', [DepartmentController::class, 'saveDepartment'])->name('save_department');
+        Route::post('/department-delete/{id}', [DepartmentController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('department_destroy');
 
         //batch
         Route::get('/batch-list', [BatchController::class, 'index'])->name('batch_list');
         Route::get('/create-batch', [BatchController::class, 'createBatch'])->name('create_batch');
         Route::post('/save-batch', [BatchController::class, 'saveBatch'])->name('save_batch');
-        Route::post('/batch-delete/{id}', [BatchController::class, 'destroy'])->name('batch_destroy');
+        Route::post('/batch-delete/{id}', [BatchController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('batch_destroy');
 
         //programme
         Route::get('/programme-list', [ProgrammeController::class, 'index'])->name('programme_list');
         Route::get('/create-programme', [ProgrammeController::class, 'createProgramme'])->name('create_programme');
         Route::post('/save-programme', [ProgrammeController::class, 'saveProgramme'])->name('save_programme');
+        Route::post('/programme-delete/{id}', [ProgrammeController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('programme_destroy');
 
         //faculty
         Route::get('/faculty-list', [FacultyController::class, 'index'])->name('faculty_list');
         Route::get('/create-faculty', [FacultyController::class, 'createFaculty'])->name('create_faculty');
         Route::post('/save-faculty', [FacultyController::class, 'saveFaculty'])->name('save_faculty');
+        Route::post('/faculty-delete/{id}', [FacultyController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('faculty_destroy');
 
         //student
         Route::get('/student-list', [StudentController::class, 'index'])->name('student_list');
         Route::get('/create-student', [StudentController::class, 'createStudent'])->name('create_student');
         Route::post('/save-student', [StudentController::class, 'saveStudent'])->name('save_student');
+        Route::post('/student-delete/{id}', [StudentController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('student_destroy');
 
         Route::get('{id}/view-pdf', [AdminReportsController::class, 'viewPdf'])->name('reports_view_pdf');
         Route::get('{id}/download-pdf', [AdminReportsController::class, 'downloadPdf'])->name('reports_download_pdf');
@@ -118,6 +136,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/admin-list', [AdminController::class, 'index'])->name('admin_list');
         Route::get('/create-admin', [AdminController::class, 'createAdmin'])->name('create_admin');
         Route::post('/save-admin', [AdminController::class, 'saveAdmin'])->name('save_admin');
+        Route::post('/admin-delete/{id}', [AdminController::class, 'destroy'])
+            ->middleware('super.admin')
+            ->name('admin_destroy');
         Route::any('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout');
 
         //Admin Upload
@@ -129,12 +150,17 @@ Route::prefix('admin')->group(function () {
             ->name('registered_report_index');
         Route::get('/event-registrations/export', [EventRegisterdReportController::class, 'export'])
             ->name('admin.event-registrations.export');
+        Route::get('/department-student-report', [DepartmentStudentReportController::class, 'index'])
+            ->name('department_student_report');
+        Route::get('/department-student-report/export', [DepartmentStudentReportController::class, 'export'])
+            ->name('department_student_report.export');
         Route::get('/task-view', [AssignTasksController::class, 'viewTask'])
             ->name('task_view');
 
         Route::get('/student-event-report', [AssignGradeController::class, 'downloadEventReport'])->name('student_event_report');
         Route::get('/download-otherfiles/{event}/{student}/{schedule_id}', [AssignGradeController::class, 'downloadAll'])->name('download_all');
         Route::post('/events/{id}', [EventsController::class, 'destroy'])
+            ->middleware('super.admin')
             ->name('events_destroy');
 
         //promote student

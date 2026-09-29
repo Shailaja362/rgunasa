@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ActivityLog;
 use App\Models\Department;
+use App\Support\RelatedRecordChecker;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -75,5 +76,42 @@ class DepartmentController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $department = Department::findOrFail($id);
+
+        $counts = RelatedRecordChecker::counts([
+            ['table' => 'programmes', 'column' => 'department_id', 'value' => $department->id, 'label' => 'programme(s)'],
+            ['table' => 'faculties', 'column' => 'department_id', 'value' => $department->id, 'label' => 'faculty member(s)'],
+            ['table' => 'students', 'column' => 'department_id', 'value' => $department->id, 'label' => 'student(s)'],
+            ['table' => 'admins', 'column' => 'department_id', 'value' => $department->id, 'label' => 'admin(s)'],
+        ]);
+
+        if (!empty($counts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('department', $counts),
+            ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('department', []),
+            ]);
+        }
+
+        $department->delete();
+
+        ActivityLog::add($department->name . ' - Department Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Department deleted successfully',
+        ]);
     }
 }

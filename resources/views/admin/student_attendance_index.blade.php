@@ -37,6 +37,9 @@
                                     <a href="{{ route('student_attendance_entry', ['event_id' => $event->id]) }}" data-event_id="{{ $event->id }}" class="bg-[#DA70D6] text-white px-3 py-1 rounded-full text-xs">
                                         Attendance Entry
                                     </a>
+                                    <a href="{{ route('attendance.download', ['event_id' => $event->id]) }}" class="bg-[#ff7f50] text-white px-3 py-1 rounded-full text-xs">
+                                        Download Report
+                                    </a>
                                 </div>
                             </td>
                         </tr>

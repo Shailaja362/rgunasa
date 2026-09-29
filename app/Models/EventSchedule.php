@@ -15,7 +15,12 @@ class EventSchedule extends Model
         'seat_count',
         'batch',
         'semester',
-        'credit_points'
+        'credit_points',
+        'session',
+        'start_time',
+        'end_time',
+        'reserve_start_time',
+        'reserve_end_time',
     ];
 
     public function registrations()

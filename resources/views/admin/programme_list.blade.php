@@ -72,6 +72,12 @@
                          <a href="{{ route('create_programme', ['programme_id' => encrypt($programme->id)]) }}">
                              <i class="fa-solid fa-pen-to-square"></i>
                         </a>
+                        @if (!empty(session()->get('super_admin')))
+                            <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                data-url="{{ route('programme_destroy', $programme->id) }}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        @endif
                         </td>
                     </tr>
                 @endforeach
@@ -83,6 +89,9 @@
         </div>
         </div>
     </section>
+    @if (!empty(session()->get('super_admin')))
+        <x-partials.delete-modal label="programme" />
+    @endif
 </x-layouts.app>
 
 

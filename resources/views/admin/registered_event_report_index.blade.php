@@ -69,6 +69,18 @@
                         placeholder="Student name / Email" class="w-full border rounded px-3 py-2">
                 </div>
                 <div>
+                    <label class="block text-sm font-medium">Programme</label>
+                    <select name="programme_id" id="programme_id"
+                        class="w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
+                        <option value="">Select Programme</option>
+                        @foreach ($programmes as $programme)
+                            <option value="{{ $programme->id }}" {{ request('programme_id') == $programme->id ? 'selected' : '' }}>
+                                {{ $programme->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label class="block text-sm font-medium">Batch</label>
                     <select name="batch" id="batch"
                         class="batch w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40 choice-select">
@@ -173,6 +185,7 @@
         let search = $('input[name="search"]').val();
         let semester = $('select[name="semester"]').val();
         let batch = $('select[name="batch"]').val();
+        let programme = $('select[name="programme_id"]').val();
 
         // Check if all fields are empty
         if (
@@ -180,7 +193,7 @@
             status === '' &&
             fromDate === '' &&
             toDate === '' &&
-            search.trim() === '' && semester === '' && batch === ''
+            search.trim() === '' && semester === '' && batch === '' && programme === ''
         ) {
             e.preventDefault();
             showToast('Please select at least one filter before downloading the report.', "error", 2000);

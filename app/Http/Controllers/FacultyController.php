@@ -6,6 +6,7 @@ use App\Helpers\ActivityLog;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Faculty;
+use App\Support\RelatedRecordChecker;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -165,5 +166,40 @@ class FacultyController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $faculty = Faculty::findOrFail($id);
+
+        $counts = RelatedRecordChecker::counts([
+            ['table' => 'clubs', 'column' => 'faculty_id', 'value' => $faculty->id, 'label' => 'club(s)'],
+            ['table' => 'events', 'column' => 'faculty_id', 'value' => $faculty->id, 'label' => 'event(s)'],
+        ]);
+
+        if (!empty($counts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('faculty member', $counts),
+            ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('faculty member', []),
+            ]);
+        }
+
+        $faculty->delete();
+
+        ActivityLog::add($faculty->name . ' - Faculty Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Faculty deleted successfully',
+        ]);
     }
 }

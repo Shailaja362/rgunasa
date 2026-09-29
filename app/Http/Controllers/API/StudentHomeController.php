@@ -86,15 +86,7 @@ class StudentHomeController extends Controller
                 $registeredCount = $upcomingRegisteredCounts[$dept->id] ?? 0;
                 $availableSeats = max(0, $dept->seat_count - $registeredCount);
 
-                if ($dept->is_reserve_date == 'y') {
-
-                    $start_time = $event->reserve_start_time;
-                    $end_time   = $event->reserve_end_time;
-                } else {
-
-                    $start_time = $event->start_time;
-                    $end_time   = $event->end_time;
-                }
+                [$start_time, $end_time] = $this->eventTimesForSchedule($dept);
 
                 $deadline = Carbon::parse($event->end_registration);
 
@@ -213,13 +205,7 @@ class StudentHomeController extends Controller
                 $availableSeats  = max(0, $dept->seat_count - $registeredCount);
 
                 // Time
-                if ($dept->is_reserve_date == 'y') {
-                    $start_time = $event->reserve_start_time;
-                    $end_time   = $event->reserve_end_time;
-                } else {
-                    $start_time = $event->start_time;
-                    $end_time   = $event->end_time;
-                }
+                [$start_time, $end_time] = $this->eventTimesForSchedule($dept);
 
                 // Registration eligibility
                 $deadline         = Carbon::parse($event->end_registration);
@@ -321,7 +307,7 @@ class StudentHomeController extends Controller
 
                 $registeredSeats = $registeredEventSeatCounts[$schedule->id] ?? 0;
                 $availableSeats = max(0, $schedule->seat_count - $registeredSeats);
-                [$startTime, $endTime] = $this->eventTimesForSchedule($event, $schedule);
+                [$startTime, $endTime] = $this->eventTimesForSchedule($schedule);
 
                 return [
                     'event_id' => $event->id,
@@ -416,13 +402,12 @@ class StudentHomeController extends Controller
         });
     }
 
-    private function eventTimesForSchedule($event, $schedule)
+    private function eventTimesForSchedule($schedule)
     {
-
         if ($schedule->is_reserve_date == 'y') {
-            return [$event->reserve_start_time, $event->reserve_end_time];
+            return [$schedule->reserve_start_time, $schedule->reserve_end_time];
         }
 
-        return [$event->start_time, $event->end_time];
+        return [$schedule->start_time, $schedule->end_time];
     }
 }

@@ -10,6 +10,8 @@ use App\Models\Department;
 use App\Helpers\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Support\RelatedRecordChecker;
 
 class StudentController extends Controller
 {
@@ -305,5 +307,56 @@ class StudentController extends Controller
             ->where('semester', '<', 8)
             ->increment('semester');
         return back()->with('success', 'Eligible students promoted successfully.');
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $student = Student::findOrFail($id);
+
+        // Payment records are never auto-deleted, regardless of confirmation.
+        $paymentCounts = RelatedRecordChecker::counts([
+            ['table' => 'payments', 'column' => 'student_id', 'value' => $student->id, 'label' => 'payment record(s)'],
+            ['table' => 'event_payments', 'column' => 'student_id', 'value' => $student->id, 'label' => 'event payment record(s)'],
+        ]);
+
+        if (!empty($paymentCounts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('student', $paymentCounts),
+            ], 422);
+        }
+
+        $cascadeCounts = RelatedRecordChecker::counts([
+            ['table' => 'student_event_registrations', 'column' => 'student_id', 'value' => $student->id, 'label' => 'event registration(s)'],
+            ['table' => 'student_attendances', 'column' => 'student_id', 'value' => $student->id, 'label' => 'attendance record(s)'],
+            ['table' => 'student_upload_proofs', 'column' => 'student_id', 'value' => $student->id, 'label' => 'uploaded proof(s)'],
+            ['table' => 'student_feedbacks', 'column' => 'student_id', 'value' => $student->id, 'label' => 'feedback submission(s)'],
+        ]);
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('student', $cascadeCounts),
+            ]);
+        }
+
+        DB::transaction(function () use ($student) {
+            DB::table('student_event_registrations')->where('student_id', $student->id)->delete();
+            DB::table('student_attendances')->where('student_id', $student->id)->delete();
+            DB::table('student_upload_proofs')->where('student_id', $student->id)->delete();
+            DB::table('student_feedbacks')->where('student_id', $student->id)->delete();
+
+            // Notifications are removed by the database cascade
+            $student->delete();
+        });
+
+        ActivityLog::add($student->name . ' - Student Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Student deleted successfully',
+        ]);
     }
 }

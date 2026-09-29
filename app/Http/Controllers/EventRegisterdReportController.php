@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\EventRegistrationExport;
 use App\Models\Batch;
 use App\Models\Event;
+use App\Models\Programme;
 use Illuminate\Http\Request;
 use App\Models\StudentEventRegistration;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -50,6 +51,7 @@ class EventRegisterdReportController extends Controller
         ];
 
         $this->data['batches'] = Batch::orderBy('name')->pluck('name');
+        $this->data['programmes'] = Programme::orderBy('name')->get(['id', 'name']);
 
         if (!empty($request->all())) {
             $query = StudentEventRegistration::with([
@@ -107,7 +109,8 @@ class EventRegisterdReportController extends Controller
             'to_date',
             'search',
             'batch',
-            'semester'
+            'semester',
+            'programme_id'
         ]);
 
         if ($request->type === 'word') {
@@ -166,6 +169,9 @@ class EventRegisterdReportController extends Controller
                     $student->where('name', 'like', '%' . $request->search . '%')
                         ->orWhere('email', 'like', '%' . $request->search . '%');
                 });
+            })
+            ->when($request->programme_id, function ($q) use ($request) {
+                $q->whereHas('student', fn($student) => $student->where('programme_id', $request->programme_id));
             });
 
         $query->when($request->filled('semester') || $request->filled('batch'), function ($q) use ($request) {

@@ -170,6 +170,12 @@
                                     <a href="{{ route('create_admin', ['admin_id' => encrypt($admin->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @if (!empty(session()->get('super_admin')) && $admin->id !== auth('admin')->id())
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                            data-url="{{ route('admin_destroy', $admin->id) }}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -181,4 +187,7 @@
             </div>
         </div>
     </section>
+    @if (!empty(session()->get('super_admin')))
+        <x-partials.delete-modal label="admin" />
+    @endif
 </x-layouts.app>

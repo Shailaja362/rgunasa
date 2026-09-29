@@ -10,6 +10,8 @@ use App\Models\Role;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use App\Support\RelatedRecordChecker;
 
 class AdminController extends Controller
 {
@@ -163,5 +165,50 @@ class AdminController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function destroy($id, Request $request)
+    {
+        $admin = Admin::findOrFail($id);
+
+        if ($admin->id === auth('admin')->id()) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => 'You cannot delete your own account.',
+            ], 422);
+        }
+
+        $counts = RelatedRecordChecker::counts([
+            ['table' => 'events', 'column' => 'created_by', 'value' => $admin->id, 'label' => 'created event(s)'],
+            ['table' => 'event_reports', 'column' => 'created_by', 'value' => $admin->id, 'label' => 'submitted event report(s)'],
+            ['table' => 'tasks', 'column' => 'created_by', 'value' => $admin->id, 'label' => 'created task(s)'],
+            ['table' => 'tasks', 'column' => 'admin_id', 'value' => $admin->id, 'label' => 'assigned task(s)'],
+        ]);
+
+        if (!empty($counts)) {
+            return response()->json([
+                'success' => false,
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('admin', $counts),
+            ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('admin', []),
+            ]);
+        }
+
+        $admin->delete();
+
+        ActivityLog::add($admin->name . ' - Admin Deleted', auth('admin')->user());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Admin deleted successfully',
+        ]);
     }
 }

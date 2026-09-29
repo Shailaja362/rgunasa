@@ -50,10 +50,12 @@
                                     <a href="{{ route('create_batch', ['batch_id' => encrypt($batch->id)]) }}">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <button type="button" class="text-red-600 hover:text-red-800 deleteBatch"
-                                        data-url="{{ route('batch_destroy', $batch->id) }}">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
+                                    @if (!empty(session()->get('super_admin')))
+                                        <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                            data-url="{{ route('batch_destroy', $batch->id) }}">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    @endif
                                 </td>
                             </tr>
                         @endforeach
@@ -65,60 +67,7 @@
             </div>
         </div>
     </section>
-
-    <div id="batchDeleteModal" class="fixed inset-0 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-lg w-96 p-6">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Confirm Delete</h2>
-            <p class="text-gray-600 mb-5">Are you sure you want to delete this batch?</p>
-            <div class="flex justify-end gap-3">
-                <button id="cancelBatchDelete" class="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400">Cancel</button>
-                <button id="confirmBatchDelete" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let batchDeleteUrl = null;
-
-        document.getElementById('batchTableBody').addEventListener('click', function (e) {
-            const btn = e.target.closest('.deleteBatch');
-            if (!btn) return;
-            batchDeleteUrl = btn.dataset.url;
-            document.getElementById('batchDeleteModal').classList.remove('hidden');
-            document.getElementById('batchDeleteModal').classList.add('flex');
-        });
-
-        document.getElementById('cancelBatchDelete').addEventListener('click', function () {
-            document.getElementById('batchDeleteModal').classList.add('hidden');
-            document.getElementById('batchDeleteModal').classList.remove('flex');
-        });
-
-        document.getElementById('confirmBatchDelete').addEventListener('click', function () {
-            if (!batchDeleteUrl) return;
-
-            fetch(batchDeleteUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                },
-            })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('batchDeleteModal').classList.add('hidden');
-                    document.getElementById('batchDeleteModal').classList.remove('flex');
-                    if (data.success) {
-                        showToast(data.message, 'success', 2000);
-                        setTimeout(() => window.location.reload(), 1000);
-                    } else {
-                        showToast(data.message || 'Failed to delete batch', 'error', 2000);
-                    }
-                })
-                .catch(() => {
-                    document.getElementById('batchDeleteModal').classList.add('hidden');
-                    document.getElementById('batchDeleteModal').classList.remove('flex');
-                    showToast('Something went wrong', 'error', 2000);
-                });
-        });
-    </script>
+    @if (!empty(session()->get('super_admin')))
+        <x-partials.delete-modal label="batch" />
+    @endif
 </x-layouts.app>

@@ -96,11 +96,11 @@ class OngoingEventController extends Controller
 
                 // Time
                 if ($dept->is_reserve_date == 'y') {
-                    $start_time = $event->reserve_start_time;
-                    $end_time   = $event->reserve_end_time;
+                    $start_time = $dept->reserve_start_time;
+                    $end_time   = $dept->reserve_end_time;
                 } else {
-                    $start_time = $event->start_time;
-                    $end_time   = $event->end_time;
+                    $start_time = $dept->start_time;
+                    $end_time   = $dept->end_time;
                 }
 
                 // Registration eligibility
@@ -272,11 +272,11 @@ class OngoingEventController extends Controller
 
             if (!empty($registration->schedule)) {
                 if ($registration->schedule->is_reserve_date === 'y') {
-                    $start_time = $event->reserve_start_time;
-                    $end_time   = $event->reserve_end_time;
+                    $start_time = $registration->schedule->reserve_start_time;
+                    $end_time   = $registration->schedule->reserve_end_time;
                 } else {
-                    $start_time = $event->start_time;
-                    $end_time   = $event->end_time;
+                    $start_time = $registration->schedule->start_time;
+                    $end_time   = $registration->schedule->end_time;
                 }
             }
 
@@ -396,11 +396,11 @@ class OngoingEventController extends Controller
 
             if (!empty($registration->schedule)) {
                 if ($registration->schedule->is_reserve_date === 'y') {
-                    $start_time = $event->reserve_start_time;
-                    $end_time   = $event->reserve_end_time;
+                    $start_time = $registration->schedule->reserve_start_time;
+                    $end_time   = $registration->schedule->reserve_end_time;
                 } else {
-                    $start_time = $event->start_time;
-                    $end_time   = $event->end_time;
+                    $start_time = $registration->schedule->start_time;
+                    $end_time   = $registration->schedule->end_time;
                 }
             }
 

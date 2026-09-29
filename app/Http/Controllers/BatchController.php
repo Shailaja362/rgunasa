@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use App\Support\RelatedRecordChecker;
 
 class BatchController extends Controller
 {
@@ -129,15 +130,34 @@ class BatchController extends Controller
             || EventSchedule::whereRaw('FIND_IN_SET(?, batch)', [$name])->exists();
     }
 
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $batch = Batch::findOrFail($id);
 
-        if ($this->isBatchInUse($batch->name)) {
+        $counts = [];
+        $studentCount = Student::where('batch', $batch->name)->count();
+        if ($studentCount > 0) {
+            $counts[] = ['label' => 'student(s)', 'count' => $studentCount];
+        }
+        $scheduleCount = EventSchedule::whereRaw('FIND_IN_SET(?, batch)', [$batch->name])->count();
+        if ($scheduleCount > 0) {
+            $counts[] = ['label' => 'event schedule(s)', 'count' => $scheduleCount];
+        }
+
+        if (!empty($counts)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete. This batch is already assigned to students or event schedules.',
+                'blocking' => true,
+                'message' => RelatedRecordChecker::blockingMessage('batch', $counts),
             ], 422);
+        }
+
+        if (!$request->boolean('confirmed')) {
+            return response()->json([
+                'success' => false,
+                'blocking' => false,
+                'message' => RelatedRecordChecker::confirmMessage('batch', []),
+            ]);
         }
 
         $batch->delete();
