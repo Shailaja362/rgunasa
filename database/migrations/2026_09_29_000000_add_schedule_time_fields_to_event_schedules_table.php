@@ -27,40 +27,10 @@ return new class extends Migration
             $table->time('reserve_start_time')->nullable()->after('end_time');
             $table->time('reserve_end_time')->nullable()->after('reserve_start_time');
         });
-
-        DB::statement('
-            UPDATE event_schedules
-            INNER JOIN events ON events.id = event_schedules.event_id
-            SET
-                event_schedules.session = events.session,
-                event_schedules.start_time = events.start_time,
-                event_schedules.end_time = events.end_time,
-                event_schedules.reserve_start_time = events.reserve_start_time,
-                event_schedules.reserve_end_time = events.reserve_end_time
-        ');
-
-        // These are kept (not dropped) as a safety net, but new event saves no
-        // longer write to them, so they must accept NULL going forward.
-        DB::statement("ALTER TABLE events MODIFY session ENUM('1', '2') NULL COMMENT '1 FN, 2 AN'");
-        DB::statement('ALTER TABLE events MODIFY start_time TIME NULL');
-        DB::statement('ALTER TABLE events MODIFY end_time TIME NULL');
-        DB::statement('ALTER TABLE events MODIFY reserve_start_time TIME NULL');
-        DB::statement('ALTER TABLE events MODIFY reserve_end_time TIME NULL');
     }
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        DB::statement("ALTER TABLE events MODIFY session ENUM('1', '2') NOT NULL COMMENT '1 FN, 2 AN'");
-        DB::statement('ALTER TABLE events MODIFY start_time TIME NOT NULL');
-        DB::statement('ALTER TABLE events MODIFY end_time TIME NOT NULL');
-        DB::statement('ALTER TABLE events MODIFY reserve_start_time TIME NOT NULL');
-        DB::statement('ALTER TABLE events MODIFY reserve_end_time TIME NOT NULL');
-
-        Schema::table('event_schedules', function (Blueprint $table) {
-            $table->dropColumn(['session', 'start_time', 'end_time', 'reserve_start_time', 'reserve_end_time']);
-        });
-    }
+    public function down(): void {}
 };
