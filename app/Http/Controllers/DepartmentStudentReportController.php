@@ -87,9 +87,14 @@ class DepartmentStudentReportController extends Controller
             ? [$request->event_id]
             : $this->visibleEvents()->pluck('id')->all();
 
-        return function ($q) use ($eventIds) {
+        return function ($q) use ($eventIds, $request) {
             $q->where('status', '!=', self::CANCELLED_STATUS)
-                ->whereIn('event_id', $eventIds);
+                ->whereIn('event_id', $eventIds)
+                ->when($request->filled('event_date'), function ($registrationQuery) use ($request) {
+                    $registrationQuery->whereHas('get_event_schedule', function ($scheduleQuery) use ($request) {
+                        $scheduleQuery->whereDate('event_date', $request->event_date);
+                    });
+                });
         };
     }
 

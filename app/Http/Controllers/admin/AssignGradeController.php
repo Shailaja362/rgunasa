@@ -70,6 +70,8 @@ class AssignGradeController extends Controller
                     ->where('event_schedule_id', $schedule->id)
                     ->whereNotNull('entry_time')
                     ->whereNotNull('exit_time')
+                    ->whereHas('student', fn($sq) => $sq->where('programme_id', $request->programme_id))
+                    ->when($request->filled('section'), fn($q) => $q->whereHas('student', fn($sq) => $sq->where('section', $request->section)))
                     ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
                     ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();

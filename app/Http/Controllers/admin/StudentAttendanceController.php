@@ -68,6 +68,8 @@ class StudentAttendanceController extends Controller
 
                 $this->data['attendance_entry'] = StudentAttendance::where('event_id', $eventId)
                     ->where('event_schedule_id', $schedule->id)
+                    ->whereHas('student', fn($sq) => $sq->where('programme_id', $request->programme_id))
+                    ->when($request->filled('section'), fn($q) => $q->whereHas('student', fn($sq) => $sq->where('section', $request->section)))
                     ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
                     ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();
@@ -76,6 +78,8 @@ class StudentAttendanceController extends Controller
                     StudentEventRegistration::with('student.get_department', 'student.get_programme')
                     ->where('event_id', $eventId)
                     ->where('event_schedule_id', $schedule->id)
+                    ->whereHas('student', fn($sq) => $sq->where('programme_id', $request->programme_id))
+                    ->when($request->filled('section'), fn($q) => $q->whereHas('student', fn($sq) => $sq->where('section', $request->section)))
                     ->when(!empty($batches), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('batch', $batches)))
                     ->when(!empty($semesters), fn($q) => $q->whereHas('student', fn($sq) => $sq->whereIn('semester', $semesters)))
                     ->get();

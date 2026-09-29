@@ -25,7 +25,7 @@
             </div>
         </div>
         <form method="GET" action="" class="bg-white rounded-lg shadow p-4 mb-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-medium mb-1">Event</label>
                     <select name="event_id" class="w-full border rounded px-3 py-2 choice-select">
@@ -49,6 +49,11 @@
                             </option>
                         @endforeach
                     </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Event Date</label>
+                    <input type="date" name="event_date" value="{{ request('event_date') }}"
+                        class="w-full border rounded px-3 py-2">
                 </div>
             </div>
             <div class="mt-6 flex justify-center gap-4">
@@ -103,7 +108,7 @@
         </div>
 
         {{-- Student List --}}
-        <h2 class="text-lg font-semibold mb-3">Student List</h2>
+        <h2 class="text-lg font-semibold mb-3 mt-4">Student List</h2>
         <div class="bg-white rounded-lg shadow overflow-x-auto">
             <table class="min-w-full border-collapse">
                 <thead class="bg-primary text-white uppercase text-sm">
