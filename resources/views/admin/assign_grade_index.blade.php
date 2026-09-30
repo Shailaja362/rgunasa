@@ -25,7 +25,7 @@
                 <tbody>
                     @forelse ($events as  $event)
                         <tr class="border-t">
-                            <td class="px-4 py-3">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3">{{ $events->firstItem() + $loop->index }}</td>
                             <td class="px-4 py-3 font-medium">{{ $event->title ?? '' }}</td>
                             <td class="px-4 py-3">{{ $event->event_date ?? '' }}</td>
                             <td class="px-4 py-3">{{ $event->contact_person ?? '' }}</td>
@@ -50,6 +50,9 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+        <div class="p-4">
+            {{ $events->links() }}
         </div>
     </section>
 </x-layouts.app>
