@@ -47,6 +47,9 @@ class AttendanceExport implements FromCollection, WithHeadings
                 return [
                     'S.No'       => $index + 1,
                     'Name'       => $row->student->name ?? '',
+                    'Register Number' => $row->student?->register_number ?? '',
+                    'Semester'   => $row->student?->semester ?? '',
+                    'Batch'      => $row->student?->batch ?? '',
                     'Department' => $row->student?->get_department?->name ?? '',
                     'Section'    => $row->student?->section ?? '',
                     'Phone'      => $row->student?->mobile_number ?? '',
@@ -62,6 +65,9 @@ class AttendanceExport implements FromCollection, WithHeadings
         return [
             'S.No',
             'Name',
+            'Register Number',
+            'Semester',
+            'Batch',
             'Department',
             'Section',
             'Phone',
