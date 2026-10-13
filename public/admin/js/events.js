@@ -473,6 +473,8 @@ document.addEventListener("DOMContentLoaded", function () {
                                 <option value="">Select Session</option>
                                 <option value="1">FN</option>
                                 <option value="2">AN</option>
+                                <option value="3">Moonlight</option>
+                                <option value="4">Dimlight</option>
                             </select>
                         </div>
                         <div>

@@ -207,7 +207,7 @@ class EventsController extends Controller
                 'departments.*.semester' => 'required|array|min:1',
                 'departments.*.semester.*' => 'in:1,2,3,4,5,6,7,8',
                 'departments.*.credit_points' => 'required|numeric|min:0|max:4',
-                'departments.*.session' => 'required|in:1,2',
+                'departments.*.session' => 'required|in:1,2,3,4',
                 'departments.*.start_time' => 'required',
                 'departments.*.end_time' => 'required',
                 'departments.*.reserve_start_time' => 'nullable',

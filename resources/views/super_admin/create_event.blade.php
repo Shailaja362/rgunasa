@@ -305,6 +305,8 @@
                                 <option value="">Select Session</option>
                                 <option value="1" {{ old("departments.$index.session", optional($dept)->session) == '1' ? 'selected' : '' }}>FN</option>
                                 <option value="2" {{ old("departments.$index.session", optional($dept)->session) == '2' ? 'selected' : '' }}>AN</option>
+                                <option value="3" {{ old("departments.$index.session", optional($dept)->session) == '3' ? 'selected' : '' }}>Moonlight</option>
+                                <option value="4" {{ old("departments.$index.session", optional($dept)->session) == '4' ? 'selected' : '' }}>Dimlight</option>
                             </select>
                         </div>
                         <div>
