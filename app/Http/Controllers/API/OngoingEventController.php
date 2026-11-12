@@ -136,13 +136,15 @@ class OngoingEventController extends Controller
                     $availableSeats > 0 &&
                     !$deadline->endOfDay()->isPast() &&
                     !$paidEventConflict;
+                // Same rules as the web dashboard: the button is enabled only when $canRegister.
                 $text = '';
-                $eventRegister = true;
+                $eventRegister = $canRegister;
+                $buttonText = $canRegister
+                    ? ($event->event_type === 'paid' ? 'Pay & Register' : 'Register Now')
+                    : ($permanentBlock ? 'Already Registered' : 'Registration Closed');
                 if ($permanentBlock) {
-                    $eventRegister = false;
                     $text = 'You have already registered for this event and cannot register again.';
                 } elseif ($cooldownActive) {
-                    $eventRegister = false;
                     $text = 'You can register again after ' . $nextAllowedDate->format('F j, Y');
                 } elseif ($availableSeats <= 0) {
                     $text = 'No available seats for this event.';
@@ -165,6 +167,7 @@ class OngoingEventController extends Controller
                     'event_date'        => Carbon::parse($dept->event_date)->format('F j, Y'),
                     'event_premium'     => $event->event_type === 'paid' ? 'paid' : 'free',
                     'event_register'    => $eventRegister,
+                    'register_button_text' => $buttonText,
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,

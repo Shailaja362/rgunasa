@@ -11,8 +11,8 @@ class Student extends Authenticatable implements JWTSubject
 {
     use Notifiable;
     protected $guard = 'student';
-    protected $fillable = ['department_id', 'programme_id', 'mobile_number', 'name', 'email', 'password', 'date_of_birth', 'gender', 'register_number', 'section', 'semester', 'batch'];
-    protected $hidden = ['password'];
+    protected $fillable = ['department_id', 'programme_id', 'mobile_number', 'name', 'email', 'password', 'date_of_birth', 'gender', 'register_number', 'section', 'semester', 'batch', 'device_token'];
+    protected $hidden = ['password', 'device_token'];
 
     public function get_department()
     {

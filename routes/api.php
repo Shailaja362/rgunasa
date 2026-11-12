@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\CashfreeController;
 use App\Http\Controllers\API\OngoingEventController;
+use App\Http\Controllers\API\PolicyController;
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\StudentAuthController;
 use App\Http\Controllers\API\StudentController;
@@ -17,7 +18,10 @@ Route::group(['prefix' => 'student'], function () {
     Route::post('update-password', [StudentAuthController::class, 'updatePassword']);
     Route::get('/download-certificate', [StudentController::class, 'downloadCertificate'])
         ->name('student.certificate.download');
+    Route::get('privacy-policy', [PolicyController::class, 'privacyPolicy']);
+    Route::get('terms-and-condition', [PolicyController::class, 'termsConditions']);
     Route::middleware('verify.jwt')->group(function () {
+        Route::post('/save-token', [PolicyController::class, 'saveToken']);
         Route::post('home', [StudentHomeController::class, 'index']);
         Route::get('upcoming-events', [UpcomingEventController::class, 'index']);
         Route::get('ongoing-events', [OngoingEventController::class, 'index']);

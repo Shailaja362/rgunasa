@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Event;
 use App\Models\EventSchedule;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use App\Models\StudentEventRegistration;
 use App\Models\StudentFeedback;
@@ -31,19 +34,89 @@ class RegisterController extends Controller
             ], 409);
         }
 
-       $register = new StudentEventRegistration();
-       $register->event_id = $request['event_id'];
-       $register->student_id = $request['student_id'];
-       $register->event_schedule_id = $request['event_schedule_id'];
-       $register->registered_at = now();
-       $register->status = 1;
-       $register->save();
+        // Use the authenticated student, never trust student_id from the request body.
+        $student = auth('student-api')->user();
+        if (!$student || (int) $request['student_id'] !== (int) $student->id) {
+            return response()->json([
+                'status'  => 401,
+                'message' => 'Unauthorized',
+            ], 401);
+        }
 
-       return response()->json([
-           'status'  => 200,
-           'message' => 'Registration successful',
-       ]);
+        // Same rules as the web StudentRegisterEvent (RegisterEventController::studentRegisterEvent).
+        DB::beginTransaction();
+        try {
+            $event = Event::findOrFail($request['event_id']);
+            $schedule = EventSchedule::where('id', $request['event_schedule_id'])
+                ->where('event_id', $event->id)
+                ->lockForUpdate()
+                ->first();
 
+            if (!$schedule) {
+                DB::rollBack();
+                return $this->registerError('Invalid event schedule for this event.');
+            }
+
+            $lastRegistration = StudentEventRegistration::where([
+                'student_id'        => $student->id,
+                'event_id'          => $event->id,
+                'event_schedule_id' => $schedule->id,
+            ])
+                ->orderBy('registered_at', 'desc')
+                ->first();
+
+            if ($lastRegistration && (empty($event->duration_days) || $event->duration_days == 0)) {
+                DB::rollBack();
+                return $this->registerError('You are already registered for this event.');
+            }
+
+            if ($lastRegistration && $event->duration_days > 0) {
+                $nextAllowedDate = Carbon::parse($lastRegistration->registered_at)
+                    ->addDays($event->duration_days);
+                if (Carbon::now()->lt($nextAllowedDate)) {
+                    DB::rollBack();
+                    return $this->registerError('You can register again after ' . $nextAllowedDate->format('d M Y'));
+                }
+            }
+
+            // seat_count is one shared pool for the whole schedule row, so count
+            // every registration on it, not just the student's cohort.
+            $registeredCount = StudentEventRegistration::where('event_schedule_id', $schedule->id)->count();
+            if ($registeredCount >= $schedule->seat_count) {
+                DB::rollBack();
+                return $this->registerError('This event seat is already full.');
+            }
+
+            StudentEventRegistration::create([
+                'student_id'        => $student->id,
+                'event_id'          => $event->id,
+                'event_schedule_id' => $schedule->id,
+                'status'            => 1,
+                'registered_at'     => Carbon::now(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 200,
+                'message' => 'Registration successful',
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('API event registration failed', ['student_id' => $student->id, 'error' => $e->getMessage()]);
+            return response()->json([
+                'status'  => 500,
+                'message' => 'Registration failed.',
+            ], 500);
+        }
+    }
+
+    private function registerError(string $message)
+    {
+        return response()->json([
+            'status'  => 409,
+            'message' => $message,
+        ], 409);
     }
 
     public function eventUploadProof(Request $request)
