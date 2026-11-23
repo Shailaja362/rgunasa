@@ -3,6 +3,39 @@
         <h3 class="font-semibold text-primary">Event Registered Students Report</h3>
     </div>
     <div class="max-w-8xl mx-auto px-4 py-8">
+        @if (session('export_error'))
+            <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ session('export_error') }}
+            </div>
+        @endif
+        @if (session('export_success'))
+            <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                {{ session('export_success') }}
+            </div>
+        @endif
+
+        {{-- Recent Downloads: exports are built by a queued job; this list refreshes itself --}}
+        <div id="recent-exports-panel" class="bg-white rounded-lg shadow p-4 mb-6 {{ empty($recentExports) ? 'hidden' : '' }}">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-semibold">Recent Downloads</h2>
+                <span class="text-xs text-gray-500">Files are kept for 24 hours</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-gray-500 border-b">
+                            <th class="py-2 pr-4">Requested</th>
+                            <th class="py-2 pr-4">Format</th>
+                            <th class="py-2 pr-4">Rows</th>
+                            <th class="py-2 pr-4">Status</th>
+                            <th class="py-2"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-exports-body"></tbody>
+                </table>
+            </div>
+        </div>
+
         {{-- Page Header --}}
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">
@@ -175,21 +208,71 @@
         </div>
     </div>
 </x-layouts.app>
-@if (session('error'))
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            showToast(@json(session('error')), "error", 2000);
-        });
-    </script>
-@endif
 <script>
-    // The export links carry the filters that were APPLIED (in the page URL),
+    (function() {
+        const statusUrl = @json(route('admin.event-registrations.exports.status'));
+        const badges = {
+            pending: ['Queued', 'bg-gray-100 text-gray-700'],
+            processing: ['Preparing…', 'bg-yellow-100 text-yellow-700'],
+            completed: ['Ready', 'bg-green-100 text-green-700'],
+            failed: ['Failed', 'bg-red-100 text-red-700'],
+        };
+        let timer = null;
+
+        function escapeHtml(value) {
+            return $('<div>').text(value ?? '').html();
+        }
+
+        function render(exports) {
+            const $panel = $('#recent-exports-panel');
+            const $body = $('#recent-exports-body');
+
+            if (!exports.length) {
+                $panel.addClass('hidden');
+                return;
+            }
+            $panel.removeClass('hidden');
+
+            $body.html(exports.map(function(item) {
+                const [label, cls] = badges[item.status] || [item.status, 'bg-gray-100 text-gray-700'];
+                let action = '';
+                if (item.download_url) {
+                    action = '<a href="' + escapeHtml(item.download_url) + '" class="px-3 py-1 text-xs bg-primary text-white rounded">Download</a>';
+                } else if (item.status === 'failed') {
+                    action = '<span class="text-xs text-red-600">' + escapeHtml(item.error) + '</span>';
+                }
+                return '<tr class="border-b last:border-0">' +
+                    '<td class="py-2 pr-4">' + escapeHtml(item.requested_at) + '</td>' +
+                    '<td class="py-2 pr-4">' + escapeHtml(item.type) + '</td>' +
+                    '<td class="py-2 pr-4">' + (item.total_rows ?? '–') + '</td>' +
+                    '<td class="py-2 pr-4"><span class="px-2 py-1 rounded text-xs ' + cls + '">' + label + '</span></td>' +
+                    '<td class="py-2 text-right">' + action + '</td>' +
+                    '</tr>';
+            }).join(''));
+
+            // Keep polling only while something is still being built.
+            const busy = exports.some(item => item.status === 'pending' || item.status === 'processing');
+            clearTimeout(timer);
+            if (busy) {
+                timer = setTimeout(refresh, 4000);
+            }
+        }
+
+        function refresh() {
+            $.getJSON(statusUrl).done(data => render(data.exports || []))
+                .fail(() => { timer = setTimeout(refresh, 10000); });
+        }
+
+        render(@json($recentExports));
+    })();
+
+    // The export links carry the filters that were APPLIED (Apply Filters),
     // so check those, not the form fields: a filter picked but not applied
     // would not be in the download. The server repeats this check.
     const exportFilterKeys = ['event_id', 'status', 'from_date', 'to_date', 'search', 'batch', 'semester', 'programme_id'];
 
     $(document).on('click', '.export-btn', function(e) {
-        const params = new URLSearchParams(window.location.search);
+        const params = new URL(this.href, window.location.origin).searchParams;
         const hasAppliedFilter = exportFilterKeys.some(key => (params.get(key) || '').trim() !== '');
 
         if (hasAppliedFilter) {

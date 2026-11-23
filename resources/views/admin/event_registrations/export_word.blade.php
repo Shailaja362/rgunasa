@@ -44,24 +44,8 @@
         </tr>
     </thead>
     <tbody>
-        @forelse ($registrations as $index => $row)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $row->student->name ?? '-' }}</td>
-                <td>{{ $row->student->batch ?? '-' }}</td>
-                <td>{{ $row->student->semester ?? '-' }}</td>
-                <td>{{ $row->student->email ?? '-' }}</td>
-                <td>{{ $row->event->title ?? '-' }}</td>
-                <td>{{ $statusLabels[$row->status] ?? 'Unknown' }}</td>
-                <td>{{ $row->created_at->format('d-m-Y') }}</td>
-            </tr>
-        @empty
-            <tr>
-                <td colspan="6" style="text-align:center;">
-                    No records found
-                </td>
-            </tr>
-        @endforelse
+        {{-- The export job streams rows in chunks and inserts them at this marker. --}}
+        <!--ROWS-->
     </tbody>
 </table>
 </body>

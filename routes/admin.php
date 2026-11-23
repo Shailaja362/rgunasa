@@ -150,6 +150,10 @@ Route::prefix('admin')->group(function () {
             ->name('registered_report_index');
         Route::get('/event-registrations/export', [EventRegisterdReportController::class, 'export'])
             ->name('admin.event-registrations.export');
+        Route::get('/event-registrations/exports/status', [EventRegisterdReportController::class, 'exportStatus'])
+            ->name('admin.event-registrations.exports.status');
+        Route::get('/event-registrations/exports/{export}/download', [EventRegisterdReportController::class, 'downloadExport'])
+            ->name('admin.event-registrations.exports.download');
         Route::get('/department-student-report', [DepartmentStudentReportController::class, 'index'])
             ->name('department_student_report');
         Route::get('/department-student-report/export', [DepartmentStudentReportController::class, 'export'])

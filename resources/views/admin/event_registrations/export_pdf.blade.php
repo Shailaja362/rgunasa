@@ -68,7 +68,7 @@
 
 <img src="{{ public_path('images/rgu_logo.jpeg') }}" class="logo">
 
-<h2>Event Registration Report</h2>
+<h2>Event Registration Report @if (!empty($partLabel)) <span style="font-size: 10px; font-weight: normal;">({{ $partLabel }})</span> @endif</h2>
 
 {{-- DomPDF slows down sharply on one huge table that spans many pages, so the
      rows are rendered as one small table per page: 15 rows on the first page
@@ -97,7 +97,8 @@
     <tbody>
         @foreach ($chunk as $i => $row)
             <tr>
-                <td class="text-center">{{ $i + 1 }}</td>
+                {{-- $offset = rows in earlier PDF parts, so numbering continues across parts. --}}
+                <td class="text-center">{{ ($offset ?? 0) + $i + 1 }}</td>
                 <td>{{ $row->student->name ?? '' }}</td>
                 <td class="text-center">{{ $row->student->batch ?? '-' }}</td>
                 <td class="text-center">{{ $row->student->semester ?? '-' }}</td>
