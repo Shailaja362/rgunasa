@@ -327,6 +327,7 @@ class StudentHomeController extends Controller
                     'available_seats' => $availableSeats,
 
                     'event_premium' => $event->event_type == 'paid' ? 'paid' : 'free',
+                    'event_amount' => $event->price,
                     'event_register' => false,
                     'registration_status' => $registration->status,
                     'grade' => $registration->grade,

@@ -40,6 +40,10 @@ return [
         'secret' => env('RAZORPAY_SECRET'),
     ],
 
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS', 'storage/app/nasa-4f222-firebase-adminsdk-fbsvc-21416a8577.json'),
+    ],
+
     'cashfree' => [
         'app_id'     => env('CASHFREE_APP_ID'),
         'secret_key' => env('CASHFREE_SECRET_KEY'),

@@ -70,7 +70,18 @@
 
 <h2>Event Registration Report</h2>
 
-<table>
+{{-- DomPDF slows down sharply on one huge table that spans many pages, so the
+     rows are rendered as one small table per page: 15 rows on the first page
+     (it also holds the logo), 20 on every page after. Rows wrap to 2-3 lines,
+     so these sizes leave room for long event names without spilling over. --}}
+@php
+    $rows = $registrations->values();
+    $pages = collect([$rows->slice(0, 15)])
+        ->merge($rows->slice(15)->chunk(20))
+        ->filter(fn ($chunk) => $chunk->isNotEmpty());
+@endphp
+@foreach ($pages as $chunk)
+<table @if (!$loop->last) style="page-break-after: always;" @endif>
     <thead>
         <tr>
             <th class="col-sl">#</th>
@@ -84,7 +95,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($registrations as $i => $row)
+        @foreach ($chunk as $i => $row)
             <tr>
                 <td class="text-center">{{ $i + 1 }}</td>
                 <td>{{ $row->student->name ?? '' }}</td>
@@ -98,6 +109,7 @@
         @endforeach
     </tbody>
 </table>
+@endforeach
 
 </body>
 </html>

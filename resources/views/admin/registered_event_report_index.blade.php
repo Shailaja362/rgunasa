@@ -175,30 +175,42 @@
         </div>
     </div>
 </x-layouts.app>
+@if (session('error'))
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            showToast(@json(session('error')), "error", 2000);
+        });
+    </script>
+@endif
 <script>
+    // The export links carry the filters that were APPLIED (in the page URL),
+    // so check those, not the form fields: a filter picked but not applied
+    // would not be in the download. The server repeats this check.
+    const exportFilterKeys = ['event_id', 'status', 'from_date', 'to_date', 'search', 'batch', 'semester', 'programme_id'];
+
     $(document).on('click', '.export-btn', function(e) {
+        const params = new URLSearchParams(window.location.search);
+        const hasAppliedFilter = exportFilterKeys.some(key => (params.get(key) || '').trim() !== '');
 
-        let eventId = $('select[name="event_id"]').val();
-        let status = $('select[name="status"]').val();
-        let fromDate = $('input[name="from_date"]').val();
-        let toDate = $('input[name="to_date"]').val();
-        let search = $('input[name="search"]').val();
-        let semester = $('select[name="semester"]').val();
-        let batch = $('select[name="batch"]').val();
-        let programme = $('select[name="programme_id"]').val();
-
-        // Check if all fields are empty
-        if (
-            eventId === '' &&
-            status === '' &&
-            fromDate === '' &&
-            toDate === '' &&
-            search.trim() === '' && semester === '' && batch === '' && programme === ''
-        ) {
-            e.preventDefault();
-            showToast('Please select at least one filter before downloading the report.', "error", 2000);
-            setTimeout(() => 800);
-            return false;
+        if (hasAppliedFilter) {
+            return true;
         }
+
+        e.preventDefault();
+
+        // Select placeholders are disabled options, so an empty select gives null.
+        const hasUnappliedFilter = exportFilterKeys.some(key => {
+            const value = $('[name="' + key + '"]').val();
+            return value !== null && value !== undefined && String(value).trim() !== '';
+        });
+
+        showToast(
+            hasUnappliedFilter
+                ? 'Please click "Apply Filters" before downloading the report.'
+                : 'Please apply at least one filter before downloading the report.',
+            "error",
+            2000
+        );
+        return false;
     });
 </script>

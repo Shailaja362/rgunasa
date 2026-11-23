@@ -307,6 +307,7 @@ class OngoingEventController extends Controller
                     'event_premium'     => $event->event_type === 'paid'
                         ? 'paid'
                         : 'free',
+                    'event_amount'      => $event->price,
                     'student_name'      => $student->name,
                     'student_id'        => $student->id,
                     'student_email'     => $student->email,
@@ -336,7 +337,7 @@ class OngoingEventController extends Controller
             ], 401);
         }
 
-        // Active Registration Count
+        // Active Registration Count (status 1), same rule as the other event APIs.
         $activeCount = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 1)
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))
@@ -442,6 +443,7 @@ class OngoingEventController extends Controller
                 'event_premium'     => $event->event_type === 'paid'
                     ? 'paid'
                     : 'free',
+                'event_amount'      => $event->price,
                 'student_name'      => $student->name,
                 'student_id'        => $student->id,
                 'student_email'     => $student->email,

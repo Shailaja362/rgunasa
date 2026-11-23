@@ -173,5 +173,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/student-credits', [StudentCreditController::class, 'index'])->name('student_credits');
         Route::get('export-student-credits', [StudentCreditController::class, 'exportCredits'])
             ->name('export_student_credits');
+
+        Route::post('/events/{id}/toggle-publish', [EventsController::class, 'togglePublish'])
+            ->name('events.toggle_publish');
+        Route::post('/events/{id}/toggle-status', [EventsController::class, 'toggleStatus'])
+            ->name('events.toggle_status');
     });
 });

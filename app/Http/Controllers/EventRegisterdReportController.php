@@ -80,6 +80,17 @@ class EventRegisterdReportController extends Controller
 
     public function export(Request $request)
     {
+        // At least one filter is required so a download never pulls every
+        // registration (an unfiltered PDF was timing out with a 504).
+        $filterKeys = ['event_id', 'status', 'from_date', 'to_date', 'search', 'batch', 'semester', 'programme_id'];
+        $hasFilter = collect($filterKeys)->contains(fn ($key) => $request->filled($key));
+
+        if (!$hasFilter) {
+            return redirect()
+                ->route('registered_report_index', $request->except('type'))
+                ->with('error', 'Please apply at least one filter before downloading the report.');
+        }
+
         $this->data['statusLabels'] = [
             1 => 'Registered',
             2 => 'Approved',
@@ -87,12 +98,33 @@ class EventRegisterdReportController extends Controller
             4 => 'Cancelled',
         ];
 
-        $query = StudentEventRegistration::with([
-            'event',
-            'student',
-            'student.get_department',
-            'get_event_schedule'
-        ])
+        // Load only the columns and relations each format prints. PDF and Word use
+        // student name/batch/semester/email + event title; Excel/CSV also need
+        // register number, section, department and the schedule's batch/semester.
+        $isSpreadsheet = in_array($request->type, ['excel', 'csv'], true);
+
+        $relations = $isSpreadsheet
+            ? [
+                'event:id,title',
+                'student:id,name,email,batch,semester,register_number,section,department_id',
+                'student.get_department:id,name',
+                'get_event_schedule:id,batch,semester',
+            ]
+            : [
+                'event:id,title',
+                'student:id,name,email,batch,semester',
+            ];
+
+        $query = StudentEventRegistration::query()
+            ->select([
+                'student_event_registrations.id',
+                'student_event_registrations.student_id',
+                'student_event_registrations.event_id',
+                'student_event_registrations.event_schedule_id',
+                'student_event_registrations.status',
+                'student_event_registrations.created_at',
+            ])
+            ->with($relations)
             ->whereHas('event', function ($query) {
                 $query->where('publish', 1)
                     ->where('is_active', 'y');
@@ -141,6 +173,11 @@ class EventRegisterdReportController extends Controller
         }
 
         if ($request->type === 'pdf') {
+            // DomPDF needs roughly 0.2 MB and 7 ms per row (about 500 MB and 20s
+            // for 3,000 rows), which is more than PHP's usual defaults.
+            set_time_limit(300);
+            ini_set('memory_limit', '1024M');
+
             $pdf = Pdf::loadView(
                 'admin.event_registrations.export_pdf',
                 $this->data

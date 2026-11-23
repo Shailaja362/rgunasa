@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\StudentAttendance;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\Student;
 use App\Models\EventSchedule;
 use App\Models\Programme;
 use App\Models\StudentEventRegistration;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\StudentNotificationService;
 
 class StudentAttendanceController extends Controller
 {
@@ -151,6 +153,7 @@ class StudentAttendanceController extends Controller
         ]);
         DB::beginTransaction();
         try {
+            $event = Event::findOrFail($request->event_id);
             $schedule = EventSchedule::find($request->schedule_id);
 
             if (empty($schedule)) {
@@ -178,6 +181,15 @@ class StudentAttendanceController extends Controller
                     } else {
                         $attendance->exit_time = null;
                     }
+                    $attendanceChanged = $attendance->isDirty(['entry_time', 'exit_time']);
+                    $attendance->save();
+
+                if ($attendanceChanged) {
+                    $student = Student::find($studentId);
+                    if ($student) {
+                        app(StudentNotificationService::class)->notify('attendance_marked', ['student' => $student, 'event' => $event]);
+                    }
+                }
 
                     $attendance->save();
 
@@ -192,6 +204,13 @@ class StudentAttendanceController extends Controller
             DB::commit();
             return back()->with('success', 'Attendance saved successfully');
         } catch (\Throwable $e) {
+              Log::error('Student Attendance Failed', [
+                'error'  => $e->getMessage(),
+            ]);
+            echo '<pre>';
+print_r($e->getMessage());
+echo '</pre>';
+exit;
             DB::rollBack();
             return back()->with('error', $e->getMessage());
         }

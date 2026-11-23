@@ -29,6 +29,8 @@ class UpcomingEventController extends Controller
             ->groupBy('student_id', 'event_id')
             ->get();
 
+        // Active = registered but not yet completed (status 1), same rule as
+        // the ongoing-events and register-events APIs.
         $activeRegistrationCount = StudentEventRegistration::where('student_id', $student->id)
             ->where('status', 1)
             ->whereHas('event', fn($q) => $q->where('publish', 1)->where('is_active', 'y'))

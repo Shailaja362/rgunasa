@@ -407,20 +407,58 @@ class EventsController extends Controller
         ]);
     }
 
-    public function publishEvent(Request $request)
+     public function publishEvent(Request $request)
     {
         $request->validate([
             'event_id' => 'required|exists:events,id'
         ]);
 
-        $event = Event::where('id', $request->event_id)
-            ->update([
-                'publish' => 1
-            ]);
+        $event = Event::findOrFail($request->event_id);
+        $wasPublished = (bool) $event->publish;
+
+        $event->publish = 1;
+        $event->save();
+
+        if (!$wasPublished) {
+            $event->load('schedules');
+            app(\App\Services\StudentNotificationService::class)->notify('event_published', ['event' => $event]);
+        }
 
         return response()->json([
             'success' => true,
             'message' => 'Event published successfully'
+        ]);
+    }
+
+    public function togglePublish($id)
+    {
+        $event = Event::findOrFail($id);
+        $wasPublished = (bool) $event->publish;
+        $event->publish = $wasPublished ? 0 : 1;
+        $event->save();
+
+        if (!$wasPublished && $event->publish) {
+            $event->load('schedules');
+            app(\App\Services\StudentNotificationService::class)->notify('event_published', ['event' => $event]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'publish' => $event->publish,
+            'message' => $event->publish ? 'Event published successfully' : 'Event unpublished successfully'
+        ]);
+    }
+
+    public function toggleStatus($id)
+    {
+        $event = Event::findOrFail($id);
+        $event->is_active = $event->is_active === 'y' ? 'n' : 'y';
+        $event->save();
+
+        return response()->json([
+            'success'   => true,
+            'is_active' => $event->is_active,
+            'message'   => $event->is_active === 'y' ? 'Event activated successfully' : 'Event deactivated successfully'
         ]);
     }
 }
