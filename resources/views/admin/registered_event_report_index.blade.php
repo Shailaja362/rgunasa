@@ -210,7 +210,7 @@
 </x-layouts.app>
 <script>
     (function() {
-        const statusUrl = @json(route('admin.event-registrations.exports.status'));
+        const statusUrl = "{{ route('admin.event-registrations.exports.status') }}";
         const badges = {
             pending: ['Queued', 'bg-gray-100 text-gray-700'],
             processing: ['Preparing…', 'bg-yellow-100 text-yellow-700'],
@@ -263,7 +263,7 @@
                 .fail(() => { timer = setTimeout(refresh, 10000); });
         }
 
-        render(@json($recentExports));
+        render({{ \Illuminate\Support\Js::from($recentExports) }});
     })();
 
     // The export links carry the filters that were APPLIED (Apply Filters),

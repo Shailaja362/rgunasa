@@ -225,7 +225,7 @@
     </div>
 </x-layouts.app>
 <script>
-    const programmeScheduleOptions = @json($programmeScheduleOptions);
+    const programmeScheduleOptions = {{ \Illuminate\Support\Js::from($programmeScheduleOptions) }};
 
     const batchChoice = new Choices("#batch", {
         removeItemButton: true,
@@ -269,7 +269,9 @@
         const schedule_id = $(this).data('schedule_id');
         // Built by route() with placeholders, so it works on any domain or sub-folder
         // (a hard-coded "/admin/..." 404s when the app is not at the domain root).
-        const downloadUrl = @json(route('download_all', ['event' => '__EVENT__', 'student' => '__STUDENT__', 'schedule_id' => '__SCHEDULE__']))
+        // Plain string on purpose: Blade's json directive splits its argument
+        // on commas, which breaks with the array inside route().
+        const downloadUrl = "{{ route('download_all', ['event' => '__EVENT__', 'student' => '__STUDENT__', 'schedule_id' => '__SCHEDULE__']) }}"
             .replace('__EVENT__', encodeURIComponent(eventId))
             .replace('__STUDENT__', encodeURIComponent(studentId))
             .replace('__SCHEDULE__', encodeURIComponent(schedule_id));

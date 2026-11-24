@@ -197,7 +197,7 @@
 </x-layouts.app>
 
 <script>
-    const programmeScheduleOptions = @json($programmeScheduleOptions);
+    const programmeScheduleOptions = {{ \Illuminate\Support\Js::from($programmeScheduleOptions) }};
 
     const batchChoice = new Choices("#batch", {
         removeItemButton: true,

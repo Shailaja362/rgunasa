@@ -444,14 +444,14 @@
     const eventListUrl = "{{ route('event_list') }}";
     const createEventUrl = "{{ route('create_event') }}";
     const publishEventUrl = "{{ route('publish_event') }}";
-    const deptOptions = @json(
+    const deptOptions = {{ \Illuminate\Support\Js::from(
         $programmes->map(function ($d) {
             return ['id' => $d->id, 'name' => $d->name];
-        }));
-    const batchOptions = @json(
+        })) }};
+    const batchOptions = {{ \Illuminate\Support\Js::from(
         $batches->map(function ($b) {
             return ['id' => $b->name, 'name' => $b->name];
-        }));
+        })) }};
     flatpickr(".date_field", {
         dateFormat: "d/m/Y",
     });

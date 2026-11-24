@@ -8,14 +8,14 @@
     @if (session('success'))
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast(@json(session('success')), "success");
+                showToast({{ \Illuminate\Support\Js::from(session('success')) }}, "success");
             });
         </script>
     @endif
     @if (session('error'))
         <script>
             document.addEventListener("DOMContentLoaded", function() {
-                showToast(@json(session('error')), "error");
+                showToast({{ \Illuminate\Support\Js::from(session('error')) }}, "error");
             });
         </script>
     @endif
