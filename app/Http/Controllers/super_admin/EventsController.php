@@ -11,6 +11,7 @@ use App\Models\EventSchedule;
 use App\Models\Faculty;
 use App\Models\Programme;
 use App\Models\Tasks;
+use App\Services\EventCreditAllocation;
 use App\Support\RelatedRecordChecker;
 use Carbon\Carbon;
 use Exception;
@@ -206,7 +207,7 @@ class EventsController extends Controller
                 'departments.*.batch.*' => 'exists:batches,name',
                 'departments.*.semester' => 'required|array|min:1',
                 'departments.*.semester.*' => 'in:1,2,3,4,5,6,7,8',
-                'departments.*.credit_points' => 'required|numeric|min:0|max:4',
+                'departments.*.credit_points' => 'nullable|numeric|min:0|max:4', // optional: empty = non-credit event
                 'departments.*.session' => 'required|in:1,2,3,4',
                 'departments.*.start_time' => 'required',
                 'departments.*.end_time' => 'required',
@@ -225,6 +226,17 @@ class EventsController extends Controller
             }
 
             $request->validate($rules);
+
+            // Do not let this event push a semester past its required credits.
+            $creditError = EventCreditAllocation::firstError(
+                $request->input('departments', []),
+                !empty($request['event_id']) ? (int) $request['event_id'] : null
+            );
+            if ($creditError) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'credit_points' => $creditError,
+                ]);
+            }
 
             DB::beginTransaction();
 
@@ -298,7 +310,7 @@ class EventsController extends Controller
                     'seat_count'      => $schedule['seat_count'],
                     'batch'           => !empty($batches) ? implode(',', $batches) : null,
                     'semester'        => !empty($semesters) ? implode(',', $semesters) : null,
-                    'credit_points'   => $schedule['credit_points'],
+                    'credit_points'   => is_numeric($schedule['credit_points'] ?? null) ? $schedule['credit_points'] : 0,
                     'session'             => $schedule['session'],
                     'start_time'          => $schedule['start_time'],
                     'end_time'            => $schedule['end_time'],

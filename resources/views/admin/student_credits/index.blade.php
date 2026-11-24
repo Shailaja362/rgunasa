@@ -78,7 +78,7 @@
     @if (!empty($filters['semester']))
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 mt-6 p-5">
             {{-- Report heading + exports --}}
-            <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-4">
+            <div class="flex flex-col md:flex-row items-start justify-between gap-4 mb-4">
                 <div class="text-sm space-y-1">
                     <div><b>Semester:</b> {{ $filters['semester'] }}</div>
                     <div><b>Programme:</b> {{ $programmeName ?? 'All Programmes' }}</div>
@@ -98,20 +98,20 @@
                         @endif
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-2" style="flex-shrink:0;">
                     <a href="{{ route('credit_report.export', ['type' => 'excel'] + $filters) }}"
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm">
+                        class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm" style="white-space:nowrap;">
                         <i class="fas fa-file-excel"></i> Export Excel
                     </a>
                     @if (!empty($filters['programme_id']))
                         <a href="{{ route('credit_report.export', ['type' => 'pdf'] + $filters) }}"
-                            class="px-4 py-2 bg-[#C04000] text-white rounded-lg hover:opacity-90 transition text-sm">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-[#C04000] text-white rounded-lg hover:opacity-90 transition text-sm" style="white-space:nowrap;">
                             <i class="fas fa-file-pdf"></i> Export PDF
                         </a>
                     @else
                         {{-- PDF of every programme is too large; Excel covers that case. --}}
                         <span title="Select a programme to download the PDF"
-                            class="px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm cursor-not-allowed">
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-gray-300 text-gray-600 rounded-lg text-sm cursor-not-allowed" style="white-space:nowrap;">
                             <i class="fas fa-file-pdf"></i> Export PDF
                         </span>
                     @endif

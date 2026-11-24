@@ -208,8 +208,19 @@
                                         class="text-blue-600 hover:text-blue-800">
                                         <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
+                                    @if ($event->publish == 1)
+                                        <span title="Published" class="ml-2 text-green-600">
+                                            <i class="fas fa-circle-check"></i>
+                                        </span>
+                                    @else
+                                        <button type="button" title="Publish"
+                                            class="ml-2 text-primary hover:opacity-90 publishEventBtn"
+                                            data-event_id="{{ $event->id }}" data-title="{{ $event->title }}">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </button>
+                                    @endif
                                     @if (!empty(session()->get('super_admin')))
-                                        <button type="button" class="text-red-600 hover:text-red-800 deleteRecord"
+                                        <button type="button" class="ml-2 text-red-600 hover:text-red-800 deleteRecord"
                                             data-url="{{ route('events_destroy', $event->id) }}">
                                             <i class="fa-solid fa-delete-left"></i>
                                         </button>
@@ -233,4 +244,51 @@
 
 </x-layouts.app>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    const publishEventUrl = "{{ route('publish_event') }}";
+
+    // Publish from the event list's Action column.
+    $(document).on("click", ".publishEventBtn", function () {
+        const $btn = $(this);
+        const eventId = $btn.data("event_id");
+
+        Swal.fire({
+            title: "Publish this event?",
+            text: ($btn.data("title") || "") + " — once published, students can view this event.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Yes, Publish it!",
+            cancelButtonText: "Cancel",
+        }).then((result) => {
+            if (!result.isConfirmed) return;
+
+            $btn.prop("disabled", true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+            $.ajax({
+                url: publishEventUrl,
+                type: "POST",
+                data: {
+                    event_id: eventId,
+                    _token: $('meta[name="csrf-token"]').attr("content"),
+                },
+                success: function (res) {
+                    if (res.success) {
+                        showToast(res.message, "success", 2000);
+                        $btn.replaceWith(
+                            '<span title="Published" class="ml-2 text-green-600"><i class="fas fa-circle-check"></i></span>'
+                        );
+                    } else {
+                        showToast(res.message, "error", 2000);
+                        $btn.prop("disabled", false).html('<i class="fas fa-paper-plane"></i>');
+                    }
+                },
+                error: function (xhr) {
+                    showToast(xhr.responseJSON?.message || "Something went wrong", "error", 2000);
+                    $btn.prop("disabled", false).html('<i class="fas fa-paper-plane"></i>');
+                },
+            });
+        });
+    });
+</script>
 <script src="{{ asset('admin/js/events.js') }}?v={{ time() }}"></script>

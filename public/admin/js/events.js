@@ -170,11 +170,7 @@ $(document).on("submit", "#eventForm", function (e) {
             condition: (val) => val === "" || (Array.isArray(val) && val.length === 0),
             message: "Please Select Semester",
         },
-        {
-            id: ".credit_points",
-            condition: (val) => val === "",
-            message: "Credit Point is required",
-        },
+        // Credit points are optional: empty means a non-credit event.
         {
             id: ".dept_session",
             condition: (val) => val === "",
@@ -461,7 +457,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium">Credit Points <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium">Credit Points <span class="text-gray-500 text-xs">(optional)</span></label>
                             <input type="number" name="departments[${deptIndex}][credit_points]" id="credit_points"
                              placeholder="Enter Event Credit Points"
                                 class="credit_points points bg-[#D9D9D9] w-full p-2 border border-gray-300 rounded-full focus:outline-none focus:ring focus:ring-primary/40">
@@ -598,7 +594,8 @@ $("#publishBtn").on("click", function () {
         }
 
         // Credit points validation
-        if (!creditPoints || creditPoints < 0) {
+        // Optional: only reject a negative value.
+        if (creditPoints !== "" && creditPoints < 0) {
             showToast("Please Enter Valid Credit Points", "error", 2000);
             isValid = false;
             return false;

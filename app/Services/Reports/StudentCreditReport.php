@@ -145,8 +145,9 @@ class StudentCreditReport
     }
 
     /**
-     * Graded (not D) registrations on published, active events whose schedule
-     * is open to the student's semester, batch and programme.
+     * Graded (not D) registrations on published, active credit events whose
+     * schedule was created for the student's semester and is open to their
+     * batch and programme.
      * `$student` is the SQL alias/table name of the students table.
      */
     private static function creditedRegistrations(string $student): QueryBuilder
@@ -158,7 +159,9 @@ class StudentCreditReport
             ->whereRaw("LOWER(r.grade) <> 'd'")
             ->where('e.publish', 1)
             ->where('e.is_active', 'y')
-            ->whereRaw("(es.semester IS NULL OR es.semester = '' OR FIND_IN_SET({$student}.semester, es.semester))")
+            ->where('es.credit_points', '>', 0)
+            // Only events created for the student's own semester count.
+            ->whereRaw("FIND_IN_SET({$student}.semester, es.semester)")
             ->whereRaw("(es.batch IS NULL OR es.batch = '' OR FIND_IN_SET({$student}.batch, es.batch))")
             ->whereRaw("(es.programme_id IS NULL OR es.programme_id = '' OR FIND_IN_SET({$student}.programme_id, es.programme_id))");
     }
