@@ -26,6 +26,7 @@ use App\Http\Controllers\super_admin\ReviewReportsController;
 use App\Http\Controllers\super_admin\SuperAdminHomeController;
 use App\Http\Controllers\student\StudentImportExportController;
 use App\Http\Controllers\StudentCreditController;
+use App\Http\Controllers\CreditReportController;
 use App\Http\Controllers\super_admin\StudentApprovalController;
 
 Route::prefix('admin')->group(function () {
@@ -177,6 +178,11 @@ Route::prefix('admin')->group(function () {
         Route::get('/student-credits', [StudentCreditController::class, 'index'])->name('student_credits');
         Route::get('export-student-credits', [StudentCreditController::class, 'exportCredits'])
             ->name('export_student_credits');
+
+        // Credit report: semester/programme-wise required, earned and remaining credits
+        Route::get('/credit-report', [CreditReportController::class, 'index'])->name('credit_report');
+        Route::get('/credit-report/export', [CreditReportController::class, 'exportCredits'])
+            ->name('credit_report.export');
 
         Route::post('/events/{id}/toggle-publish', [EventsController::class, 'togglePublish'])
             ->name('events.toggle_publish');

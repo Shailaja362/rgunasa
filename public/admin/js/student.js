@@ -220,7 +220,9 @@ $(document).on("submit", "#studentregisterForm", function (e) {
             if (res.success) {
                 showToast(res.message, "success", 2000);
                 setTimeout(function () {
-                    window.location.href = "nasa/student/login"; // Replace with your actual event list route
+                    // Set in register_student.blade.php via route('student.login'),
+                    // so it is correct on any domain or sub-folder.
+                    window.location.href = studentLoginUrl;
                 }, 2000);
             } else {
                 showToast(res.message, "error", 2000);

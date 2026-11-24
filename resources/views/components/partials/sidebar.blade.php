@@ -103,6 +103,7 @@
                     <x-menu.item name="Student Attendance" icon="fa-graduation-cap" route="student_attendance" />
                     <x-menu.item name="Assign Grades" icon="fa-star" route="assign_grades" />
                     <x-menu.item name="Reports" icon="fa-book" route="reports" />
+                    <x-menu.item name="Credit Report" icon="fa-chart-bar" route="credit_report" />
                 </x-slot:menus>
             </x-menu.list>
         @endif
@@ -144,6 +145,7 @@
                     <x-menu.item name="Reports" icon="fa-book" route="reports" />
                     <x-menu.item name="Review Reports" icon="fa-check-circle" route="review_reports" />
                     <x-menu.item name="Student Credits" icon="fa-trophy" route="student_credits" />
+                    <x-menu.item name="Credit Report" icon="fa-chart-bar" route="credit_report" />
                 </x-slot:menus>
             </x-menu.list>
         @endif

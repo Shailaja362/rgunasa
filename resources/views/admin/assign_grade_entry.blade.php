@@ -267,7 +267,13 @@
         const eventId = $(this).data('event_id');
         const studentId = $(this).data('student_id');
         const schedule_id = $(this).data('schedule_id');
-        fetch(`/admin/download-otherfiles/${eventId}/${studentId}/${schedule_id}`)
+        // Built by route() with placeholders, so it works on any domain or sub-folder
+        // (a hard-coded "/admin/..." 404s when the app is not at the domain root).
+        const downloadUrl = @json(route('download_all', ['event' => '__EVENT__', 'student' => '__STUDENT__', 'schedule_id' => '__SCHEDULE__']))
+            .replace('__EVENT__', encodeURIComponent(eventId))
+            .replace('__STUDENT__', encodeURIComponent(studentId))
+            .replace('__SCHEDULE__', encodeURIComponent(schedule_id));
+        fetch(downloadUrl)
             .then(res => res.json())
             .then(data => {
                 if (!data.success || !Array.isArray(data.files)) {

@@ -214,5 +214,6 @@
 </html>
 <script>
         const registerSave   = "{{ route('student.register_save') }}";
+        const studentLoginUrl = "{{ route('student.login') }}";
 </script>
 <script src="{{ asset('admin/js/student.js') }}?v={{ time() }}"></script>
